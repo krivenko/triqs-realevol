@@ -25,14 +25,6 @@ message(STATUS "muParser version: " ${MUPARSER_VERSION})
 # Compile C++ code
 add_subdirectory(c++)
 
-# Real/complex time-dependent expressions
-set(time_expr_type "real" CACHE STRING "Choose implementation of time_expr (real, complex).")
-if(${time_expr_type} STREQUAL "real")
-    add_definitions("-DTIME_EXPR_REAL")
-elseif(${time_expr_type} STREQUAL "complex")
-    add_definitions("-DTIME_EXPR_COMPLEX")
-endif()
-
 # Python interface
 if (${TRIQS_WITH_PYTHON_SUPPORT})
  if(${Tests})
