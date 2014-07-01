@@ -42,7 +42,6 @@ public:
     time_expr(std::string const& expr);
     time_expr(const char* expr);
     time_expr(result_type r);
-    time_expr(int i);
     time_expr(time_expr const& te);
     ~time_expr();
     result_type operator()(double t) const;
@@ -97,13 +96,10 @@ public:
     constexpr static double comparison_tolerance = std::numeric_limits<double>::epsilon();
     
     time_expr();
-    time_expr(std::string const& expr_re);
-    time_expr(std::string const& expr_re, std::string const& expr_im);
-    time_expr(const char* expr_re, const char* expr_im);
-    time_expr(const char* expr_re);
+    time_expr(std::string const& expr_re, std::string const& expr_im = "0");
+    time_expr(const char* expr_re, const char* expr_im = "0");
     time_expr(result_type c);
     time_expr(result_type::value_type r);
-    time_expr(int i);
     time_expr(time_expr const& te);
     result_type operator()(double t) const;
     bool is_constant() const;

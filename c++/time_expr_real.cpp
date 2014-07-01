@@ -45,28 +45,14 @@ time_expr<false>::time_expr(std::string const& expr) :
     }
 }
 
-time_expr<false>::time_expr(const char* expr) :
-    parser(muParser_pool::acquire())
-{
-    parser->DefineVar("t", &arg);
-    parser->SetExpr(expr);
-    if(!parser->GetUsedVar().size()){
-        arg = parser->Eval();
-        muParser_pool::release(parser);
-        parser = nullptr;
-     }
-}
+time_expr<false>::time_expr(const char* expr) : time_expr(std::string(expr))
+{}
 
 time_expr<false>::time_expr(time_expr::result_type r) :
     arg(r), parser(nullptr)
 {}
 
-time_expr<false>::time_expr(int i) :
-    arg(i), parser(nullptr)
-{}
-
-time_expr<false>::time_expr() :
-    arg(0), parser(nullptr)
+time_expr<false>::time_expr() : time_expr(result_type(0))
 {}
 
 time_expr<false>::time_expr(time_expr const& te) :

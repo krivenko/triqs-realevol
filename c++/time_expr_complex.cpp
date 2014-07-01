@@ -20,20 +20,6 @@ time_expr<true>::time_expr(std::string const& expr_re, std::string const& expr_i
     }
 }
 
-time_expr<true>::time_expr(std::string const& expr_re)
-{
-    parser_re.DefineVar("t", &t);
-    parser_im.DefineVar("t", &t);
-    
-    parser_re.SetExpr(expr_re);
-    parser_im.SetExpr("0");
-    
-    _is_constant = (!parser_re.GetUsedVar().size());
-    if(_is_constant){
-        precomputed_value = std::complex<double>(parser_re.Eval(),0.0);
-    }
-}
-
 time_expr<true>::time_expr(const char* expr_re, const char* expr_im)
 {
     parser_re.DefineVar("t", &t);
@@ -48,19 +34,6 @@ time_expr<true>::time_expr(const char* expr_re, const char* expr_im)
     }
 }
 
-time_expr<true>::time_expr(const char* expr_re)
-{
-    parser_re.DefineVar("t", &t);
-    parser_im.DefineVar("t", &t);
-    
-    parser_re.SetExpr(expr_re);
-    parser_im.SetExpr("0");
-    
-    _is_constant = (!parser_re.GetUsedVar().size());
-    if(_is_constant){
-        precomputed_value = std::complex<double>(parser_re.Eval(),0.0);
-    }
-}
 time_expr<true>::time_expr(result_type c) :
     _is_constant(true),
     precomputed_value(c)
@@ -80,17 +53,6 @@ time_expr<true>::time_expr(result_type::value_type r) :
     parser_im.DefineVar("t", &t);
     
     parser_re.SetExpr(boost::lexical_cast<std::string>(r));
-    parser_im.SetExpr("0");
-}
-
-time_expr<true>::time_expr(int i) :
-    _is_constant(true),
-    precomputed_value(i,0.0)
-{
-    parser_re.DefineVar("t", &t);
-    parser_im.DefineVar("t", &t);
-    
-    parser_re.SetExpr(boost::lexical_cast<std::string>(i));
     parser_im.SetExpr("0");
 }
 
