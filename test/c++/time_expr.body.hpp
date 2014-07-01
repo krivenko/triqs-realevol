@@ -74,13 +74,12 @@ for(int i = 0; i < 4; ++i){
     if(std::abs(te1dhalf(T[i]) - (TE1_res[i]/0.5)) >= 1e-10) return EXIT_FAILURE;
     if(std::abs(halfdte2(T[i]) - (0.5/TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
 }
-/*    
-    // Test try_reduce_to_constant()
-    time_expr te0t("0*t"), te1t("1*t");
-    if(te0t.is_constant() || te1t.is_constant()) return EXIT_FAILURE;
-    generic::uniform_mesh<> m(0,100,101);
-    try_reduce_to_constant(te0t, m);
-    try_reduce_to_constant(te1t, m);
-    if(!te0t.is_constant()) return EXIT_FAILURE;
-    if(te1t.is_constant()) return EXIT_FAILURE;
-*/
+    
+// Test try_reduce_to_constant()
+time_expr te0t("0*t"), te1t("1*t");
+if(te0t.is_constant() || te1t.is_constant()) return EXIT_FAILURE;
+uniform_mesh<> m(0,100,101);
+try_reduce_to_constant(te0t, m);
+try_reduce_to_constant(te1t, m);
+if(!te0t.is_constant()) return EXIT_FAILURE;
+if(te1t.is_constant()) return EXIT_FAILURE;

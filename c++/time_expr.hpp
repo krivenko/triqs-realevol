@@ -18,13 +18,13 @@
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/split_member.hpp>
 
-//#include "mesh_base.hpp"
-//#include "mesh_iterator.hpp"
+#include "mesh_base.hpp"
+#include "mesh_iterator.hpp"
 
 using boost::lexical_cast;
 
 namespace realevol {
-  
+    
 // Time-dependent expressions
 template<bool ComplexValued = false> class time_expr;
     
@@ -61,9 +61,6 @@ public:
     time_expr operator/=(time_expr const& te);
     bool operator==(time_expr const& te) const;
     
-    template<class Mesh>
-    friend bool try_reduce_to_constant(time_expr& te, Mesh const& m);
-    
 private:
     
     mutable mu::Parser* parser;
@@ -88,22 +85,6 @@ private:
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
 
-// Заменить выражение на константное, если оно принимает одно и то же значение
-// на всех точках сетки.
-/**
-template<class Mesh>
-bool try_reduce_to_constant(time_expr& te, const Mesh& m)
-{
-    typename Mesh::const_iterator it = m.begin();
-    time_expr::result_type value = te(*it);
-    
-    for(it++; it != m.end(); it++)
-        if(std::fabs(te(*it) - value) > time_expr::comparison_tolerance) return false;
-        
-    te = time_expr(value);
-    return true;
-}*/
-
 // Time-dependent expressions (complex)
 template<>
 class time_expr<true> : public boost::operators<time_expr<true>>
@@ -127,10 +108,10 @@ public:
     result_type operator()(double t) const;
     bool is_constant() const;
     bool is_zero() const;
-  
+
     // Stream output
     friend std::ostream& operator<<(std::ostream& os, time_expr<true> const& te);
-    
+
     time_expr operator-();
     
     time_expr operator=(time_expr const& te);
@@ -139,9 +120,6 @@ public:
     time_expr operator*=(time_expr const& te);
     time_expr operator/=(time_expr const& te);
     bool operator==(time_expr const& te) const;
-    
-    template<class Mesh>
-    friend bool try_reduce_to_constant(time_expr& te, Mesh const& m);
     
 private:
     
@@ -178,20 +156,18 @@ private:
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
 
-// Заменить выражение на константное, если оно принимает одно и то же значение
-// на всех точках сетки.
-/*
-template<class Mesh>
-bool try_reduce_to_constant(time_expr& te, const Mesh& m)
+// Replace the expression with a constant if it takes equal values at all mesh points
+template<class Mesh, bool ComplexValued>
+bool try_reduce_to_constant(time_expr<ComplexValued>& te, Mesh const& m)
 {
-    typename Mesh::const_iterator it = m.begin();
-    time_expr::result_type value = te(*it);
+    auto it = m.begin();
+    auto value = te(*it);
     
     for(it++; it != m.end(); it++)
-        if(std::abs(te(*it) - value) > time_expr::comparison_tolerance) return false;
+        if(std::abs(te(*it) - value) > time_expr<ComplexValued>::comparison_tolerance) return false;
         
-    te = time_expr(value);
+    te = time_expr<ComplexValued>(value);
     return true;
-}*/
+}
 
 }

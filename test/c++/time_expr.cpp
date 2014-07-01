@@ -6,7 +6,7 @@
 #include <boost/archive/text_iarchive.hpp>
 
 #include "time_expr.hpp"
-//#include "uniform_mesh.hpp"
+#include "uniform_mesh.hpp"
 
 using namespace realevol;
 
