@@ -23,7 +23,7 @@ bool check_mesh_container(mesh_container<double,uniform_mesh<>> & f)
     return true;
 }
 
-int main(void)
+int main()
 {
     uniform_mesh<> m(0,0.5,6);
     mesh_container<double,uniform_mesh<>> f1(m);

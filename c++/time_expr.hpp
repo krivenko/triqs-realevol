@@ -18,6 +18,7 @@
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/split_member.hpp>
 
+#include "numerics.hpp"
 #include "mesh_base.hpp"
 #include "mesh_iterator.hpp"
 
@@ -34,9 +35,7 @@ class time_expr<false> : public boost::operators<time_expr<false>>
 
 public:
     
-    typedef double result_type;
-    
-    constexpr static double comparison_tolerance = std::numeric_limits<double>::epsilon();
+    using result_type = double;
     
     time_expr();
     time_expr(std::string const& expr);
@@ -46,12 +45,16 @@ public:
     ~time_expr();
     result_type operator()(double t) const;
     bool is_constant() const;
-    bool is_zero() const;
-  
+
+    friend bool is_zero(time_expr const& te)
+    {
+        return te.is_constant() && is_zero(te.arg);
+    }
+    
     // Stream output
     friend std::ostream& operator<<(std::ostream& os, time_expr const& te);
     
-    time_expr operator-(void);
+    time_expr operator-() const;
     
     time_expr operator=(time_expr const& te);
     time_expr operator+=(time_expr const& te);
@@ -59,6 +62,11 @@ public:
     time_expr operator*=(time_expr const& te);
     time_expr operator/=(time_expr const& te);
     bool operator==(time_expr const& te) const;
+    
+    friend time_expr _conj(time_expr const& te)
+    {
+        return te;
+    }
     
 private:
     
@@ -91,9 +99,7 @@ class time_expr<true> : public boost::operators<time_expr<true>>
 
 public:
     
-    typedef std::complex<double> result_type;
-    
-    constexpr static double comparison_tolerance = std::numeric_limits<double>::epsilon();
+    using result_type = std::complex<double>;
     
     time_expr();
     time_expr(std::string const& expr_re, std::string const& expr_im = "0");
@@ -103,12 +109,16 @@ public:
     time_expr(time_expr const& te);
     result_type operator()(double t) const;
     bool is_constant() const;
-    bool is_zero() const;
 
+    friend bool is_zero(time_expr const& te)
+    {
+        return te.is_constant() && is_zero(te.precomputed_value);
+    }
+    
     // Stream output
     friend std::ostream& operator<<(std::ostream& os, time_expr<true> const& te);
 
-    time_expr operator-();
+    time_expr operator-() const;
     
     time_expr operator=(time_expr const& te);
     time_expr operator+=(time_expr const& te);
@@ -116,6 +126,14 @@ public:
     time_expr operator*=(time_expr const& te);
     time_expr operator/=(time_expr const& te);
     bool operator==(time_expr const& te) const;
+    
+    friend time_expr _conj(time_expr const& te)
+    {
+        if(te.is_constant())
+            return _conj(te.precomputed_value);
+        else
+            return time_expr(te.parser_re.GetExpr(),"-(" + te.parser_im.GetExpr() + ")");
+    }
     
 private:
     
@@ -160,7 +178,7 @@ bool try_reduce_to_constant(time_expr<ComplexValued>& te, Mesh const& m)
     auto value = te(*it);
     
     for(it++; it != m.end(); it++)
-        if(std::abs(te(*it) - value) > time_expr<ComplexValued>::comparison_tolerance) return false;
+        if(!is_zero(te(*it) - value)) return false;
         
     te = time_expr<ComplexValued>(value);
     return true;
