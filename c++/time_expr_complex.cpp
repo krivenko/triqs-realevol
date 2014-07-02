@@ -93,11 +93,6 @@ bool time_expr<true>::is_constant() const
     return _is_constant;
 }
 
-bool time_expr<true>::is_zero() const
-{
-    return _is_constant && std::abs(precomputed_value) < comparison_tolerance;
-}
-
 std::ostream& operator<<(std::ostream& os, time_expr<true> const& te)
 {
     if(te._is_constant)
@@ -109,7 +104,7 @@ std::ostream& operator<<(std::ostream& os, time_expr<true> const& te)
     return os;
 }
 
-auto time_expr<true>::operator-(void) -> time_expr
+auto time_expr<true>::operator-() const -> time_expr
 {
     if(_is_constant)
         return time_expr(boost::lexical_cast<std::string>(-precomputed_value));
@@ -191,7 +186,7 @@ auto time_expr<true>::operator/=(const time_expr& te) -> time_expr
 bool time_expr<true>::operator==(const time_expr& te) const
 {
     return ((_is_constant == te._is_constant) &&
-                (std::abs(precomputed_value - te.precomputed_value) < time_expr::comparison_tolerance))
+                (is_zero(precomputed_value - te.precomputed_value)))
         || ((parser_re.GetExpr() == te.parser_re.GetExpr()) && (parser_im.GetExpr() == te.parser_im.GetExpr()));
 }
     

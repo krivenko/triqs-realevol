@@ -75,11 +75,6 @@ bool time_expr<false>::is_constant() const
     return parser==nullptr;
 }
 
-bool time_expr<false>::is_zero() const
-{
-    return is_constant() && std::fabs(arg) < comparison_tolerance;
-}
-
 auto time_expr<false>::operator()(double t) const -> result_type
 {
     if(is_constant())
@@ -100,7 +95,7 @@ std::ostream& operator<<(std::ostream& os, time_expr<false> const& te)
     return os;
 }
 
-auto time_expr<false>::operator-() -> time_expr
+auto time_expr<false>::operator-() const -> time_expr
 {
     if(is_constant())
         return time_expr(-arg);
@@ -217,7 +212,7 @@ bool time_expr<false>::operator==(const time_expr& te) const
     bool is_const = is_constant();
     if(is_const != te.is_constant()) return false;
     if(is_const)
-        return arg == te.arg;
+        return is_zero(arg-te.arg);
     else
         return parser->GetExpr() == te.parser->GetExpr();
 }
