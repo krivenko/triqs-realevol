@@ -10,11 +10,10 @@
 #include <boost/serialization/vector.hpp>
 
 #include "mesh_base.hpp"
-#include "uniform_mesh.hpp"
 
 namespace realevol {
 
-template<class T, class Mesh = uniform_mesh<> >
+template<class T, class Mesh>
 struct mesh_container : public std::vector<T> {
     
 public:
