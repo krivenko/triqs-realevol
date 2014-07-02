@@ -12,9 +12,9 @@ using namespace realevol;
 
 template<class T> T sqr(T x) { return x*x; } 
 
-bool check_mesh_container(mesh_container<double> & f)
+bool check_mesh_container(mesh_container<double,uniform_mesh<>> & f)
 {    
-    mesh_container<double>::arg_value_iterator i = f.arg_value_begin();
+    mesh_container<double,uniform_mesh<>>::arg_value_iterator i = f.arg_value_begin();
     for(; i != f.arg_value_end(); i++){
         if(std::fabs(sqr(i->get<0>()) - i->get<1>()) > 1e-10)
             return false;
@@ -26,7 +26,7 @@ bool check_mesh_container(mesh_container<double> & f)
 int main(void)
 {
     uniform_mesh<> m(0,0.5,6);
-    mesh_container<double> f1(m);
+    mesh_container<double,uniform_mesh<>> f1(m);
     
     f1[0] = sqr(f1.get_mesh()[0]);
     f1[1] = sqr(f1.get_mesh()[1]);
@@ -41,7 +41,7 @@ int main(void)
     boost::archive::text_oarchive oar(ss);
     oar << f1;
     boost::archive::text_iarchive iar(ss);
-    mesh_container<double> f2(m);
+    mesh_container<double,uniform_mesh<>> f2(m);
     iar >> f2;
     
     if(!check_mesh_container(f2)) return EXIT_FAILURE;
