@@ -93,7 +93,7 @@ auto time_expr::operator-() const -> time_expr
     if(is_constant(*this))
         return time_expr(-arg);
     else
-        return time_expr("-(" + parser->GetExpr() + ")");
+        return time_expr("-(" + trim_copy(parser->GetExpr()) + ")");
 }
 
 auto time_expr::operator=(const time_expr& te) -> time_expr
