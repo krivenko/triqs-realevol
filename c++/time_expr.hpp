@@ -92,6 +92,11 @@ private:
 
 using complex_time_expr = callable_complex<time_expr>;
 
+time_expr _conj(time_expr const& x)
+{
+    return x;
+}
+
 // Replace the expression with a constant if it takes equal values at all mesh points
 template<class Mesh, class Expr>
 bool try_reduce_to_constant(Expr& te, Mesh const& m)

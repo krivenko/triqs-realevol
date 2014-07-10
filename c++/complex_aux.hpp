@@ -187,20 +187,25 @@ public:
     {
         return is_constant(z.re) && is_constant(z.im);
     }
-    
+
+    friend bool is_zero(callable_complex const& z)
+    {
+        return is_zero(z.re) && is_zero(z.im);
+    }
+
     friend std::ostream& operator<<(std::ostream& os, callable_complex const& z)
     {
         os << "(" << z.re << "," << z.im << ")";
         return os;
     }
     
-    friend value_type _conj(callable_complex z)
+    friend callable_complex _conj(callable_complex z)
     {
         return callable_complex(z.re,-z.im);
     }
-        
+
 private:
-    
+
     // Boost serialization
     friend class boost::serialization::access;
     template<class Archive>
