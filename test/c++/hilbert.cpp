@@ -1,11 +1,11 @@
 #include <iostream>
 
-#include <triqs/operators/many_body_operator.hpp>
-
-#include <triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp>
-#include <triqs/draft/hilbert_space_tools/hilbert_space.hpp>
-#include <triqs/draft/hilbert_space_tools/imperative_operator.hpp>
-#include <triqs/draft/hilbert_space_tools/state.hpp>
+#include "many_body_operator.hpp"
+#include "fundamental_operator_set.hpp"
+#include "hilbert_space.hpp"
+#include "imperative_operator.hpp"
+#include "state.hpp"
+#include "time_expr.hpp"
 
 using namespace realevol;
 
@@ -73,16 +73,13 @@ int main() {
   std::cout << "state is: " << st << std::endl;
 
   std::cout << std::endl << "Part V: the declarative operator" << std::endl << std::endl;
-
-  using triqs::utility::c;
-  using triqs::utility::c_dag;
   
   auto H = 3 * c_dag("up",1) * c("up",1) + 2 * c_dag("up",2) * c("up",2) + c("up",1) * c("up",2);
   std::cout << "H = " << H << std::endl;
 
   std::cout << std::endl << "Part VI: the imperative operator" << std::endl << std::endl;
 
-  auto opH = imperative_operator<hilbert_space>(H, fop);
+  auto opH = imperative_operator<double,hilbert_space>(H, fop);
 
   state<hilbert_space, double, true> old_state(h_full);
   old_state(7) = 1.0;
@@ -120,7 +117,7 @@ int main() {
   std::vector<int>  Cdagmap(2,-1);
   Cdagmap[phs0.get_index()] = phs1.get_index();
   std::vector<sub_hilbert_space> sub1{phs0, phs1};
-  auto opCdag = imperative_operator<sub_hilbert_space, true>(Cdag, fop2, Cdagmap, &sub1 );
+  auto opCdag = imperative_operator<double,sub_hilbert_space, true>(Cdag, fop2, Cdagmap, &sub1 );
 
   state<sub_hilbert_space,double, false> start(phs0);
 
@@ -137,7 +134,7 @@ int main() {
   std::cout << std::endl << "Part VIII: quartic operators" << std::endl << std::endl;
 
   {
-   fundamental_operator_set FOPS;
+  fundamental_operator_set FOPS;
   FOPS.insert("up",0);
   FOPS.insert("down",0);
   FOPS.insert("up",1);
@@ -145,16 +142,68 @@ int main() {
   hilbert_space HS(FOPS);
   std::cerr  << " HS dimension "<< HS.dimension() << std::endl;
   
-  triqs::utility::many_body_operator<double> quartic_op;
+  many_body_operator<double> quartic_op;
   quartic_op = -1.0*c_dag("up",0)*c_dag("down",1)*c("up",1)*c("down",0);
      
   state<hilbert_space,double, false> st1(HS);
   st1(9) = 1.0; // 0110
   std::cout << "old state is: " << st1 << std::endl;
   std::cout << "operator is: " << quartic_op << std::endl;
-  std::cout << "new state is: " << imperative_operator<hilbert_space>(quartic_op,FOPS)(st1) << std::endl;
+  std::cout << "new state is: " << imperative_operator<double,hilbert_space>(quartic_op,FOPS)(st1) << std::endl;
+  }
+  
+  std::cout << std::endl << "Part IX: time-dependent operators" << std::endl << std::endl;
+  {
+  fundamental_operator_set FOPS;
+  FOPS.insert("up",0);
+  FOPS.insert("down",0);
+  FOPS.insert("up",1);
+  FOPS.insert("down",1);
+  hilbert_space HS(FOPS);
+  std::cerr  << " HS dimension "<< HS.dimension() << std::endl;
+  
+  many_body_operator<time_expr> op;
+  op = -1.0*c_dag<time_expr>("up",0)*c_dag<time_expr>("down",1)*c<time_expr>("up",1)*c<time_expr>("down",0);
+  // Spin-flips
+  op += "2*t^2"*c_dag<time_expr>("down",1)*c<time_expr>("up",1);
+  op += "2*t^2"*c_dag<time_expr>("up",0)*c<time_expr>("down",0);
+  
+  double t = 0.2;
+  
+  state<hilbert_space,double,false> st1(HS);
+  st1(9) = 1.0; // 0110
+  std::cout << "old state is: " << st1 << std::endl;
+  std::cout << "operator is: " << op << std::endl;
+  std::cout << "new state is: " << imperative_operator<time_expr,hilbert_space>(op,FOPS)(st1,t) << std::endl;
   }
 
+  std::cout << std::endl << "Part X: time-dependent operators (complex)" << std::endl << std::endl;
+  {
+  std::complex<double> I(0,1.0);
+    
+  fundamental_operator_set FOPS;
+  FOPS.insert("up",0);
+  FOPS.insert("down",0);
+  FOPS.insert("up",1);
+  FOPS.insert("down",1);
+  hilbert_space HS(FOPS);
+  std::cerr  << " HS dimension "<< HS.dimension() << std::endl;
+  
+  many_body_operator<complex_time_expr> op;
+  op = -1.0*c_dag<complex_time_expr>("up",0)*c_dag<complex_time_expr>("down",1)*c<complex_time_expr>("up",1)*c<complex_time_expr>("down",0);
+  // Spin-flips
+  op += I*("2*t^2"*c_dag<complex_time_expr>("down",1)*c<complex_time_expr>("up",1));
+  op += I*("2*t^2"*c_dag<complex_time_expr>("up",0)*c<complex_time_expr>("down",0));
+  
+  double t = 0.2;
+  
+  state<hilbert_space,std::complex<double>,false> st1(HS);
+  st1(9) = 1.0; // 0110
+  std::cout << "old state is: " << st1 << std::endl;
+  std::cout << "operator is: " << op << std::endl;
+  std::cout << "new state is: " << imperative_operator<complex_time_expr,hilbert_space>(op,FOPS)(st1,t) << std::endl;
+  }  
+  
   return 0;
 
 }

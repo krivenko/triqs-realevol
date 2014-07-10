@@ -97,7 +97,7 @@ public:
     
     // Forward the call to the real and imaginary parts
     template<typename... Args>
-    auto operator()(Args&&... args) -> std::complex<typename std::result_of<T(Args...)>::type>
+    auto operator()(Args&&... args) const -> std::complex<typename std::result_of<T(Args...)>::type>
     {
         return {re(std::forward<Args>(args)...),im(std::forward<Args>(args)...)};
     }

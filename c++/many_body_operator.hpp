@@ -324,15 +324,15 @@ namespace realevol {
 
  // Free functions to make creation/annihilation operators
  
- template <typename scalar_t, typename... IndexTypes> many_body_operator<scalar_t> c(IndexTypes... indices) {
+ template <typename scalar_t = double, typename... IndexTypes> many_body_operator<scalar_t> c(IndexTypes... indices) {
   return many_body_operator<scalar_t>::make_canonical(false, {indices...});
  }
 
- template <typename scalar_t, typename... IndexTypes> many_body_operator<scalar_t> c_dag(IndexTypes... indices) {
+ template <typename scalar_t = double, typename... IndexTypes> many_body_operator<scalar_t> c_dag(IndexTypes... indices) {
   return many_body_operator<scalar_t>::make_canonical(true, {indices...});
  }
 
- template <typename scalar_t, typename... IndexTypes> many_body_operator<scalar_t> n(IndexTypes... indices) {
+ template <typename scalar_t = double, typename... IndexTypes> many_body_operator<scalar_t> n(IndexTypes... indices) {
   return c_dag<scalar_t>(indices...) * c<scalar_t>(indices...);
  }
 }

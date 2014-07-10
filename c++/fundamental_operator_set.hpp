@@ -19,19 +19,17 @@
  *
  ******************************************************************************/
 #pragma once
-#include <triqs/operators/many_body_operator.hpp>
+#include "many_body_operator.hpp"
 #include <vector>
 #include <map>
 
 namespace realevol {
 
-using namespace triqs;
-
 // This class contains an ordered list the **indices** of the canonical operators used to build the Fock state.
 // It guarantees that the order in the list is the same as given by < operator on the indice tuple of the canonical operators.
 class fundamental_operator_set {
  public:
- using indices_t = triqs::utility::many_body_operator<double>::indices_t;
+ using indices_t = typename many_body_operator<std::true_type>::indices_t;
 
  private:
  using map_t = std::map<indices_t, int>; // the table index <-> n
