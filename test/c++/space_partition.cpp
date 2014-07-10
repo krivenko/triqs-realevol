@@ -5,18 +5,14 @@
 #include <algorithm>
 #include <sstream>
 
-#include "./space_partition.hpp"
-#include <triqs/operators/many_body_operator.hpp>
-#include <triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp>
-#include <triqs/draft/hilbert_space_tools/hilbert_space.hpp>
-#include <triqs/draft/hilbert_space_tools/imperative_operator.hpp>
-#include <triqs/draft/hilbert_space_tools/state.hpp>
+#include "space_partition.hpp"
+#include "many_body_operator.hpp"
+#include "fundamental_operator_set.hpp"
+#include "hilbert_space.hpp"
+#include "imperative_operator.hpp"
+#include "state.hpp"
 
 using namespace realevol;
-using triqs::utility::many_body_operator;
-using triqs::utility::c;
-using triqs::utility::c_dag;
-using triqs::utility::n;
 
 int main() {
 
@@ -65,13 +61,13 @@ int main() {
  hilbert_space hs(fops);
 
  // Imperative operator for H
- imperative_operator<hilbert_space, false> Hop(H, fops);
+ imperative_operator<double, hilbert_space, false> Hop(H, fops);
 
  // Sample state
  state<hilbert_space, double, true> st(hs);
 
  // Space partition
- using space_partition_t = space_partition<state<hilbert_space, double, true>, imperative_operator<hilbert_space, false>>;
+ using space_partition_t = space_partition<state<hilbert_space, double, true>, imperative_operator<double, hilbert_space, false>>;
  space_partition_t SP(st, Hop);
 
  /////////////////////////////
