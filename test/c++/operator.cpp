@@ -5,11 +5,18 @@
 #include <sstream>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
+#include <boost/serialization/complex.hpp>
 
-#include "many_body_operator.hpp"
+#include <triqs/operators/many_body_operator.hpp>
 #include "time_expr.hpp"
+#include "callable_complex.hpp"
 
 using namespace realevol;
+
+using triqs::utility::many_body_operator;
+using triqs::utility::c_dag;
+using triqs::utility::c;
+using triqs::utility::n;
 
 template<typename op>
 void test_commutators(std::vector<op> const& Cd, std::vector<op> const& C)
@@ -233,7 +240,7 @@ int main()
     }
 
     {
-    // Test real-expression-valued operators
+    // Test complex-expression-valued operators
     using scalar_t = complex_time_expr;
     using operator_t = many_body_operator<scalar_t>;
 
