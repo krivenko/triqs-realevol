@@ -240,7 +240,7 @@ bool time_expr::operator==(const time_expr& te) const
     bool is_const = is_constant(*this);
     if(is_const != is_constant(te)) return false;
     if(is_const)
-        return is_zero(arg-te.arg);
+        return numeric_ops<result_type>::is_zero(arg-te.arg);
     else
         return parser->GetExpr() == te.parser->GetExpr();
 }

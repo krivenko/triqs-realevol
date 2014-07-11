@@ -6,45 +6,13 @@
 #include <utility>
 #include <tuple>
 #include <ostream>
-#include <triqs/utility/is_complex.hpp>
+#include <triqs/utility/draft/numeric_ops.hpp>
 #include <boost/serialization/complex.hpp>
 #include <boost/operators.hpp>
 
+using triqs::utility::numeric_ops;
+
 namespace realevol {
-
-// Generic tests for being zero 
-template<class T>
-typename std::enable_if<std::is_integral<T>::value,bool>::type is_zero(T x)
-{
-    return x==0;
-}
-template<class T>
-typename std::enable_if<std::is_floating_point<T>::value,bool>::type is_zero(T x)
-{
-    return std::fabs(x) < 100*std::numeric_limits<T>::epsilon();
-}
-
-template<class T>
-typename std::enable_if<triqs::is_complex<T>::value,bool>::type is_zero(T x)
-{
-    return is_zero(std::real(x)) && is_zero(std::imag(x));
-}
-
-// Generic complex conjugate
-template<class T>
-typename std::enable_if<std::is_arithmetic<T>::value,T>::type _conj(T x)
-{
-    return x;
-}
-
-template<class T>
-typename std::enable_if<triqs::is_complex<T>::value,T>::type _conj(T x)
-{
-    return std::conj(x);
-}
-
-// Check for being constant
-template<class T> bool is_constant(T x) { return true; }
 
 // Callable complex type
 template<class T>
@@ -188,20 +156,10 @@ public:
         return is_constant(z.re) && is_constant(z.im);
     }
 
-    friend bool is_zero(callable_complex const& z)
-    {
-        return is_zero(z.re) && is_zero(z.im);
-    }
-
     friend std::ostream& operator<<(std::ostream& os, callable_complex const& z)
     {
         os << "(" << z.re << "," << z.im << ")";
         return os;
-    }
-    
-    friend callable_complex _conj(callable_complex z)
-    {
-        return callable_complex(z.re,-z.im);
     }
 
 private:
@@ -218,3 +176,19 @@ private:
 };
 
 }
+
+namespace triqs { namespace utility {
+    
+    template<typename T>    
+    struct numeric_ops<realevol::callable_complex<T>> {
+        using CT = realevol::callable_complex<T>;
+        
+        static bool is_zero(CT const& cte) {
+            return numeric_ops<typename CT::value_type>::is_zero(cte.real()) &&
+                   numeric_ops<typename CT::value_type>::is_zero(cte.imag());
+        }
+        static CT conj(CT const& cte) {
+            return CT(cte.real(),-cte.imag());
+        }
+    };  
+}}
