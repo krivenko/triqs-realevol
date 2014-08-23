@@ -25,7 +25,7 @@ void test_commutators(std::vector<op> const& Cd, std::vector<op> const& C)
     for(auto const& cdi : Cd)
     for(auto const& ci : C){
         std::cout << "[" << cdi << ", " << ci << "] = " << cdi*ci - ci*cdi << std::endl;
-    }    
+    }
 }
 
 template<typename op>
@@ -49,26 +49,26 @@ void test_serialization(op const& X, std::string const& name)
     boost::archive::text_iarchive ia(ss);
     op new_X;
     ia & new_X;
-    
+
     std::cout << "New " << name << "= " << new_X << std::endl;
 }
 
 int main()
 {
-    
+
     {
     // Test real-valued operators
     using scalar_t = double;
     using operator_t = many_body_operator<scalar_t>;
-    
+
     std::cout << std::endl;
     std::cout << "I. Real-valued operators" << std::endl;
     std::cout << "========================" << std::endl;
-    
+
     // Operators without indices
     operator_t op_with_no_indices = c<scalar_t>() + c_dag<scalar_t>() - n<scalar_t>();
     std::cout << "op_with_no_indices = " << op_with_no_indices << std::endl;
-    
+
     // Operators with many indices
     auto op_with_many_indices = c<scalar_t>(1,0.2,"a",true,-2) +
                                 c_dag<scalar_t>(3,0.15,"b",false,-5);
@@ -168,11 +168,11 @@ int main()
 
     // Serialization
     test_serialization(N3,"N^3");
-   
+
     auto X = I*c_dag<scalar_t>(1) * c_dag<scalar_t>(2) * c<scalar_t>(3) * c<scalar_t>(4);
     std::cout  << "X = "<< X<<std::endl; 
     std::cout  << "dagger(X) = "<< dagger(X)<<std::endl; 
-    
+
     }
 
     {
@@ -304,6 +304,6 @@ int main()
     std::cout  << "X = "<< X<<std::endl;
     std::cout  << "dagger(X) = "<< dagger(X)<<std::endl;
     }
-    
+
     return EXIT_SUCCESS;
 }

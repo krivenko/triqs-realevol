@@ -11,7 +11,7 @@
 using namespace realevol;
 
 int main()
-{   
+{
     {
     // Test real-valued expressions
     using expr_t = time_expr;
@@ -21,19 +21,19 @@ int main()
     // Check whether the expressions really depend on time
     if(is_constant(te1) || is_constant(te2) || !is_constant(te3))
         return EXIT_FAILURE;
-    
+
     // Write to a archive
     std::stringstream archive_str;
     boost::archive::text_oarchive oa(archive_str);
     oa << te1; oa << te2; oa << te3;
-    
+
     // Read from an archive
     boost::archive::text_iarchive ia(archive_str);
     expr_t read_expr;
     ia >> read_expr; if(read_expr != te1) return EXIT_FAILURE;
     ia >> read_expr; if(read_expr != te2) return EXIT_FAILURE;
     ia >> read_expr; if(read_expr != te3) return EXIT_FAILURE;
-    
+
     // Check correctness of numerical expressions
     double T[] = {0, 0.1, 10, 55};
     double TE1_res[] = {0, 0.01, 100, 3025};
@@ -51,7 +51,7 @@ int main()
     for(int i = 0; i < 4; ++i){
         if(std::abs(mte2(T[i]) - (-TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
     }
-    
+
     // Addition of expressions
     expr_t te1pte2 = te1 + te2;
     expr_t te1phalf = te1 + 0.5;
@@ -62,7 +62,7 @@ int main()
         if(std::abs(te1phalf(T[i]) - (TE1_res[i]+0.5)) >= 1e-10) return EXIT_FAILURE;
         if(std::abs(halfpte2(T[i]) - (0.5+TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
     }
-    
+
     // Subtraction of expressions
     expr_t te1mte2 = te1 - te2;
     expr_t te1mhalf = te1 - 0.5;
@@ -72,7 +72,7 @@ int main()
         if(std::abs(te1mhalf(T[i]) - (TE1_res[i]-0.5)) >= 1e-10) return EXIT_FAILURE;
         if(std::abs(halfmte2(T[i]) - (0.5-TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
     }
-   
+
     // Multiplication of expressions
     expr_t te1ppte2 = te1 * te2;
     expr_t te1pphalf = te1 * 0.5;
@@ -82,7 +82,7 @@ int main()
         if(std::abs(te1pphalf(T[i]) - (TE1_res[i]*0.5)) >= 1e-10) return EXIT_FAILURE;
         if(std::abs(halfppte2(T[i]) - (0.5*TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
     }
-    
+
     // Division of expressions 
     expr_t te1dte2 = te1 / te2;
     expr_t te1dhalf = te1 / 0.5;
@@ -91,8 +91,8 @@ int main()
         if(std::abs(te1dte2(T[i]) - (TE1_res[i]/TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
         if(std::abs(te1dhalf(T[i]) - (TE1_res[i]/0.5)) >= 1e-10) return EXIT_FAILURE;
         if(std::abs(halfdte2(T[i]) - (0.5/TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
-    }    
-    
+    }
+
     // Test try_reduce_to_constant()
     expr_t te0t("0*t"), te1t("1*t");
     if(is_constant(te0t) || is_constant(te1t)) return EXIT_FAILURE;
@@ -112,7 +112,7 @@ int main()
     {
     // Test complex-valued expressions
     using expr_t = complex_time_expr;
-    
+
     const std::complex<double> I(0,1);
 
     expr_t te1("t^2",1.0), te2("t + sin(_pi/2)","t^3");
@@ -121,19 +121,19 @@ int main()
     // Check whether the expressions really depend on time
     if(is_constant(te1) || is_constant(te2) || !is_constant(te3) || !is_constant(te4))
         return EXIT_FAILURE;
-    
+
     // Write to a archive
     std::stringstream archive_str;
     boost::archive::text_oarchive oa(archive_str);
     oa << te1; oa << te2; oa << te3;
-    
+
     // Read from an archive
     boost::archive::text_iarchive ia(archive_str);
     expr_t read_expr;
     ia >> read_expr; if(read_expr != te1) return EXIT_FAILURE;
     ia >> read_expr; if(read_expr != te2) return EXIT_FAILURE;
     ia >> read_expr; if(read_expr != te3) return EXIT_FAILURE;
-    
+
     // Test assignments
     expr_t tea;
     tea = expr_t("t^2",1.0); if(tea != expr_t("t^2",1.0)) return EXIT_FAILURE;
@@ -142,7 +142,7 @@ int main()
     tea = "8-t"; if(tea != expr_t("8-t")) return EXIT_FAILURE;
     tea = {2.0,5.0}; if(tea != expr_t("2.0","5.0")) return EXIT_FAILURE;
     if(tea != expr_t(2.0,5.0)) return EXIT_FAILURE;
-    
+
     // Check correctness of numerical expressions
     double T[] = {0, 0.1, 10, 55};
     std::complex<double> TE1_res[] = {{0,1.0}, {0.01,1.0}, {100,1.0}, {3025,1.0}};
@@ -162,7 +162,7 @@ int main()
     for(int i = 0; i < 4; ++i){
         if(std::abs(mte2(T[i]) - (-TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
     }
-    
+
     // Addition of expressions
     expr_t te1pte2 = te1 + te2;
     expr_t te1phalf = te1 + 0.5;
@@ -191,7 +191,7 @@ int main()
         if(std::abs(te1mihalf(T[i]) - (TE1_res[i]-0.5*I)) >= 1e-10) return EXIT_FAILURE;
         if(std::abs(ihalfmte2(T[i]) - (0.5*I-TE2_res[i])) >= 1e-10) return EXIT_FAILURE;        
     }
-    
+
     // Multiplication of expressions
     expr_t te1ppte2 = te1 * te2;
     expr_t te1pphalf = te1 * 0.5;
@@ -205,7 +205,7 @@ int main()
         if(std::abs(te1ppihalf(T[i]) - (TE1_res[i]*0.5*I)) >= 1e-10) return EXIT_FAILURE;
         if(std::abs(ihalfppte2(T[i]) - (0.5*I*TE2_res[i])) >= 1e-10) return EXIT_FAILURE;        
     }
-    
+
     // Division of expressions 
     expr_t te1dte2 = te1 / te2;
     expr_t te1dhalf = te1 / 0.5;
@@ -218,8 +218,8 @@ int main()
         if(std::abs(halfdte2(T[i]) - (0.5/TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
         if(std::abs(te1dihalf(T[i]) - (TE1_res[i]/(0.5*I))) >= 1e-10) return EXIT_FAILURE;
         if(std::abs(ihalfdte2(T[i]) - ((0.5*I)/TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
-    }    
-    
+    }
+
     // Test try_reduce_to_constant()
     expr_t te0t("0*t","2"), te1t("1*t","t^3");
     if(is_constant(te0t) || is_constant(te1t)) return EXIT_FAILURE;
@@ -228,7 +228,7 @@ int main()
     try_reduce_to_constant(te1t, m);
     if(!is_constant(te0t)) return EXIT_FAILURE;
     if(is_constant(te1t)) return EXIT_FAILURE;
-    
+
     }
     return EXIT_SUCCESS;
 }
