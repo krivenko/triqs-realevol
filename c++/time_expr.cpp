@@ -105,7 +105,7 @@ auto time_expr::operator=(const time_expr& te) -> time_expr
     }else{
         if(is_constant(*this)){
             parser = pool.acquire();
-            parser->DefineVar("t",&arg);            
+            parser->DefineVar("t",&arg);
         }
         parser->SetExpr(trim_copy(te.parser->GetExpr()));
     }
@@ -125,14 +125,14 @@ auto time_expr::operator=(std::string const& expr) -> time_expr
         pool.release(parser);
         parser = nullptr;
     }
-    
+
     return *this;
 }
 
 auto time_expr::operator=(const char* expr) -> time_expr
 {
     *this = std::string(expr);
-    
+
     return *this;
 }
 
@@ -143,7 +143,7 @@ auto time_expr::operator=(result_type r) -> time_expr
         parser = nullptr;
     }
     arg = r;
-    
+
     return *this;
 }
 
@@ -165,7 +165,7 @@ auto time_expr::operator+=(const time_expr& te) -> time_expr
             ")"
         );
     }
-    
+
     return *this;
 }
 
@@ -187,7 +187,7 @@ auto time_expr::operator-=(const time_expr& te) -> time_expr
             ")"
         );
     }
-    
+
     return *this;
 }
 
@@ -209,7 +209,7 @@ auto time_expr::operator*=(const time_expr& te) -> time_expr
             ")"
         );
     }
-    
+
     return *this;
 }
 
@@ -231,7 +231,7 @@ auto time_expr::operator/=(const time_expr& te) -> time_expr
             ")"
         );
     }
-    
+
     return *this;
 }
 
@@ -244,5 +244,5 @@ bool time_expr::operator==(const time_expr& te) const
     else
         return parser->GetExpr() == te.parser->GetExpr();
 }
-    
+
 }
