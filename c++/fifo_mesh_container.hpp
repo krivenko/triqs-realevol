@@ -25,21 +25,27 @@ public:
     static_assert(std::is_base_of<mesh_base<typename mesh_t::node_number_t,typename mesh_t::mesh_point_t,mesh_t>,mesh_t>::value,
                   "Mesh is not derived from mesh_base");
 
-    template<class ProcessorType = std::function<void(value_type const&)>>
-    fifo_mesh_container(const mesh_t& mesh,
-                        ProcessorType fifo_processor = std::function<void(value_type const&)>(),
-                        const value_type& default_value = value_type(),
-                        size_type max_size = 1,
-                        size_type proc_block_size = 1
-                       ) :
-    mesh(mesh),
-    fifo_processor(fifo_processor),
-    default_value(default_value),
-    max_size(max_size),
-    proc_block_size(proc_block_size)
+    struct processing_t {
+        std::function<void(typename mesh_t::mesh_point_t, value_type const&)> fifo_processor;
+        size_type max_size;
+        size_type proc_block_size;
+
+        template<class FifoProcessorType>
+        processing_t(FifoProcessorType fifo_processor, size_type max_size = 1, size_type proc_block_size = 1) :
+            fifo_processor(fifo_processor), max_size(max_size), proc_block_size(proc_block_size) {}
+    };
+
+    template<class... ValueConstructorArgs>
+    explicit fifo_mesh_container(mesh_t const& mesh,
+                                 processing_t const& proc,
+                                 ValueConstructorArgs && ...vc_args
+                                ) :
+    mesh(mesh), proc(proc), default_value(vc_args...)
     {
-        if(proc_block_size>max_size) throw(std::range_error(
-            "proc_block_size > max_size in fifo_mesh_container (" + std::to_string(proc_block_size) + ">" + std::to_string(max_size) + ")." 
+        if(proc.proc_block_size > proc.max_size) throw(std::range_error(
+            "proc_block_size > max_size in fifo_mesh_container (" +
+            std::to_string(proc.proc_block_size) + ">" +
+            std::to_string(proc.max_size) + ")."
         ));
     }
 
@@ -87,7 +93,7 @@ public:
     arg_value_iterator arg_value_begin(void) noexcept
     {
         fifo.clear();
-        if(mesh.get_nodes()>0) fifo.push_back(default_value);
+        if(mesh.get_nodes()>0) fifo.emplace_back(default_value);
         return arg_value_iterator(*this,std::begin(mesh));
     }
 
@@ -100,21 +106,18 @@ private:
     void update_fifo(typename mesh_t::const_iterator const& mesh_it)
     {
         if(mesh_it != std::end(mesh)){
-            fifo.push_back(default_value);
-            if(fifo.size()>max_size){
-                for(size_type n=0; n<proc_block_size; ++n){
-                    fifo_processor(fifo.front());
+            fifo.emplace_back(default_value);
+            if(fifo.size()>proc.max_size){
+                for(size_type n=0; n<proc.proc_block_size; ++n){
+                    proc.fifo_processor(*(mesh_it-proc.max_size+n),fifo.front());
                     fifo.pop_front();
                 }
             }
-        } else empty_fifo();
-    }
-
-    void empty_fifo()
-    {
-        while(!fifo.empty()){
-            fifo_processor(fifo.front());
-            fifo.pop_front();
+        } else {
+            for(size_type n=fifo.size(); n>0; --n){
+                proc.fifo_processor(*(mesh_it-n),fifo.front());
+                fifo.pop_front();
+            }
         }
     }
 
@@ -122,9 +125,8 @@ private:
 
     mesh_t mesh;
     std::deque<value_type> fifo;
+    const processing_t proc;
     const value_type default_value;
-    const size_type max_size, proc_block_size;
-    std::function<void(value_type const&)> fifo_processor;
 };
 
 }

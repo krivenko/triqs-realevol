@@ -12,22 +12,19 @@ using namespace realevol;
 
 template<class T> T sqr(T x) { return x*x; } 
 
-void fifo_processor(double const& x)
+void fifo_processor(double t, double const& x)
 {
-    std::cout << "Processing element " << x << std::endl;
+    std::cout << "Processing element " << x << " at " << t << std::endl;
 }
 
-void run_test(int max_size, int proc_block_size, bool change_elements)
+void run_test(std::size_t max_size, std::size_t proc_block_size, bool change_elements)
 {
     std::cout << "max_size = " << max_size << ", ";
     std::cout << "proc_block_size = " << proc_block_size << ", ";
     std::cout << "change_elements = " << change_elements << std::endl;
 
     uniform_mesh<> m(0,19.0,20);
-    fifo_mesh_container<int,uniform_mesh<>> f(m,fifo_processor,
-                                              999 /* default_value*/,
-                                              max_size,
-                                              proc_block_size);
+    fifo_mesh_container<int,uniform_mesh<>> f(m,{fifo_processor,max_size,proc_block_size},999/* default_value*/);
 
     int n = 0;
     for(auto it = f.arg_value_begin(); it != f.arg_value_end(); ++it){

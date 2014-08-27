@@ -25,13 +25,9 @@ public:
                   "Mesh is not derived from mesh_base");
 
     // vector-compatible constructors
-    explicit mesh_container(const mesh_t& mesh,
-                            const value_type& value = value_type()) :
-        std::vector<value_type>(mesh.get_nodes(),value), mesh(mesh) {}
-
-    template <class InputIterator>
-    mesh_container(const mesh_t& mesh, InputIterator it) :
-        std::vector<value_type>(it, it + mesh.get_nodes()), mesh(mesh) {}
+    template<class... ValueConstructorArgs>
+    explicit mesh_container(const mesh_t& mesh, ValueConstructorArgs && ...vc_args) :
+        std::vector<value_type>(mesh.get_nodes(),value_type(vc_args...)), mesh(mesh) {}
 
     mesh_container(const mesh_t& mesh, const std::vector<value_type>& value) :
         std::vector<value_type>(value), mesh(mesh) {}
