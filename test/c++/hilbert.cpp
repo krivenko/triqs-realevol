@@ -1,12 +1,14 @@
 #include <iostream>
 
+#include "time_expr.hpp"
+#include "callable_complex.hpp"
+
 #include <triqs/operators/many_body_operator.hpp>
 
 #include "triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp"
 #include "triqs/draft/hilbert_space_tools/hilbert_space.hpp"
 #include "triqs/draft/hilbert_space_tools/imperative_operator.hpp"
 #include "triqs/draft/hilbert_space_tools/state.hpp"
-#include "time_expr.hpp"
 
 using namespace realevol;
 using namespace triqs::utility;
@@ -187,7 +189,8 @@ int main() {
 
   std::cout << std::endl << "Part X: time-dependent operators (complex)" << std::endl << std::endl;
   {
-  std::complex<double> I(0,1.0);
+  using complex_time_expr = callable_complex<time_expr>;
+  complex_time_expr I(.0,1.0);
 
   fundamental_operator_set FOPS;
   FOPS.insert("up",0);
@@ -198,10 +201,10 @@ int main() {
   std::cerr  << " HS dimension "<< HS.dimension() << std::endl;
 
   many_body_operator<complex_time_expr> op;
-  op = -1.0*c_dag<complex_time_expr>("up",0)*c_dag<complex_time_expr>("down",1)*c<complex_time_expr>("up",1)*c<complex_time_expr>("down",0);
+  op = -1.0_te*c_dag<complex_time_expr>("up",0)*c_dag<complex_time_expr>("down",1)*c<complex_time_expr>("up",1)*c<complex_time_expr>("down",0);
   // Spin-flips
-  op += I*("2*t^2"*c_dag<complex_time_expr>("down",1)*c<complex_time_expr>("up",1));
-  op += I*("2*t^2"*c_dag<complex_time_expr>("up",0)*c<complex_time_expr>("down",0));
+  op += I*("2*t^2"_te*c_dag<complex_time_expr>("down",1)*c<complex_time_expr>("up",1));
+  op += I*("2*t^2"_te*c_dag<complex_time_expr>("up",0)*c<complex_time_expr>("down",0));
 
   double t = 0.2;
 

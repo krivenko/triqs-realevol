@@ -7,9 +7,9 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/serialization/complex.hpp>
 
-#include <triqs/operators/many_body_operator.hpp>
 #include "time_expr.hpp"
 #include "callable_complex.hpp"
+#include <triqs/operators/many_body_operator.hpp>
 
 using namespace realevol;
 
@@ -119,7 +119,7 @@ int main()
     using scalar_t = std::complex<double>;
     using operator_t = many_body_operator<scalar_t>;
 
-    std::cout << std::endl;    
+    std::cout << std::endl;
     std::cout << "II. Complex-valued operators" << std::endl;
     std::cout << "============================" << std::endl;
 
@@ -200,7 +200,7 @@ int main()
     test_commutators(Cd,C);
 
     // Algebra
-    auto x = "t^2"*c<scalar_t>(0);
+    auto x = "t^2"_te*c<scalar_t>(0);
     auto y = c_dag<scalar_t>(1);
 
     std::cout << std::endl << "Algebra:" << std::endl;
@@ -208,18 +208,18 @@ int main()
     std::cout << "y = " << y << std::endl;
 
     std::cout << "-x = " << -x << std::endl;
-    std::cout << "x + 2.0 = " << x + 2.0 << std::endl;
-    std::cout << "2.0 + x = " << 2.0 + x << std::endl;
-    std::cout << "x - 2.0 = " << x - 2.0 << std::endl;
-    std::cout << "2.0 - x = " << 2.0 - x << std::endl;
-    std::cout << "3.0*y = " << 3.0*y << std::endl;
-    std::cout << "y*3.0 = " << y*3.0 << std::endl;
-    std::cout << "x + 2.0*t = " << x + "2*t" << std::endl;
-    std::cout << "2.0*t + x = " << "2*t" + x << std::endl;
-    std::cout << "x - 2.0*t = " << x - "2.0*t" << std::endl;
-    std::cout << "2.0*t - x = " << "2.0*t" - x << std::endl;
-    std::cout << "3.0*t*y = " << "3.0*t"*y << std::endl;
-    std::cout << "y*3.0*t = " << y*"3.0*t" << std::endl;
+    std::cout << "x + 2.0 = " << x + 2.0_te << std::endl;
+    std::cout << "2.0 + x = " << 2.0_te + x << std::endl;
+    std::cout << "x - 2.0 = " << x - 2.0_te << std::endl;
+    std::cout << "2.0 - x = " << 2.0_te - x << std::endl;
+    std::cout << "3.0*y = " << 3.0_te*y << std::endl;
+    std::cout << "y*3.0 = " << y*3.0_te << std::endl;
+    std::cout << "x + 2.0*t = " << x + "2*t"_te << std::endl;
+    std::cout << "2.0*t + x = " << "2*t"_te + x << std::endl;
+    std::cout << "x - 2.0*t = " << x - "2.0*t"_te << std::endl;
+    std::cout << "2.0*t - x = " << "2.0*t"_te - x << std::endl;
+    std::cout << "3.0*t*y = " << "3.0*t"_te*y << std::endl;
+    std::cout << "y*3.0*t = " << y*"3.0*t"_te << std::endl;
     std::cout << "x + y = " << x + y << std::endl;
     std::cout << "x - y = " << x - y << std::endl;
     std::cout << "(x + y)*(x - y) = " << (x + y)*(x - y) << std::endl;
@@ -241,10 +241,10 @@ int main()
 
     {
     // Test complex-expression-valued operators
-    using scalar_t = complex_time_expr;
+    using scalar_t = callable_complex<time_expr>;
     using operator_t = many_body_operator<scalar_t>;
 
-    auto I = scalar_t{0,1.0};
+    auto I = scalar_t{.0,1.0};
 
     std::cout << std::endl;
     std::cout << "IV. Complex-expression-valued operators" << std::endl;
@@ -266,7 +266,7 @@ int main()
     test_commutators(Cd,C);
 
     // Algebra
-    auto x = "t^2"*c<scalar_t>(0);
+    auto x = "t^2"_te*c<scalar_t>(0);
     auto y = c_dag<scalar_t>(1);
 
     std::cout << std::endl << "Algebra:" << std::endl;
@@ -274,18 +274,18 @@ int main()
     std::cout << "y = " << y << std::endl;
 
     std::cout << "-x = " << -x << std::endl;
-    std::cout << "x + 2.0*I = " << x + 2.0*I << std::endl;
-    std::cout << "2.0*I + x = " << 2.0*I + x << std::endl;
-    std::cout << "x - 2.0*I = " << x - 2.0*I << std::endl;
-    std::cout << "2.0*I - x = " << 2.0*I - x << std::endl;
-    std::cout << "3.0*I*y = " << 3.0*I*y << std::endl;
-    std::cout << "y*3.0*I = " << y*3.0*I << std::endl;
-    std::cout << "x + 2.0*t*I = " << x + "2*t"*I << std::endl;
-    std::cout << "2.0*t*I + x = " << "2*t"*I + x << std::endl;
-    std::cout << "x - 2.0*t*I = " << x - "2.0*t"*I << std::endl;
-    std::cout << "2.0*t*I - x = " << "2.0*t"*I - x << std::endl;
-    std::cout << "3.0*t*I*y = " << "3.0*t"*I*y << std::endl;
-    std::cout << "y*3.0*I*t = " << y*"3.0*t"*I << std::endl;
+    std::cout << "x + 2.0*I = " << x + 2.0_te*I << std::endl;
+    std::cout << "2.0*I + x = " << 2.0_te*I + x << std::endl;
+    std::cout << "x - 2.0*I = " << x - 2.0_te*I << std::endl;
+    std::cout << "2.0*I - x = " << 2.0_te*I - x << std::endl;
+    std::cout << "3.0*I*y = " << (3.0_te*I)*y << std::endl;
+    std::cout << "y*3.0*I = " << y*(3.0_te)*I << std::endl;
+    std::cout << "x + 2.0*t*I = " << x + "2*t"_te*I << std::endl;
+    std::cout << "2.0*t*I + x = " << "2*t"_te*I + x << std::endl;
+    std::cout << "x - 2.0*t*I = " << x - "2*t"_te*I << std::endl;
+    std::cout << "2.0*t*I - x = " << "2.0*t"_te*I - x << std::endl;
+    std::cout << "3.0*t*I*y = " << ("3.0*t"_te*I)*y << std::endl;
+    std::cout << "y*3.0*I*t = " << y*("3.0*t"_te*I) << std::endl;
     std::cout << "x + y = " << x + y << std::endl;
     std::cout << "x - y = " << x - y << std::endl;
     std::cout << "(x + y)*(x - y) = " << (x + y)*(x - y) << std::endl;
