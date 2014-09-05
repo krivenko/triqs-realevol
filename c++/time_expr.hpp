@@ -85,6 +85,9 @@ private:
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
 
+time_expr operator""_te (long double r){ return time_expr(r); }
+time_expr operator ""_te(const char* expr, std::size_t) { return time_expr(expr); };
+
 // Replace the expression with a constant if it takes equal values at all mesh points
 template<class Mesh, class Expr>
 bool try_reduce_to_constant(Expr& te, Mesh const& m)

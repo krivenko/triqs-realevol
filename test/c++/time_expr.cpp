@@ -6,6 +6,7 @@
 #include <boost/archive/text_iarchive.hpp>
 
 #include "time_expr.hpp"
+#include "callable_complex.hpp"
 #include "uniform_mesh.hpp"
 
 using namespace realevol;
@@ -108,10 +109,16 @@ int main()
     tea = "1*t"; if(tea != te1t) return EXIT_FAILURE;
     tea = std::string("1*t"); if(tea != te1t) return EXIT_FAILURE;
     tea = .0; if(tea != te0t) return EXIT_FAILURE;
+
+    // Test user-defined literals
+    expr_t tel1 = "t^3-2*t";
+    expr_t tel2 = 0.3;
+    if(tel1 != "t^3-2*t"_te) return EXIT_FAILURE;
+    if(tel2 != 0.3_te) return EXIT_FAILURE;
     }
     {
     // Test complex-valued expressions
-    using expr_t = complex_time_expr;
+    using expr_t = callable_complex<time_expr>;
 
     const std::complex<double> I(0,1);
 
@@ -189,7 +196,7 @@ int main()
         if(std::abs(te1mhalf(T[i]) - (TE1_res[i]-0.5)) >= 1e-10) return EXIT_FAILURE;
         if(std::abs(halfmte2(T[i]) - (0.5-TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
         if(std::abs(te1mihalf(T[i]) - (TE1_res[i]-0.5*I)) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(ihalfmte2(T[i]) - (0.5*I-TE2_res[i])) >= 1e-10) return EXIT_FAILURE;        
+        if(std::abs(ihalfmte2(T[i]) - (0.5*I-TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
     }
 
     // Multiplication of expressions

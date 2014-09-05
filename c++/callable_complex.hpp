@@ -10,8 +10,6 @@
 #include <boost/serialization/complex.hpp>
 #include <boost/operators.hpp>
 
-using triqs::utility::numeric_ops;
-
 namespace realevol {
 
 // Callable complex type
@@ -179,16 +177,15 @@ private:
 
 namespace triqs { namespace utility {
 
-    template<typename T>    
-    struct numeric_ops<realevol::callable_complex<T>> {
-        using CT = realevol::callable_complex<T>;
+template<typename T>
+bool is_zero(realevol::callable_complex<T> const& cte) {
+    return triqs::utility::is_zero(cte.real()) &&
+        triqs::utility::is_zero(cte.imag());
+}
 
-        static bool is_zero(CT const& cte) {
-            return numeric_ops<typename CT::value_type>::is_zero(cte.real()) &&
-                   numeric_ops<typename CT::value_type>::is_zero(cte.imag());
-        }
-        static CT conj(CT const& cte) {
-            return CT(cte.real(),-cte.imag());
-        }
-    };
+template<typename T>
+realevol::callable_complex<T> _conj(realevol::callable_complex<T> const& cte) {
+    return {cte.real(),-cte.imag()};
+}
+
 }}
