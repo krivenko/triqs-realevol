@@ -46,11 +46,8 @@ time_expr::time_expr(std::string const& expr) :
 time_expr::time_expr(const char* expr) : time_expr(std::string(expr))
 {}
 
-time_expr::time_expr(time_expr::result_type r) :
+time_expr::time_expr(double r) :
     arg(r), parser(nullptr)
-{}
-
-time_expr::time_expr() : time_expr(result_type(0))
 {}
 
 time_expr::time_expr(time_expr const& te) :
@@ -68,7 +65,7 @@ time_expr::~time_expr()
     pool.release(parser);
 }
 
-auto time_expr::operator()(double t) const -> result_type
+auto time_expr::operator()(double t) const -> double
 {
     if(is_constant(*this))
         return arg;
@@ -136,7 +133,7 @@ auto time_expr::operator=(const char* expr) -> time_expr
     return *this;
 }
 
-auto time_expr::operator=(result_type r) -> time_expr
+auto time_expr::operator=(double r) -> time_expr
 {
     if(!is_constant(*this)){
         pool.release(parser);
@@ -240,7 +237,7 @@ bool time_expr::operator==(const time_expr& te) const
     bool is_const = is_constant(*this);
     if(is_const != is_constant(te)) return false;
     if(is_const)
-        return numeric_ops<result_type>::is_zero(arg-te.arg);
+        return triqs::utility::is_zero(arg-te.arg);
     else
         return parser->GetExpr() == te.parser->GetExpr();
 }
