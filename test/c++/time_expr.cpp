@@ -144,9 +144,9 @@ int main()
     // Test assignments
     expr_t tea;
     tea = expr_t("t^2",1.0); if(tea != expr_t("t^2",1.0)) return EXIT_FAILURE;
-    tea = 0.7; if(tea != expr_t("0.7")) return EXIT_FAILURE;
-    tea = std::string("2*t+4*t^3"); if(tea != expr_t("2*t+4*t^3")) return EXIT_FAILURE;
-    tea = "8-t"; if(tea != expr_t("8-t")) return EXIT_FAILURE;
+    tea = 0.7_te; if(tea != expr_t("0.7")) return EXIT_FAILURE;
+    tea = "2*t+4*t^3"_te; if(tea != expr_t("2*t+4*t^3")) return EXIT_FAILURE;
+    tea = "8-t"_te; if(tea != expr_t("8-t")) return EXIT_FAILURE;
     tea = {2.0,5.0}; if(tea != expr_t("2.0","5.0")) return EXIT_FAILURE;
     if(tea != expr_t(2.0,5.0)) return EXIT_FAILURE;
 

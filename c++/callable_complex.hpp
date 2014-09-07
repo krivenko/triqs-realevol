@@ -13,18 +13,7 @@ class callable_complex : public std::complex<T> {
 public:
 
     using base_t = std::complex<T>;
-
-    // Constructors
-    callable_complex(T const& re = T(), T const& im = T()) : base_t(re,im) {};
-    callable_complex(callable_complex const& other) = default;
-    template<typename X> callable_complex(std::complex<X> const& x) : base_t(x) {};
-
-    // Assignments
-    callable_complex& operator=(callable_complex const& other) = default;
-    callable_complex& operator=(T const& x) {
-        *static_cast<base_t*>(this) = x;
-        return *this;
-    };
+    using base_t::base_t; // Inherit constructors
 
     // Call operator: forward the call to the real and imaginary parts
     template<typename... Args>
