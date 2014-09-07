@@ -27,6 +27,7 @@ add_subdirectory(c++)
 
 # Python interface
 if (${TRIQS_WITH_PYTHON_SUPPORT})
+ add_subdirectory(python)
  if(${Tests})
   enable_testing()
   add_subdirectory(test)
