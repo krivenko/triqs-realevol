@@ -1,0 +1,85 @@
+Check whether the expressions really depend on time
+False
+False
+True
+Check correctness of numerical expressions
+======== t = 0 ========
+0.0 0
+1.0 1.0
+4.5 4.5
+Unary minus
+-1.0 -1.0
+Addition of expressions
+1.0 1.0
+0.5 0.5
+1.5 1.5
+Subtraction of expressions
+-1.0 -1.0
+-0.5 -0.5
+-0.5 -0.5
+Multiplication of expressions
+0.0 0.0
+0.0 0.0
+0.5 0.5
+Division of expressions by a scalar
+0.0 0.0
+======== t = 0.1 ========
+0.01 0.01
+1.1 1.1
+4.5 4.5
+Unary minus
+-1.1 -1.1
+Addition of expressions
+1.11 1.11
+0.51 0.51
+1.6 1.6
+Subtraction of expressions
+-1.09 -1.09
+-0.49 -0.49
+-0.6 -0.6
+Multiplication of expressions
+0.011 0.011
+0.005 0.005
+0.55 0.55
+Division of expressions by a scalar
+0.02 0.02
+======== t = 10 ========
+100.0 100
+11.0 11.0
+4.5 4.5
+Unary minus
+-11.0 -11.0
+Addition of expressions
+111.0 111.0
+100.5 100.5
+11.5 11.5
+Subtraction of expressions
+89.0 89.0
+99.5 99.5
+-10.5 -10.5
+Multiplication of expressions
+1100.0 1100.0
+50.0 50.0
+5.5 5.5
+Division of expressions by a scalar
+200.0 200.0
+======== t = 55 ========
+3025.0 3025
+56.0 56.0
+4.5 4.5
+Unary minus
+-56.0 -56.0
+Addition of expressions
+3081.0 3081.0
+3025.5 3025.5
+56.5 56.5
+Subtraction of expressions
+2969.0 2969.0
+3024.5 3024.5
+-55.5 -55.5
+Multiplication of expressions
+169400.0 169400.0
+1512.5 1512.5
+28.0 28.0
+Division of expressions by a scalar
+6050.0 6050.0
