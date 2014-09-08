@@ -32,7 +32,7 @@ auto RHS = [](Vector const& sol, double t){
 auto printer = [](double t, Vector const& x){ std::cout << std::fixed << std::setprecision(5)
                                               << t << "    " << x[Coordinate] << std::endl; }; 
 
-int main(void)
+int main()
 {
     // Time mesh on a segment [0;20.0] (201 points)
     uniform_mesh<> mesh(0,20.0,201);
