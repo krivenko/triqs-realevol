@@ -9,16 +9,16 @@ namespace realevol {
 // Abstract mesh
 template<
     class NodeIndex,    // Node index type (unsigned)
-    class MeshPoint,    // Node value type (floating point)
+    class Value,        // Node value type (floating point)
     class Mesh          // CRTP
 >
 struct mesh_base {
 
     using node_index_t = NodeIndex;
-    using mesh_point_t = MeshPoint;
+    using value_t = Value;
 
     static_assert(std::is_unsigned<node_index_t>::value,"NodeIndex is not an unsigned integral type.");
-    static_assert(std::is_floating_point<mesh_point_t>::value,"MeshPoint is not a floating-point type.");
+    static_assert(std::is_floating_point<value_t>::value,"Value is not a floating-point type.");
 
     mesh_base(node_index_t nodes) : nodes(nodes) {}
 
@@ -29,20 +29,16 @@ struct mesh_base {
         return node < nodes;
     }
 
-    struct deref_result_t {
+    struct point_t {
         typename Mesh::node_index_t index;
-        typename Mesh::mesh_point_t value;
+        typename Mesh::value_t value;
     };
 
 private:
 
     template<typename Derived>
     struct iterator_base_t {
-        using type = boost::iterator_facade<
-            Derived,
-            deref_result_t const,
-            boost::random_access_traversal_tag,
-            deref_result_t const>;
+        using type = boost::iterator_facade<Derived,point_t const,boost::random_access_traversal_tag,point_t const>;
     };
 
 public:
@@ -55,7 +51,7 @@ public:
 
     public:
         using difference_type = typename iterator_base_t<const_iterator>::type::difference_type;
-        using deref_result_t = mesh_base::deref_result_t;
+        using point_t = mesh_base::point_t;
 
         const_iterator() = delete;
         const_iterator(const_iterator const&) = default;
@@ -65,7 +61,7 @@ public:
 
     private:
         friend class boost::iterator_core_access;
-        inline const deref_result_t dereference() const {
+        inline const point_t dereference() const {
             return {node,mesh[node]};
         }
         inline void increment() { ++node; }

@@ -21,7 +21,7 @@ public:
     using value_type = T;
     using size_type = typename std::deque<value_type>::size_type;
 
-    static_assert(std::is_base_of<mesh_base<typename mesh_t::node_index_t,typename mesh_t::mesh_point_t,mesh_t>,mesh_t>::value,
+    static_assert(std::is_base_of<mesh_base<typename mesh_t::node_index_t,typename mesh_t::value_t,mesh_t>,mesh_t>::value,
                   "Mesh is not derived from mesh_base");
 
     struct overflow_t {
@@ -48,7 +48,7 @@ public:
 
     // Iterator
     struct deref_result_t {
-        typename mesh_t::const_iterator::deref_result_t mesh_point;
+        typename mesh_t::point_t mesh_point;
         value_type & value;
     };
 
