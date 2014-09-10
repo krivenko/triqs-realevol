@@ -29,14 +29,15 @@ struct mesh_base {
         return node < nodes;
     }
 
+    struct deref_result_t {
+        typename Mesh::node_index_t index;
+        typename Mesh::mesh_point_t value;
+    };
+
 private:
 
     template<typename Derived>
     struct iterator_base_t {
-        struct deref_result_t {
-            typename Mesh::node_index_t index;
-            typename Mesh::mesh_point_t value;
-        };
         using type = boost::iterator_facade<
             Derived,
             deref_result_t const,
@@ -54,7 +55,7 @@ public:
 
     public:
         using difference_type = typename iterator_base_t<const_iterator>::type::difference_type;
-        using deref_result_t = typename iterator_base_t<const_iterator>::deref_result_t;
+        using deref_result_t = mesh_base::deref_result_t;
 
         const_iterator() = delete;
         const_iterator(const_iterator const&) = default;

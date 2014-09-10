@@ -12,29 +12,37 @@ using namespace realevol;
 
 template<class T> T sqr(T x) { return x*x; } 
 
-void fifo_processor(double t, double const& x)
+using mesh_t = uniform_mesh<>;
+using cont_t = fifo_mesh_container<int,mesh_t>;
+
+std::size_t pbs;
+void overflow_handler(cont_t & f)
 {
-    std::cout << "Processing element " << x << " at " << t << std::endl;
+    auto proc = [](mesh_t::deref_result_t mp, cont_t::value_type v){
+        std::cout << "Processing element " << v << " at " << mp.value << std::endl;
+    };
+    f.process_front(proc,pbs);
 }
 
 void run_test(std::size_t max_size, std::size_t proc_block_size, bool change_elements)
 {
+    pbs = proc_block_size;
     std::cout << "max_size = " << max_size << ", ";
     std::cout << "proc_block_size = " << proc_block_size << ", ";
     std::cout << "change_elements = " << change_elements << std::endl;
 
-    uniform_mesh<> m(0,19.0,20);
-    fifo_mesh_container<int,uniform_mesh<>> f(m,{fifo_processor,max_size,proc_block_size},999/* default_value*/);
+    mesh_t m(0,19.0,20);
+    cont_t f(m,{overflow_handler,max_size},999/* default_value*/);
 
     int n = 0;
-    for(auto it = f.arg_value_begin(); it != f.arg_value_end(); ++it){
+    for(auto it = std::begin(f); it != std::end(f); ++it){
         std::cout << "Adding element ";
         if(change_elements){
             std::cout << n;
-            it->get<1>() = n;
+            it->value = n;
         } else 
             std::cout << 999;
-        std::cout << " at " << it->get<0>()  << std::endl;
+        std::cout << " at " << it->mesh_point.value  << std::endl;
         ++n;
     }
 }
