@@ -35,7 +35,7 @@ auto RHS = [](Vector const& sol, double t){
 };
 
 // Printing function
-auto printer = [](uniform_mesh<>::deref_result_t mp, Vector const& x){
+auto printer = [](uniform_mesh<>::point_t mp, Vector const& x){
     std::cout << std::fixed << std::setprecision(5)
     << mp.value << "     " << x[0].real() << "     " << x[0].imag()
     << "     " << x[1].real() << "     " << x[1].imag()

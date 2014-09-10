@@ -72,7 +72,7 @@ public:
 
     // Iterator over pairs mesh point-value pairs
     struct deref_result_t {
-        typename mesh_t::const_iterator::deref_result_t mesh_point;
+        typename mesh_t::point_t mesh_point;
         value_type & value;
         deref_result_t(_iter const& it) : mesh_point(boost::get<0>(*it)), value(boost::get<1>(*it)) {}
     };

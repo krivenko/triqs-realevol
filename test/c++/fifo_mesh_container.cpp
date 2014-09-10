@@ -18,7 +18,7 @@ using cont_t = fifo_mesh_container<int,mesh_t>;
 std::size_t pbs;
 void overflow_handler(cont_t & f)
 {
-    auto proc = [](mesh_t::deref_result_t mp, cont_t::value_type v){
+    auto proc = [](mesh_t::point_t mp, cont_t::value_type v){
         std::cout << "Processing element " << v << " at " << mp.value << std::endl;
     };
     f.process_front(proc,pbs);
