@@ -22,7 +22,7 @@ public:
     using value_type = T;
     using size_type = typename std::deque<value_type>::size_type;
 
-    static_assert(std::is_base_of<mesh_base<typename mesh_t::node_number_t,typename mesh_t::mesh_point_t,mesh_t>,mesh_t>::value,
+    static_assert(std::is_base_of<mesh_base<typename mesh_t::node_index_t,typename mesh_t::mesh_point_t,mesh_t>,mesh_t>::value,
                   "Mesh is not derived from mesh_base");
 
     struct processing_t {
@@ -86,14 +86,14 @@ public:
         }
         inline iterator_deref_type dereference() const
         {
-            return iterator_deref_type(*mesh_it,container.fifo.back());
+            return iterator_deref_type(mesh_it->value,container.fifo.back());
         }
     };
 
     arg_value_iterator arg_value_begin(void) noexcept
     {
         fifo.clear();
-        if(mesh.get_nodes()>0) fifo.emplace_back(default_value);
+        if(mesh.size()>0) fifo.emplace_back(default_value);
         return arg_value_iterator(*this,std::begin(mesh));
     }
 
@@ -109,13 +109,13 @@ private:
             fifo.emplace_back(default_value);
             if(fifo.size()>proc.max_size){
                 for(size_type n=0; n<proc.proc_block_size; ++n){
-                    proc.fifo_processor(*(mesh_it-proc.max_size+n),fifo.front());
+                    proc.fifo_processor((mesh_it-proc.max_size+n)->value,fifo.front());
                     fifo.pop_front();
                 }
             }
         } else {
             for(size_type n=fifo.size(); n>0; --n){
-                proc.fifo_processor(*(mesh_it-n),fifo.front());
+                proc.fifo_processor((mesh_it-n)->value,fifo.front());
                 fifo.pop_front();
             }
         }
