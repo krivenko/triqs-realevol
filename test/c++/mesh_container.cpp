@@ -14,12 +14,9 @@ template<class T> T sqr(T x) { return x*x; }
 
 bool check_mesh_container(mesh_container<double,uniform_mesh<>> & f)
 {
-    mesh_container<double,uniform_mesh<>>::arg_value_iterator i = f.arg_value_begin();
-    for(; i != f.arg_value_end(); i++){
-        if(std::fabs(sqr(i->get<0>()) - i->get<1>()) > 1e-10)
+    for(auto e : f)
+        if(std::fabs(sqr(e.mesh_point.value) - e.value) > 1e-10)
             return false;
-    }
-
     return true;
 }
 

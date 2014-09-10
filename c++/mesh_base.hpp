@@ -33,15 +33,15 @@ private:
 
     template<typename Derived>
     struct iterator_base_t {
-        struct deref_result {
+        struct deref_result_t {
             typename Mesh::node_index_t index;
             typename Mesh::mesh_point_t value;
         };
         using type = boost::iterator_facade<
             Derived,
-            deref_result const,
+            deref_result_t const,
             boost::random_access_traversal_tag,
-            deref_result const>;
+            deref_result_t const>;
     };
 
 public:
@@ -54,16 +54,17 @@ public:
 
     public:
         using difference_type = typename iterator_base_t<const_iterator>::type::difference_type;
-        using deref_result = typename iterator_base_t<const_iterator>::deref_result;
+        using deref_result_t = typename iterator_base_t<const_iterator>::deref_result_t;
 
         const_iterator() = delete;
         const_iterator(const_iterator const&) = default;
+        const_iterator(const_iterator &&) = default;
         explicit const_iterator(Mesh const& mesh) : mesh(mesh), node(0) {}
         explicit const_iterator(Mesh const& mesh, typename Mesh::node_index_t node) : mesh(mesh), node(node) {}
 
     private:
         friend class boost::iterator_core_access;
-        inline const deref_result dereference() const {
+        inline const deref_result_t dereference() const {
             return {node,mesh[node]};
         }
         inline void increment() { ++node; }
