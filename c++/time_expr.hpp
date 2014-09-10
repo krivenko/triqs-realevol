@@ -16,7 +16,6 @@
 #include <triqs/utility/draft/numeric_ops.hpp>
 
 #include "mesh_base.hpp"
-#include "mesh_iterator.hpp"
 
 using boost::lexical_cast;
 
@@ -93,10 +92,10 @@ template<class Mesh, class Expr>
 bool try_reduce_to_constant(Expr& te, Mesh const& m)
 {
     auto it = m.begin();
-    auto value = te(*it);
+    auto value = te(it->value);
 
     for(it++; it != m.end(); it++)
-        if(!triqs::utility::is_zero(te(*it) - value)) return false;
+        if(!triqs::utility::is_zero(te(it->value) - value)) return false;
 
     te = Expr(value);
     return true;

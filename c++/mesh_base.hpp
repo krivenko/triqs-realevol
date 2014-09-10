@@ -2,69 +2,105 @@
 
 #include <type_traits>
 #include <boost/serialization/access.hpp>
-
-#include "mesh_iterator.hpp"
+#include <boost/iterator/iterator_facade.hpp>
 
 namespace realevol {
 
 // Abstract mesh
 template<
-    class NodeNumber,   // Node index type (unsigned)
+    class NodeIndex,    // Node index type (unsigned)
     class MeshPoint,    // Node value type (floating point)
     class Mesh          // CRTP
 >
 struct mesh_base {
 
-    using node_number_t = NodeNumber;
+    using node_index_t = NodeIndex;
     using mesh_point_t = MeshPoint;
 
-    static_assert(std::is_unsigned<node_number_t>::value,"NodeNumber is not an unsigned integral type.");
+    static_assert(std::is_unsigned<node_index_t>::value,"NodeIndex is not an unsigned integral type.");
     static_assert(std::is_floating_point<mesh_point_t>::value,"MeshPoint is not a floating-point type.");
 
-    mesh_base(node_number_t nodes) : nodes(nodes) {}
+    mesh_base(node_index_t nodes) : nodes(nodes) {}
 
     // Number of nodes of the mesh
-    inline node_number_t get_nodes() const { return nodes; }
+    inline node_index_t size() const { return nodes; }
 
-    inline bool is_on_mesh(node_number_t node) const
-    {
+    inline bool is_on_mesh(node_index_t node) const {
         return node < nodes;
     }
 
-    // Mesh iterator
-    using const_iterator = mesh_iterator<Mesh>;
+private:
 
-    const_iterator begin(void) const noexcept
+    template<typename Derived>
+    struct iterator_base_t {
+        struct deref_result {
+            typename Mesh::node_index_t index;
+            typename Mesh::mesh_point_t value;
+        };
+        using type = boost::iterator_facade<
+            Derived,
+            deref_result const,
+            boost::random_access_traversal_tag,
+            deref_result const>;
+    };
+
+public:
+
+    // Iterator over a mesh
+    class const_iterator : public iterator_base_t<const_iterator>::type
     {
-        return const_iterator(static_cast<Mesh const*>(this));
+        Mesh const& mesh;
+        typename Mesh::node_index_t node;
+
+    public:
+        using difference_type = typename iterator_base_t<const_iterator>::type::difference_type;
+        using deref_result = typename iterator_base_t<const_iterator>::deref_result;
+
+        const_iterator() = delete;
+        const_iterator(const_iterator const&) = default;
+        explicit const_iterator(Mesh const& mesh) : mesh(mesh), node(0) {}
+        explicit const_iterator(Mesh const& mesh, typename Mesh::node_index_t node) : mesh(mesh), node(node) {}
+
+    private:
+        friend class boost::iterator_core_access;
+        inline const deref_result dereference() const {
+            return {node,mesh[node]};
+        }
+        inline void increment() { ++node; }
+        inline void decrement() { --node; }
+        inline void advance(difference_type n){
+            node += n;
+        }
+        inline difference_type distance_to(const_iterator const& other) const {
+            return other.node - node;
+        }
+        inline bool equal(const_iterator const& other) const {
+            return node == other.node;
+        }
+    };
+
+    const_iterator begin(void) const noexcept {
+        return const_iterator(static_cast<Mesh const&>(*this));
     }
-
-    const_iterator cbegin(void) const noexcept
-    {
-        return const_iterator(static_cast<Mesh const*>(this));
+    const_iterator cbegin(void) const noexcept {
+        return const_iterator(static_cast<Mesh const&>(*this));
     }
-
-    const_iterator end(void) const noexcept
-    {
-        return const_iterator(static_cast<Mesh const*>(this),nodes);
+    const_iterator end(void) const noexcept {
+        return const_iterator(static_cast<Mesh const&>(*this),nodes);
     }
-
-    const_iterator cend(void) const noexcept
-    {
-        return const_iterator(static_cast<Mesh const*>(this),nodes);
+    const_iterator cend(void) const noexcept {
+        return const_iterator(static_cast<Mesh const&>(*this),nodes);
     }
 
 protected:
-    node_number_t nodes;
+    node_index_t nodes;
 
     // Methods for boost::serialization
     friend class boost::serialization::access;
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
+    void serialize(Archive & ar, const unsigned int version) {
         ar & nodes;
     }
-
 };
 
 }

@@ -1,7 +1,6 @@
 #pragma once
 
 #include"mesh_base.hpp"
-#include"mesh_iterator.hpp"
 
 #include<boost/serialization/access.hpp>
 #include<boost/serialization/base_object.hpp>
@@ -10,22 +9,22 @@ namespace realevol {
 
 // Uniform mesh
 template<
-    class NodeNumber = std::size_t,    // Node index type (unsigned)
+    class NodeIndex = std::size_t,     // Node index type (unsigned)
     class MeshPoint = double           // Node value type (floating point)
 >
 struct uniform_mesh :
-    public mesh_base<NodeNumber,MeshPoint,uniform_mesh<NodeNumber,MeshPoint>> {
+    public mesh_base<NodeIndex,MeshPoint,uniform_mesh<NodeIndex,MeshPoint>> {
 
-    using node_number_t = NodeNumber;
+    using node_index_t = NodeIndex;
     using mesh_point_t = MeshPoint;
-    using base_t =  mesh_base<node_number_t,mesh_point_t,uniform_mesh<node_number_t,mesh_point_t>>;
+    using base_t =  mesh_base<node_index_t,mesh_point_t,uniform_mesh<node_index_t,mesh_point_t>>;
 
-    uniform_mesh(mesh_point_t start, mesh_point_t end, node_number_t nodes) :
+    uniform_mesh(mesh_point_t start, mesh_point_t end, node_index_t nodes) :
         base_t(nodes),
         start(start),
         step((end-start)/(nodes-1)) {}
 
-    inline mesh_point_t operator[](node_number_t node) const
+    inline mesh_point_t operator[](node_index_t node) const
     {
         return start + step*node;
     }

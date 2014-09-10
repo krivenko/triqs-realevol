@@ -18,7 +18,7 @@ bool check_uniform_mesh(Mesh const& m){
     auto it = m.begin();
     for(; it != m.end(); ++it){
         unsigned int index = std::distance(m.begin(), it);
-        if(std::fabs(*it - ref_v[index]) >= 1e-10) return false;
+        if(std::fabs(it->value - ref_v[index]) >= 1e-10) return false;
     }
 
     return true;
