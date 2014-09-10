@@ -25,9 +25,9 @@ template<
         // Number of unknown functions
         std::size_t N = initial_value.size();
 
-        auto mesh_it = solution.arg_value_begin();
         // Set the initial value
-        mesh_it->template get<1>() = initial_value;
+        auto it = std::begin(solution);
+        it->value = initial_value;
 
         // Temporaries
         value_t rhs_arg(N), X1(N), X2(N), X3(N), X4(N);
@@ -37,10 +37,10 @@ template<
 
         while(true){
             // Value of the independent variable
-            var_t x = mesh_it->template get<0>();
+            var_t x = it->mesh_point.value;
 
             // Solution at this point
-            value_t const& U(mesh_it->template get<1>());
+            value_t const& U(it->value);
 
             // Stage 1
             rhs_arg = U;
@@ -58,10 +58,10 @@ template<
             rhs_arg = U + step*X3;
             X4 = rhs_of_var_only(x + step);
 
-            ++mesh_it;
-            if(mesh_it == solution.arg_value_end()) break;
+            ++it;
+            if(it == std::end(solution)) break;
 
-            mesh_it->template get<1>() = U + step/6.0*(X1 + 2.0*X2 + 2.0*X3 + X4);
+            it->value = U + step/6.0*(X1 + 2.0*X2 + 2.0*X3 + X4);
         }
     }
 
