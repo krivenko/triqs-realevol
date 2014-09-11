@@ -1,6 +1,6 @@
 from wrap_generator import *
 
-# realevol module
+# texpr module
 module = module_(full_name = "pytriqs.applications.realevol.texpr", doc = "Time-dependent expression")
 module.add_include("<triqs/arrays.hpp>")
 module.add_include("c++/time_expr.hpp")

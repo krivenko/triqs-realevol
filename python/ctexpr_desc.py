@@ -1,7 +1,7 @@
 from wrap_generator import *
 from itertools import product
 
-# realevol module
+# ctexpr module
 module = module_(full_name = "pytriqs.applications.realevol.ctexpr", doc = "Complex time-dependent expression")
 module.use_module("texpr")
 module.add_include("<triqs/arrays.hpp>")
