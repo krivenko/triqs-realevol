@@ -84,8 +84,8 @@ private:
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
 
-time_expr operator""_te (long double r){ return time_expr(r); }
-time_expr operator ""_te(const char* expr, std::size_t) { return time_expr(expr); };
+inline time_expr operator""_te (long double r){ return time_expr(r); }
+inline time_expr operator ""_te(const char* expr, std::size_t) { return time_expr(expr); };
 
 // Replace the expression with a constant if it takes equal values at all mesh points
 template<class Mesh, class Expr>
@@ -105,7 +105,7 @@ bool try_reduce_to_constant(Expr& te, Mesh const& m)
 
 namespace triqs { namespace utility {
 
-bool is_zero(realevol::time_expr const& te) { return te.is_zero(); }
-realevol::time_expr _conj(realevol::time_expr const& te) { return te; }
+inline bool is_zero(realevol::time_expr const& te) { return te.is_zero(); }
+inline realevol::time_expr _conj(realevol::time_expr const& te) { return te; }
 
 }}
