@@ -46,18 +46,14 @@ public:
         return mesh;
     }
 
-    // Iterator
-    struct deref_result_t {
+    struct pair_t {
         typename mesh_t::point_t mesh_point;
         value_type & value;
     };
 
+    // Iterator
     class iterator : 
-    public boost::iterator_facade<
-        iterator,
-        deref_result_t,
-        boost::single_pass_traversal_tag,
-        deref_result_t>
+    public boost::iterator_facade<iterator,pair_t,boost::single_pass_traversal_tag,pair_t>
     {
     public:
         iterator(fifo_mesh_container & container, typename mesh_t::const_iterator mesh_it) :
@@ -74,7 +70,7 @@ public:
             ++mesh_it;
             container.update_fifo(mesh_it);
         }
-        inline deref_result_t dereference() const {
+        inline pair_t dereference() const {
             return {*mesh_it,container.fifo.back()};
         }
     };
