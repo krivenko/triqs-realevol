@@ -32,6 +32,7 @@ struct mesh_base {
     struct point_t {
         typename Mesh::node_index_t index;
         typename Mesh::value_t value;
+        explicit operator decltype(value)() const { return value; }
     };
 
 private:
@@ -46,7 +47,7 @@ public:
     // Iterator over a mesh
     class const_iterator : public iterator_base_t<const_iterator>::type
     {
-        Mesh const& mesh;
+        const Mesh * pmesh;
         typename Mesh::node_index_t node;
 
     public:
@@ -55,14 +56,15 @@ public:
 
         const_iterator() = delete;
         const_iterator(const_iterator const&) = default;
-        const_iterator(const_iterator &&) = default;
-        explicit const_iterator(Mesh const& mesh) : mesh(mesh), node(0) {}
-        explicit const_iterator(Mesh const& mesh, typename Mesh::node_index_t node) : mesh(mesh), node(node) {}
+        const_iterator(const_iterator &&) noexcept = default;
+        explicit const_iterator(Mesh const& mesh) : pmesh(&mesh), node(0) {}
+        explicit const_iterator(Mesh const& mesh, typename Mesh::node_index_t node) : pmesh(&mesh), node(node) {}
+        const_iterator & operator=(const_iterator const&) = default;
 
     private:
         friend class boost::iterator_core_access;
         inline const point_t dereference() const {
-            return {node,mesh[node]};
+            return {node,(*pmesh)[node]};
         }
         inline void increment() { ++node; }
         inline void decrement() { --node; }
