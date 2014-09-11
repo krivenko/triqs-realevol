@@ -52,13 +52,13 @@ private:
 public:
 
     // Iterator over pairs mesh point-value pairs (const)
-    struct const_deref_result_t {
-        typename mesh_t::const_iterator::deref_result_t mesh_point;
+    struct const_pair_t {
+        typename mesh_t::point_t mesh_point;
         value_type const& value;
-        const_deref_result_t(_const_iter const& it) : mesh_point(boost::get<0>(*it)), value(boost::get<1>(*it)) {}
+        const_pair_t(_const_iter const& it) : mesh_point(boost::get<0>(*it)), value(boost::get<1>(*it)) {}
     };
 
-    using const_iterator = triqs::utility::dressed_iterator<_const_iter,const_deref_result_t>;
+    using const_iterator = triqs::utility::dressed_iterator<_const_iter,const_pair_t>;
     const_iterator cbegin() const noexcept {
         return const_iterator(boost::make_zip_iterator(
             boost::make_tuple(std::begin(mesh), std::vector<value_type>::cbegin()))
@@ -71,13 +71,13 @@ public:
     }
 
     // Iterator over pairs mesh point-value pairs
-    struct deref_result_t {
+    struct pair_t {
         typename mesh_t::point_t mesh_point;
         value_type & value;
-        deref_result_t(_iter const& it) : mesh_point(boost::get<0>(*it)), value(boost::get<1>(*it)) {}
+        pair_t(_iter const& it) : mesh_point(boost::get<0>(*it)), value(boost::get<1>(*it)) {}
     };
 
-    using iterator = triqs::utility::dressed_iterator<_iter,deref_result_t>;
+    using iterator = triqs::utility::dressed_iterator<_iter,pair_t>;
     iterator begin() noexcept {
         return iterator(boost::make_zip_iterator(
             boost::make_tuple(std::begin(mesh), std::vector<value_type>::begin()))
