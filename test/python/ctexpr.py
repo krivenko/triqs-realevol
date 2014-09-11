@@ -1,10 +1,11 @@
-from pytriqs.applications.realevol.realevol import texpr, ctexpr, is_constant
+from pytriqs.applications.realevol.ctexpr import *
+from pytriqs.applications.realevol.texpr import texpr as rtexpr
 from cmath import sin, sqrt, pi
 
-te1 = ctexpr("t^2",1.0)
-te2 = ctexpr("t + sin(_pi/2)","t^3")
-te3 = ctexpr("sqrt(9.0) + 1.5","2.9")
-te4 = ctexpr(1.9+2.8j);
+te1 = texpr("t^2",1.0)
+te2 = texpr("t + sin(_pi/2)","t^3")
+te3 = texpr("sqrt(9.0) + 1.5","2.9")
+te4 = texpr(1.9+2.8j);
 
 print "Check whether the expressions really depend on time"
 print is_constant(te1)
@@ -35,10 +36,10 @@ for t in [0, 0.1, 10, 55]:
 
     print "Addition of expressions"
     e1pte2 = te1 + te2
-    te1phalf = te1 + ctexpr(0.5)
-    halfpte2 = ctexpr(0.5) + te2
-    te1pihalf = te1 + ctexpr(0.5j)
-    ihalfpte2 = ctexpr(0.5j) + te2
+    te1phalf = te1 + texpr(0.5)
+    halfpte2 = texpr(0.5) + te2
+    te1pihalf = te1 + texpr(0.5j)
+    ihalfpte2 = texpr(0.5j) + te2
     check(e1pte2(t),te1_ref+te2_ref)
     check(te1phalf(t),te1_ref+0.5)
     check(halfpte2(t),0.5+te2_ref)
@@ -47,10 +48,10 @@ for t in [0, 0.1, 10, 55]:
 
     print "Subtraction of expressions"
     e1mte2 = te1 - te2
-    te1mhalf = te1 - ctexpr(0.5)
-    halfmte2 = ctexpr(0.5) - te2
-    te1mihalf = te1 - ctexpr(0.5j)
-    ihalfmte2 = ctexpr(0.5j) - te2
+    te1mhalf = te1 - texpr(0.5)
+    halfmte2 = texpr(0.5) - te2
+    te1mihalf = te1 - texpr(0.5j)
+    ihalfmte2 = texpr(0.5j) - te2
     check(e1mte2(t),te1_ref-te2_ref)
     check(te1mhalf(t),te1_ref-0.5)
     check(halfmte2(t),0.5-te2_ref)
@@ -59,10 +60,10 @@ for t in [0, 0.1, 10, 55]:
 
     print "Multiplication of expressions"
     te1ppte2 = te1 * te2
-    te1pphalf = te1 * ctexpr(0.5)
-    halfppte2 = ctexpr(0.5) * te2
-    te1ppihalf = te1 * ctexpr(0.5j)
-    ihalfppte2 = ctexpr(0.5j) * te2
+    te1pphalf = te1 * texpr(0.5)
+    halfppte2 = texpr(0.5) * te2
+    te1ppihalf = te1 * texpr(0.5j)
+    ihalfppte2 = texpr(0.5j) * te2
     check(te1ppte2(t),te1_ref*te2_ref)
     check(te1pphalf(t),te1_ref*0.5)
     check(halfppte2(t),0.5*te2_ref)
@@ -70,5 +71,5 @@ for t in [0, 0.1, 10, 55]:
     check(ihalfppte2(t),0.5j*te2_ref)
 
     print "Division of expressions"
-    te1dhalf = te1 / texpr(0.5)
+    te1dhalf = te1 / rtexpr(0.5)
     check(te1dhalf(t),te1_ref/0.5)
