@@ -6,6 +6,7 @@
 #include <triqs/parameters.hpp>
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/h5/map.hpp>
+#include <triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp>
 
 #include "mesh_container.hpp"
 #include "time_expr.hpp"
@@ -13,7 +14,7 @@
 
 namespace realevol {
 
-using triqs::utility::many_body_operator;
+using namespace triqs::utility;
 using parameters_t = triqs::params::parameters;
 template<typename Value> using dict_t = std::map<std::string,Value>;
 
@@ -27,11 +28,11 @@ class solver {
 
 public:
 
-    using operator_t = std::conditional<
+    using operator_t = typename std::conditional<
         ComplexOperators,
         many_body_operator<callable_complex<time_expr>>,
         many_body_operator<time_expr>
-    >;
+    >::type;
 
     solver();
 
@@ -41,6 +42,10 @@ public:
 
     static parameters_t solve_parameters();
     static void help();
+
+private:
+
+    static void fill_fops(fundamental_operator_set & fops, operator_t const& op);
 };
 
 }
