@@ -17,7 +17,7 @@ uniform_mesh = class_(
 uniform_mesh.add_constructor(signature="(double start, double end, std::size_t nodes)", doc="create uniform mesh")
 uniform_mesh.add_getitem(signature="double(std::size_t node)")
 uniform_mesh.add_iterator(c_cast_type="double")
-uniform_mesh.add_len(c_name = "size")
+uniform_mesh.add_len(c_name = "size", calling_pattern="int result = self_c.size()")
 uniform_mesh.add_property(getter=cfunction("double get_step()"), doc="step of the mesh")
 module.add_class(uniform_mesh)
 
