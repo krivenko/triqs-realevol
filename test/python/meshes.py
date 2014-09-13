@@ -6,5 +6,6 @@ def print_mesh(m):
 
 m1 = umesh(0,1,11)
 
+print len(m1)
 print m1[5]
 print_mesh(m1)
