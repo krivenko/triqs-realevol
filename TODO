@@ -1,0 +1,5 @@
+* Compare performance of muParser and GiNaC in four cases:
+    - Constant expression
+    - Sum of constant expressions
+    - Time-dependent expression (constants, cos, exp)
+    - Time-dependent expression + parentheses
