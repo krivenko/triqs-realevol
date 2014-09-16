@@ -13,7 +13,7 @@ texpr = class_(
         c_type = "time_expr",
         c_type_absolute = "realevol::time_expr",
         is_printable= True,
-        arithmetic = ("algebra","with_unit","with_unary_minus","double"),
+        arithmetic = ("algebra","with_unit","with_unary_minus","double","std::string"),
         doc = "Time-dependent expression (muParser wrapper)"
         )
 
