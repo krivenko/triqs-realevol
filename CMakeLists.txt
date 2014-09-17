@@ -15,13 +15,6 @@ find_package(TRIQS REQUIRED)
 # We want to be installed in the TRIQS tree
 set(CMAKE_INSTALL_PREFIX ${TRIQS_PATH})
 
-# Detect muParser
-find_package(PkgConfig)
-pkg_check_modules(MUPARSER REQUIRED muparser)
-add_definitions(${MUPARSER_CFLAGS})
-link_libraries(${MUPARSER_LDFLAGS})
-message(STATUS "muParser version: " ${MUPARSER_VERSION})
-
 # Compile C++ code
 add_subdirectory(c++)
 

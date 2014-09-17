@@ -3,7 +3,7 @@ from math import sin, sqrt, pi
 
 
 te1 = texpr("t^2")
-te2 = texpr("t + sin(_pi/2)")
+te2 = texpr("t + sin(pi/2)")
 te3 = texpr("sqrt(9.0) + 1.5")
 
 print "Check whether the expressions really depend on time"

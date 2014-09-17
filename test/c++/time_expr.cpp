@@ -17,7 +17,7 @@ int main()
     // Test real-valued expressions
     using expr_t = time_expr;
 
-    expr_t te1("t^2"), te2("t + sin(_pi/2)"), te3("sqrt(9.0) + 1.5");
+    expr_t te1("t^2"), te2("t + sin(pi/2)"), te3("sqrt(9.0) + 1.5");
 
     // Check whether the expressions really depend on time
     if(is_constant(te1) || is_constant(te2) || !is_constant(te3))
@@ -122,7 +122,7 @@ int main()
 
     const std::complex<double> I(0,1);
 
-    expr_t te1("t^2",1.0), te2("t + sin(_pi/2)","t^3");
+    expr_t te1("t^2",1.0), te2("t + sin(pi/2)","t^3");
     expr_t te3("sqrt(9.0) + 1.5","2.9"), te4(1.9+I*2.8);
 
     // Check whether the expressions really depend on time

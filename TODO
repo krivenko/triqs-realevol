@@ -1,5 +1,2 @@
-* Compare performance of muParser and GiNaC in four cases:
-    - Constant expression
-    - Sum of constant expressions
-    - Time-dependent expression (constants, cos, exp)
-    - Time-dependent expression + parentheses
+* Try adding more arithmetic operator overloads to callable_complex (boost::operator)
+* If successful, rename callable_complex -> adv_complex

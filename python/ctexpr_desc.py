@@ -17,7 +17,7 @@ texpr = class_(
         c_type_absolute = "realevol::callable_complex<realevol::time_expr>",
         is_printable= True,
         arithmetic = ("algebra","with_unit","with_unary_minus","time_expr"),
-        doc = "Complex time-dependent expression (muParser wrapper)"
+        doc = "Complex time-dependent expression (ExprTk wrapper)"
         )
 
 ctexpr_constructor_arg_types = ('double','std::string','time_expr')
