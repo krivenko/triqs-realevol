@@ -14,7 +14,7 @@ texpr = class_(
         c_type_absolute = "realevol::time_expr",
         is_printable= True,
         arithmetic = ("algebra","with_unit","with_unary_minus","double","std::string"),
-        doc = "Time-dependent expression (muParser wrapper)"
+        doc = "Time-dependent expression (ExprTk wrapper)"
         )
 
 texpr.add_constructor(signature="(std::string expr)", doc="create expression")

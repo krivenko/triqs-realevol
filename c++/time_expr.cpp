@@ -1,245 +1,121 @@
 #include "time_expr.hpp"
 
-#include <limits>
-#include <deque>
-#include <boost/algorithm/string/trim.hpp>
-
-using boost::lexical_cast;
-using boost::trim_copy;
+#include <boost/lexical_cast.hpp>
 
 namespace realevol {
 
-// Singleton pool of mu::Parser objects
-class muParser_pool {
-    std::deque<mu::Parser*> parsers;
-    static constexpr const std::size_t chunk_size = 5;
+// Global exprtk::parser object
+exprtk::parser<double> parser;
 
-public:
-    mu::Parser* acquire()
-    {
-        if(!parsers.size()){
-            for(std::size_t n=0; n<chunk_size; ++n) parsers.push_back(new mu::Parser);
-        }
-        auto p = parsers.back();
-        parsers.pop_back();
-        return p;
-    }
-
-    void release(mu::Parser* p)
-    {
-        if(p!=nullptr) parsers.push_back(p);
-    }
-} pool;
-
-time_expr::time_expr(std::string const& expr) :
-    parser(pool.acquire())
+time_expr::time_expr(std::string const& str) :
+    str(str)
 {
-    parser->DefineVar("t", &arg);
-    parser->SetExpr(trim_copy(expr));
-    if(!parser->GetUsedVar().size()){
-        arg = parser->Eval();
-        pool.release(parser);
-        parser = nullptr;
-    }
+    exprtk::symbol_table<double> symt;
+    symt.add_variable("t",arg);
+    symt.add_constants();
+    expr.register_symbol_table(symt);
+    parser.compile(str,expr);
+    if(exprtk::expression_helper<double>::is_constant(expr))
+        this->str = boost::lexical_cast<std::string>(expr());
 }
 
 time_expr::time_expr(const char* expr) : time_expr(std::string(expr))
 {}
 
-time_expr::time_expr(double r) :
-    arg(r), parser(nullptr)
+time_expr::time_expr(double r) : time_expr(boost::lexical_cast<std::string>(r))
 {}
 
 time_expr::time_expr(time_expr const& te) :
-    arg(te.arg), parser(nullptr)
+    str(te.str)
 {
-    if(te.parser != nullptr){
-        parser = pool.acquire();
-        parser->DefineVar("t",&arg);
-        parser->SetExpr(trim_copy(te.parser->GetExpr()));
-    }
-}
-
-time_expr::~time_expr()
-{
-    pool.release(parser);
+    exprtk::symbol_table<double> symt;
+    symt.add_variable("t",arg);
+    symt.add_constants();
+    expr.register_symbol_table(symt);
+    parser.compile(str,expr);
 }
 
 auto time_expr::operator()(double t) const -> double
 {
-    if(is_constant(*this))
-        return arg;
-    else {
-        arg = t;
-        return parser->Eval();
-    }
+    arg = t;
+    return expr.value();
 }
 
 std::ostream& operator<<(std::ostream& os, time_expr const& te)
 {
-    if(is_constant(te))
-        os << te.arg;
-    else
-        os << trim_copy(te.parser->GetExpr());
-    
-    return os;
+    return (os << te.str);
 }
 
 auto time_expr::operator-() const -> time_expr
 {
-    if(is_constant(*this))
-        return time_expr(-arg);
-    else
-        return time_expr("-(" + trim_copy(parser->GetExpr()) + ")");
+    return time_expr("-(" + str + ")");
 }
 
 auto time_expr::operator=(const time_expr& te) -> time_expr
 {
-    if(is_constant(te)){
-        arg = te.arg;
-        pool.release(parser);
-        parser = nullptr;
-    }else{
-        if(is_constant(*this)){
-            parser = pool.acquire();
-            parser->DefineVar("t",&arg);
-        }
-        parser->SetExpr(trim_copy(te.parser->GetExpr()));
-    }
+    this->str = te.str;
+    parser.compile(str,expr);
     return *this;
 }
 
-auto time_expr::operator=(std::string const& expr) -> time_expr
+auto time_expr::operator=(std::string const& str) -> time_expr
 {
-    if(is_constant(*this))
-    {
-        parser = pool.acquire();
-    }
-    parser->DefineVar("t", &arg);
-    parser->SetExpr(trim_copy(expr));
-    if(!parser->GetUsedVar().size()){
-        arg = parser->Eval();
-        pool.release(parser);
-        parser = nullptr;
-    }
-
+    this->str = str;
+    parser.compile(str,expr);
     return *this;
 }
 
 auto time_expr::operator=(const char* expr) -> time_expr
 {
     *this = std::string(expr);
-
     return *this;
 }
 
 auto time_expr::operator=(double r) -> time_expr
 {
-    if(!is_constant(*this)){
-        pool.release(parser);
-        parser = nullptr;
-    }
-    arg = r;
-
+    *this = boost::lexical_cast<std::string>(r);
     return *this;
 }
 
 auto time_expr::operator+=(const time_expr& te) -> time_expr
 {
-    bool is_const = is_constant(*this);
-    if(is_const && is_constant(te))
-        arg += te.arg;
-    else {
-        if(is_const){
-            parser = pool.acquire();
-            parser->DefineVar("t",&arg);
-        }
-        parser->SetExpr(
-            "(" +
-            (is_const ? lexical_cast<std::string>(arg) : trim_copy(parser->GetExpr())) +
-            ")+(" +
-            (is_constant(te) ? lexical_cast<std::string>(te.arg) : trim_copy(te.parser->GetExpr())) +
-            ")"
-        );
-    }
-
+    str = "(" + str + ")+(" + te.str + ")";
+    parser.compile(str,expr);
+    if(exprtk::expression_helper<double>::is_constant(expr))
+        str = boost::lexical_cast<std::string>(expr());
     return *this;
 }
 
 auto time_expr::operator-=(const time_expr& te) -> time_expr
 {
-    bool is_const = is_constant(*this);
-    if(is_const && is_constant(te))
-        arg -= te.arg;
-    else {
-        if(is_const){
-            parser = pool.acquire();
-            parser->DefineVar("t",&arg);
-        }
-        parser->SetExpr(
-            "(" +
-            (is_const ? lexical_cast<std::string>(arg) : trim_copy(parser->GetExpr())) +
-            ")-(" +
-            (is_constant(te) ? lexical_cast<std::string>(te.arg) : trim_copy(te.parser->GetExpr())) +
-            ")"
-        );
-    }
-
+    str = "(" + str + ")-(" + te.str + ")";
+    parser.compile(str,expr);
+    if(exprtk::expression_helper<double>::is_constant(expr))
+        str = boost::lexical_cast<std::string>(expr());
     return *this;
 }
 
 auto time_expr::operator*=(const time_expr& te) -> time_expr
 {
-    bool is_const = is_constant(*this);
-    if(is_const && is_constant(te))
-        arg *= te.arg;
-    else {
-        if(is_const){
-            parser = pool.acquire();
-            parser->DefineVar("t",&arg);
-        }
-        parser->SetExpr(
-            "(" +
-            (is_const ? lexical_cast<std::string>(arg) : trim_copy(parser->GetExpr())) +
-            ")*(" +
-            (is_constant(te) ? lexical_cast<std::string>(te.arg) : trim_copy(te.parser->GetExpr())) +
-            ")"
-        );
-    }
-
+    str = "(" + str + ")*(" + te.str + ")";
+    parser.compile(str,expr);
+    if(exprtk::expression_helper<double>::is_constant(expr))
+        str = boost::lexical_cast<std::string>(expr());
     return *this;
 }
 
 auto time_expr::operator/=(const time_expr& te) -> time_expr
 {
-    bool is_const = is_constant(*this);
-    if(is_const && is_constant(te))
-        arg /= te.arg;
-    else {
-        if(is_const){
-            parser = pool.acquire();
-            parser->DefineVar("t",&arg);
-        }
-        parser->SetExpr(
-            "(" +
-            (is_const ? lexical_cast<std::string>(arg) : trim_copy(parser->GetExpr())) +
-            ")/(" +
-            (is_constant(te) ? lexical_cast<std::string>(te.arg) : trim_copy(te.parser->GetExpr())) +
-            ")"
-        );
-    }
-
+    str = "(" + str + ")/(" + te.str + ")";
+    parser.compile(str,expr);
+    if(exprtk::expression_helper<double>::is_constant(expr))
+        str = boost::lexical_cast<std::string>(expr());
     return *this;
 }
 
 bool time_expr::operator==(const time_expr& te) const
 {
-    bool is_const = is_constant(*this);
-    if(is_const != is_constant(te)) return false;
-    if(is_const)
-        return triqs::utility::is_zero(arg-te.arg);
-    else
-        return parser->GetExpr() == te.parser->GetExpr();
+    return str == te.str;
 }
 
 }

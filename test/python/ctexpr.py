@@ -3,7 +3,7 @@ from pytriqs.applications.realevol.texpr import texpr as rtexpr
 from cmath import sin, sqrt, pi
 
 te1 = texpr("t^2",1.0)
-te2 = texpr("t + sin(_pi/2)","t^3")
+te2 = texpr("t + sin(pi/2)","t^3")
 te3 = texpr("sqrt(9.0) + 1.5","2.9")
 te4 = texpr(1.9+2.8j);
 
