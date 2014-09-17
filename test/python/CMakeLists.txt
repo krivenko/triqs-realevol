@@ -1,6 +1,6 @@
 find_package(TriqsTest)
 
-triqs_add_test_txt(texpr)
-triqs_add_test_txt(ctexpr)
-triqs_add_test_txt(meshes)
-triqs_add_test_txt(operator_python)
+set(PYTHON_TESTS texpr ctexpr meshes operator)
+foreach(t ${PYTHON_TESTS})
+    triqs_add_test_txt(py_${t})
+endforeach(t)
