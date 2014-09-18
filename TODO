@@ -1,2 +1,0 @@
-* Try adding more arithmetic operator overloads to callable_complex (boost::operator)
-* If successful, rename callable_complex -> adv_complex

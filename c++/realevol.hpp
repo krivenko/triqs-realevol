@@ -10,7 +10,7 @@
 
 #include "mesh_container.hpp"
 #include "time_expr.hpp"
-#include "callable_complex.hpp"
+#include "c_time_expr.hpp"
 
 namespace realevol {
 
@@ -30,7 +30,7 @@ public:
 
     using operator_t = typename std::conditional<
         ComplexOperators,
-        many_body_operator<callable_complex<time_expr>>,
+        many_body_operator<c_time_expr>,
         many_body_operator<time_expr>
     >::type;
 

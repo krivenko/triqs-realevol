@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "time_expr.hpp"
-#include "callable_complex.hpp"
+#include "c_time_expr.hpp"
 
 #include <triqs/operators/many_body_operator.hpp>
 
@@ -189,8 +189,7 @@ int main() {
 
   std::cout << std::endl << "Part X: time-dependent operators (complex)" << std::endl << std::endl;
   {
-  using complex_time_expr = callable_complex<time_expr>;
-  complex_time_expr I(.0,1.0);
+  std::complex<double> I(.0,1.0);
 
   fundamental_operator_set FOPS;
   FOPS.insert("up",0);
@@ -200,11 +199,11 @@ int main() {
   hilbert_space HS(FOPS);
   std::cerr  << " HS dimension "<< HS.dimension() << std::endl;
 
-  many_body_operator<complex_time_expr> op;
-  op = -1.0_te*c_dag<complex_time_expr>("up",0)*c_dag<complex_time_expr>("down",1)*c<complex_time_expr>("up",1)*c<complex_time_expr>("down",0);
+  many_body_operator<c_time_expr> op;
+  op = -1.0_te*c_dag<c_time_expr>("up",0)*c_dag<c_time_expr>("down",1)*c<c_time_expr>("up",1)*c<c_time_expr>("down",0);
   // Spin-flips
-  op += I*("2*t^2"_te*c_dag<complex_time_expr>("down",1)*c<complex_time_expr>("up",1));
-  op += I*("2*t^2"_te*c_dag<complex_time_expr>("up",0)*c<complex_time_expr>("down",0));
+  op += I*("2*t^2"_te*c_dag<c_time_expr>("down",1)*c<c_time_expr>("up",1));
+  op += I*("2*t^2"_te*c_dag<c_time_expr>("up",0)*c<c_time_expr>("down",0));
 
   double t = 0.2;
 
@@ -212,12 +211,12 @@ int main() {
   st1(9) = 1.0; // 0110
   std::cout << "old state is: " << st1 << std::endl;
   std::cout << "operator is: " << op << std::endl;
-  auto imp_op = imperative_operator<hilbert_space,complex_time_expr>(op,FOPS);
+  auto imp_op = imperative_operator<hilbert_space,c_time_expr>(op,FOPS);
   std::cout << "new state is (t=" << t << "): " << imp_op(st1,t) << std::endl;
 
   // precompute imp_op at t=0.3
   t = 0.3;
-  imp_op.update_coeffs([t](complex_time_expr & M){ M = M(t);});
+  imp_op.update_coeffs([t](c_time_expr & M){ M = M(t);});
   std::cout << "new state is (t=" << t << "): " << imp_op(st1,0) << std::endl;
   }
 
