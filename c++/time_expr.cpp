@@ -51,33 +51,33 @@ auto time_expr::operator-() const -> time_expr
     return time_expr("-(" + str + ")");
 }
 
-auto time_expr::operator=(const time_expr& te) -> time_expr
+auto time_expr::operator=(const time_expr& te) -> time_expr &
 {
     this->str = te.str;
     parser.compile(str,expr);
     return *this;
 }
 
-auto time_expr::operator=(std::string const& str) -> time_expr
+auto time_expr::operator=(std::string const& str) -> time_expr &
 {
     this->str = str;
     parser.compile(str,expr);
     return *this;
 }
 
-auto time_expr::operator=(const char* expr) -> time_expr
+auto time_expr::operator=(const char* expr) -> time_expr &
 {
     *this = std::string(expr);
     return *this;
 }
 
-auto time_expr::operator=(double r) -> time_expr
+auto time_expr::operator=(double r) -> time_expr &
 {
     *this = boost::lexical_cast<std::string>(r);
     return *this;
 }
 
-auto time_expr::operator+=(const time_expr& te) -> time_expr
+auto time_expr::operator+=(const time_expr& te) -> time_expr &
 {
     str = "(" + str + ")+(" + te.str + ")";
     parser.compile(str,expr);
@@ -86,7 +86,7 @@ auto time_expr::operator+=(const time_expr& te) -> time_expr
     return *this;
 }
 
-auto time_expr::operator-=(const time_expr& te) -> time_expr
+auto time_expr::operator-=(const time_expr& te) -> time_expr &
 {
     str = "(" + str + ")-(" + te.str + ")";
     parser.compile(str,expr);
@@ -95,7 +95,7 @@ auto time_expr::operator-=(const time_expr& te) -> time_expr
     return *this;
 }
 
-auto time_expr::operator*=(const time_expr& te) -> time_expr
+auto time_expr::operator*=(const time_expr& te) -> time_expr &
 {
     str = "(" + str + ")*(" + te.str + ")";
     parser.compile(str,expr);
@@ -104,7 +104,7 @@ auto time_expr::operator*=(const time_expr& te) -> time_expr
     return *this;
 }
 
-auto time_expr::operator/=(const time_expr& te) -> time_expr
+auto time_expr::operator/=(const time_expr& te) -> time_expr &
 {
     str = "(" + str + ")/(" + te.str + ")";
     parser.compile(str,expr);

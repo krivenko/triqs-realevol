@@ -32,15 +32,15 @@ public:
 
     time_expr operator-() const;
 
-    time_expr operator=(time_expr const& te);
-    time_expr operator=(std::string const& str);
-    time_expr operator=(const char* str);
-    time_expr operator=(double r);
+    time_expr & operator=(time_expr const& te);
+    time_expr & operator=(std::string const& str);
+    time_expr & operator=(const char* str);
+    time_expr & operator=(double r);
 
-    time_expr operator+=(time_expr const& te);
-    time_expr operator-=(time_expr const& te);
-    time_expr operator*=(time_expr const& te);
-    time_expr operator/=(time_expr const& te);
+    time_expr & operator+=(time_expr const& te);
+    time_expr & operator-=(time_expr const& te);
+    time_expr & operator*=(time_expr const& te);
+    time_expr & operator/=(time_expr const& te);
     bool operator==(time_expr const& te) const;
 
     double operator()(double t) const;
