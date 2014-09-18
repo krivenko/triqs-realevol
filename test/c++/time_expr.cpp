@@ -6,7 +6,7 @@
 #include <boost/archive/text_iarchive.hpp>
 
 #include "time_expr.hpp"
-#include "callable_complex.hpp"
+#include "c_time_expr.hpp"
 #include "uniform_mesh.hpp"
 
 using namespace realevol;
@@ -118,7 +118,7 @@ int main()
     }
     {
     // Test complex-valued expressions
-    using expr_t = callable_complex<time_expr>;
+    using expr_t = c_time_expr;
 
     const std::complex<double> I(0,1);
 
@@ -172,10 +172,10 @@ int main()
 
     // Addition of expressions
     expr_t te1pte2 = te1 + te2;
-    expr_t te1phalf = te1 + expr_t(0.5);
-    expr_t halfpte2 = expr_t(0.5) + te2;
-    expr_t te1pihalf = te1 + expr_t(0.5*I);
-    expr_t ihalfpte2 = expr_t(0.5*I) + te2;
+    expr_t te1phalf = te1 + 0.5;
+    expr_t halfpte2 = 0.5 + te2;
+    expr_t te1pihalf = te1 + 0.5*I;
+    expr_t ihalfpte2 = 0.5*I + te2;
 
     for(int i = 0; i < 4; ++i){
         if(std::abs(te1pte2(T[i]) - (TE1_res[i]+TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
@@ -187,10 +187,10 @@ int main()
 
     // Subtraction of expressions
     expr_t te1mte2 = te1 - te2;
-    expr_t te1mhalf = te1 - expr_t(0.5);
-    expr_t halfmte2 = expr_t(0.5) - te2;
-    expr_t te1mihalf = te1 - expr_t(0.5*I);
-    expr_t ihalfmte2 = expr_t(0.5*I) - te2;
+    expr_t te1mhalf = te1 - 0.5;
+    expr_t halfmte2 = 0.5 - te2;
+    expr_t te1mihalf = te1 - 0.5*I;
+    expr_t ihalfmte2 = 0.5*I - te2;
     for(int i = 0; i < 4; ++i){
         if(std::abs(te1mte2(T[i]) - (TE1_res[i]-TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
         if(std::abs(te1mhalf(T[i]) - (TE1_res[i]-0.5)) >= 1e-10) return EXIT_FAILURE;
@@ -201,10 +201,10 @@ int main()
 
     // Multiplication of expressions
     expr_t te1ppte2 = te1 * te2;
-    expr_t te1pphalf = te1 * expr_t(0.5);
-    expr_t halfppte2 = expr_t(0.5) * te2;
-    expr_t te1ppihalf = te1 * expr_t(0.5*I);
-    expr_t ihalfppte2 = expr_t(0.5*I) * te2;
+    expr_t te1pphalf = te1 * 0.5;
+    expr_t halfppte2 = 0.5 * te2;
+    expr_t te1ppihalf = te1 * 0.5*I;
+    expr_t ihalfppte2 = 0.5*I * te2;
     for(int i = 0; i < 4; ++i){
         if(std::abs(te1ppte2(T[i]) - (TE1_res[i]*TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
         if(std::abs(te1pphalf(T[i]) - (TE1_res[i]*0.5)) >= 1e-10) return EXIT_FAILURE;
@@ -215,10 +215,10 @@ int main()
 
     // Division of expressions 
     expr_t te1dte2 = te1 / te2;
-    expr_t te1dhalf = te1 / expr_t(0.5);
-    expr_t halfdte2 = expr_t(0.5) / te2;
-    expr_t te1dihalf = te1 / expr_t(0.5*I);
-    expr_t ihalfdte2 = expr_t(0.5*I) / te2;
+    expr_t te1dhalf = te1 / 0.5;
+    expr_t halfdte2 = 0.5 / te2;
+    expr_t te1dihalf = te1 / (0.5*I);
+    expr_t ihalfdte2 = (0.5*I) / te2;
     for(int i = 0; i < 4; ++i){
         if(std::abs(te1dte2(T[i]) - (TE1_res[i]/TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
         if(std::abs(te1dhalf(T[i]) - (TE1_res[i]/0.5)) >= 1e-10) return EXIT_FAILURE;
@@ -235,6 +235,13 @@ int main()
     try_reduce_to_constant(te1t, m);
     if(!is_constant(te0t)) return EXIT_FAILURE;
     if(is_constant(te1t)) return EXIT_FAILURE;
+
+    // Test user-defined literals
+    expr_t tel1 = "t^3-2*t";
+    expr_t tel2 = 0.3;
+    if(tel1 != "t^3-2*t"_cte) return EXIT_FAILURE;
+    if(tel2 != 0.3_cte) return EXIT_FAILURE;
+
     }
     return EXIT_SUCCESS;
 }

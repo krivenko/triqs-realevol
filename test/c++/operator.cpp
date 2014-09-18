@@ -8,7 +8,7 @@
 #include <boost/serialization/complex.hpp>
 
 #include "time_expr.hpp"
-#include "callable_complex.hpp"
+#include "c_time_expr.hpp"
 #include <triqs/operators/many_body_operator.hpp>
 
 using namespace realevol;
@@ -241,7 +241,7 @@ int main()
 
     {
     // Test complex-expression-valued operators
-    using scalar_t = callable_complex<time_expr>;
+    using scalar_t = c_time_expr;
     using operator_t = many_body_operator<scalar_t>;
 
     auto I = scalar_t{.0,1.0};
