@@ -10,6 +10,10 @@
 #include <triqs/utility/draft/numeric_ops.hpp>
 #include <triqs/utility/mini_vector.hpp>
 
+// Disable some features of ExprTk to speed up compilation
+#define exprtk_disable_comments
+#define exprtk_disable_break_continue
+#define exprtk_disable_string_capabilities
 #include "exprtk/exprtk.hpp"
 
 #include "mesh_base.hpp"
