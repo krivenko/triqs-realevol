@@ -4,6 +4,7 @@ from itertools import product
 # ctexpr module
 module = module_(full_name = "pytriqs.applications.realevol.ctexpr", doc = "Complex time-dependent expression")
 module.use_module("texpr")
+module.add_include("<complex>")
 module.add_include("<triqs/arrays.hpp>")
 module.add_include("c++/time_expr.hpp")
 module.add_include("c++/c_time_expr.hpp")
@@ -16,7 +17,7 @@ texpr = class_(
         c_type = "c_time_expr",
         c_type_absolute = "realevol::c_time_expr",
         is_printable= True,
-        arithmetic = ("algebra","with_unit","with_unary_minus","time_expr","double","std::string"),
+        arithmetic = ("algebra","with_unit","with_unary_minus","time_expr","double","std::string","std::complex<double>"),
         doc = "Complex time-dependent expression (ExprTk wrapper)"
         )
 

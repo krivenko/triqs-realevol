@@ -1,5 +1,5 @@
-from pytriqs.applications.realevol.texpr import *
-from pytriqs.applications.realevol.operators import *
+from pytriqs.applications.realevol.ctexpr import *
+from pytriqs.applications.realevol.coperators import *
 from itertools import product
 
 def test_commutators(Cd,C):
@@ -14,7 +14,7 @@ def test_anticommutators(Cd,C):
     for cdi, ci in product(Cd,C):
         print "{", cdi, ",", ci, "} =", cdi*ci + ci*cdi
 
-print "Real-expression-valued operators"
+print "Complex-expression-valued operators"
 print "====================================="
 
 # Commutation relations
@@ -34,18 +34,18 @@ print "y =", y
 
 print "-x=", -x
 print
-print "x + 2.0 =", x + 2.0
-print "2.0 + x =", 2.0 + x
-print "x - 2.0 =", x - 2.0
-print "2.0 - x =", 2.0 - x
-print "3.0*y =", 3.0*y
-print "y*3.0 =", y*3.0
-print "x + 2.0*t =", x + "2*t"
-print "2.0*t + x =", "2*t" + x
-print "x - 2.0*t =", x - "2.0*t"
-print "2.0*t - x =", "2.0*t" - x
-print "3.0*t*y =", "3.0*t"*y
-print "y*3.0*t =", y*"3.0*t"
+print "x + 2.0*I =", x + 2.0*1j 
+print "2.0*I + x =", 2.0*1j + x 
+print "x - 2.0*I =", x - 2.0*1j
+print "2.0*I - x =", 2.0*1j - x 
+print "3.0*I*y =", (3.0*1j)*y 
+print "y*3.0*I =", y*(3.0*1j) 
+print "x + 2.0*t*I =", x + texpr("2*t")*1j 
+print "2.0*t*I + x =", texpr("2*t")*1j + x 
+print "x - 2.0*t*I =", x - texpr("2*t")*1j 
+print "2.0*t*I - x =", texpr("2.0*t")*1j - x 
+print "3.0*t*I*y =", texpr("3.0*t")*1j*y 
+print "y*3.0*I*t =", y*texpr("3.0*t")*1j
 print "x + y =", x + y
 print "x - y =", x - y
 print "(x + y)*(x - y) =", (x + y)*(x - y)
@@ -57,7 +57,7 @@ N3 = N*N*N
 print "N =", N
 print "N^3 =", N3
 
-X = c_dag(1) * c_dag(2) * c(3) * c(4)
+X = 1j*c_dag(1) * c_dag(2) * c(3) * c(4)
 print
 print "X =", X
 print "dagger(X) =", dagger(X)
