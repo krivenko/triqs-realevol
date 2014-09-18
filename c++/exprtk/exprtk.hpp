@@ -15534,6 +15534,7 @@ namespace exprtk
          }
       }
 
+      #ifndef exprtk_disable_string_capabilities
       inline expression_node_ptr parse_string()
       {
          const std::string symbol = current_token_.value;
@@ -15655,6 +15656,7 @@ namespace exprtk
 
          return result;
       }
+      #endif
 
       inline expression_node_ptr parse_vector()
       {
@@ -17132,6 +17134,7 @@ namespace exprtk
             return node_allocator_->allocate<literal_node_t>(v);
          }
 
+         #ifndef exprtk_disable_string_capabilities
          inline expression_node_ptr operator()(const std::string& s) const
          {
             return node_allocator_->allocate<string_literal_node_t>(s);
@@ -17146,6 +17149,7 @@ namespace exprtk
          {
             return node_allocator_->allocate_tt<const_string_range_node_t>(s,rp);
          }
+         #endif
 
          inline bool unary_optimizable(const details::operator_type& operation) const
          {
@@ -23708,7 +23712,7 @@ namespace exprtk
             return error_node();
          }
          #else
-         inline expression_node_ptr synthesize_string_expression(const details::operator_type&, expression_node_ptr (&)[2])
+         inline expression_node_ptr synthesize_string_expression(const details::operator_type&, expression_node_ptr (&branch)[2])
          {
             details::free_all_nodes(*node_allocator_,branch);
             return error_node();
@@ -23807,7 +23811,7 @@ namespace exprtk
                return error_node();
          }
          #else
-         inline expression_node_ptr synthesize_string_expression(const details::operator_type&, expression_node_ptr (&)[3])
+         inline expression_node_ptr synthesize_string_expression(const details::operator_type&, expression_node_ptr (&branch)[3])
          {
             details::free_all_nodes(*node_allocator_,branch);
             return error_node();
