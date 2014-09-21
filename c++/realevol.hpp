@@ -21,8 +21,9 @@ template<typename Value> using dict_t = std::map<std::string,Value>;
 template<typename Mesh, bool ComplexOperators = false>
 class solver {
 
-    using results_t = dict_t<mesh_container<Mesh,double>>;
+    using results_t = dict_t<mesh_container<double,Mesh>>;
 
+    fundamental_operator_set fops;
     results_t _results;
     boost::mpi::communicator comm;      // define the communicator, here MPI_COMM_WORLD
 
@@ -34,7 +35,7 @@ public:
         many_body_operator<time_expr>
     >::type;
 
-    solver();
+    solver(std::vector<std::string> const& operator_indices);
 
     void solve(operator_t h, parameters_t params, dict_t<operator_t> observables = {});
 
