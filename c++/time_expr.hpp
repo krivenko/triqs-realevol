@@ -102,7 +102,7 @@ bool try_reduce_to_constant(Expr& te, Mesh const& m)
 
 namespace triqs { namespace utility {
 
-inline bool is_zero(realevol::time_expr const& te) { return te.is_zero(); }
+inline bool is_zero(realevol::time_expr const& te, double = 0 /* neglected */) { return te.is_zero(); }
 inline realevol::time_expr _conj(realevol::time_expr const& te) { return te; }
 
 }}

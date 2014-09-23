@@ -80,7 +80,7 @@ inline c_time_expr operator ""_cte(const char* expr, std::size_t) { return c_tim
 
 namespace triqs { namespace utility {
 
-inline bool is_zero(realevol::c_time_expr const& cte) { return cte.is_zero(); }
+inline bool is_zero(realevol::c_time_expr const& cte, double = 0 /* neglected */) { return cte.is_zero(); }
 inline realevol::c_time_expr _conj(realevol::c_time_expr const& cte) { return {cte.real(),-cte.imag()}; }
 
 }}
