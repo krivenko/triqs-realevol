@@ -14,9 +14,9 @@ foreach(ext texpr ctexpr meshes operators coperators solver)
     triqs_set_rpath_for_target(${ext})
 endforeach()
 
-add_dependencies(ctexpr texpr)
-add_dependencies(operators texpr)
-add_dependencies(coperators ctexpr)
+add_dependencies(python_wrap_ctexpr python_wrap_texpr)
+add_dependencies(python_wrap_operators python_wrap_texpr)
+add_dependencies(python_wrap_coperators python_wrap_ctexpr)
 
 #configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.py.in ${CMAKE_BINARY_DIR}/pytriqs/${python_destination}/version.py)
 #install (FILES ${CMAKE_BINARY_DIR}/pytriqs/${python_destination}/version.py DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${python_destination})
