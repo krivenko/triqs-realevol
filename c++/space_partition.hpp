@@ -4,6 +4,7 @@
 #include <map>
 #include <utility>
 #include <limits>
+#include <triqs/utility/draft/numeric_ops.hpp>
 #include <boost/pending/disjoint_sets.hpp>
 
 namespace realevol {
@@ -23,8 +24,6 @@ template <typename StateType, typename OperatorType> class space_partition {
 
  using block_mapping_t = std::set<std::pair<index_t,index_t>>;
 
- static constexpr amplitude_t tolerance = std::numeric_limits<amplitude_t>::epsilon();
-
  space_partition(state_t const& st, operator_t const& H)
     : subspaces(st.size()), tmp_state(make_zero_state(st)) {
 
@@ -37,7 +36,7 @@ template <typename StateType, typename OperatorType> class space_partition {
 
    // Iterate over non-zero final amplitudes
    foreach(final_state, [&](index_t f, amplitude_t amplitude) {
-    if (std::fabs(amplitude) < tolerance) return;
+    if (triqs::utility::is_zero(amplitude)) return;
     auto i_subspace = subspaces.find_set(i);
     auto f_subspace = subspaces.find_set(f);
     if (i_subspace != f_subspace) subspaces.link(i_subspace, f_subspace);
@@ -72,7 +71,7 @@ template <typename StateType, typename OperatorType> class space_partition {
 
    // Iterate over non-zero final amplitudes
    foreach(final_state, [&](index_t f, amplitude_t amplitude) {
-    if (std::fabs(amplitude) < tolerance) return;
+    if (triqs::utility::is_zero(amplitude)) return;
     auto f_subspace = subspaces.find_set(f);
     if((!diagonal_only) || i_subspace==f_subspace)
       mapping.insert(std::make_pair(i_subspace,f_subspace));

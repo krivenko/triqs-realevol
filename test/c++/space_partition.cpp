@@ -2,6 +2,7 @@
 
 #include <set>
 #include <vector>
+#include <array>
 #include <algorithm>
 #include <sstream>
 
@@ -19,6 +20,7 @@ using namespace triqs::utility;
 int main() {
 
  // 3 bands Kanamori
+ std::array<int,3> orb {0,1,2};
 
  // Parameters
  double mu = 0.7;
@@ -27,36 +29,36 @@ int main() {
 
  // basis of operators to use
  fundamental_operator_set fops;
- for (int o = 0; o < 3; ++o) {
-  fops.insert("up", o);
-  fops.insert("dn", o);
+ for (int o : orb) {
+  fops.insert("up",o);
+  fops.insert("dn",o);
  }
 
  // Hamiltonian
  many_body_operator<double> H;
- for (int o = 0; o < 3; ++o) {
-  H += -mu * (n("up", o) + n("dn", o));
+ for (int o : orb) {
+  H += -mu * (n("up",o) + n("dn",o));
  }
- for (int o = 0; o < 3; ++o) {
-  H += U * n("up", o) * n("dn", o);
+ for (int o : orb) {
+  H += U * n("up",o) * n("dn",o);
  }
- for (int o1 = 0; o1 < 3; ++o1)
-  for (int o2 = 0; o2 < 3; ++o2) {
+ for (int o1 : orb)
+  for (int o2 : orb) {
    if (o1 == o2) continue;
-   H += (U - 2 * J) * n("up", o1) * n("dn", o2);
+   H += (U - 2 * J) * n("up",o1) * n("dn",o2);
   }
- for (int o1 = 0; o1 < 3; ++o1)
-  for (int o2 = 0; o2 < 3; ++o2) {
+ for (int o1 : orb)
+  for (int o2 : orb) {
    if (o2 >= o1) continue;
-   H += (U - 3 * J) * n("up", o1) * n("up", o2);
-   H += (U - 3 * J) * n("dn", o1) * n("dn", o2);
+   H += (U - 3 * J) * n("up",o1) * n("up",o2);
+   H += (U - 3 * J) * n("dn",o1) * n("dn",o2);
   }
 
- for (int o1 = 0; o1 < 3; ++o1)
-  for (int o2 = 0; o2 < 3; ++o2) {
+ for (int o1 : orb)
+  for (int o2 : orb) {
    if (o1 == o2) continue;
-   H += -J * c_dag("up", o1) * c_dag("dn", o1) * c("up", o2) * c("dn", o2);
-   H += -J * c_dag("up", o1) * c_dag("dn", o2) * c("up", o2) * c("dn", o1);
+   H += -J * c_dag("up",o1) * c_dag("dn",o1) * c("up",o2) * c("dn",o2);
+   H += -J * c_dag("up",o1) * c_dag("dn",o2) * c("up",o2) * c("dn",o1);
   }
 
  // Hilbert space
