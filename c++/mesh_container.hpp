@@ -10,8 +10,6 @@
 #include <boost/serialization/vector.hpp>
 #include <triqs/utility/dressed_iterator.hpp>
 
-#include "mesh_base.hpp"
-
 namespace realevol {
 
 template<class T, class Mesh>
@@ -22,9 +20,6 @@ public:
     using mesh_t = Mesh;
     using base_t = std::vector<T>;
     using value_type = typename base_t::value_type;
-
-    static_assert(std::is_base_of<mesh_base<typename mesh_t::node_index_t, typename mesh_t::mesh_point_t,mesh_t>,mesh_t>::value,
-                  "Mesh is not derived from mesh_base");
 
     // vector-compatible constructors
     template<class... ValueConstructorArgs>
@@ -71,7 +66,7 @@ public:
 
     // Iterator over pairs mesh point-value pairs
     struct pair_t {
-        typename mesh_t::point_t mesh_point;
+        typename mesh_t::mesh_point_t mesh_point;
         value_type & value;
         pair_t(_iter const& it) : mesh_point(boost::get<0>(*it)), value(boost::get<1>(*it)) {}
     };

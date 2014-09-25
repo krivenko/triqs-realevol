@@ -11,7 +11,7 @@ template<
 
     using solution_mesh_container_t = SolutionMeshContainer;
     using mesh_t = typename solution_mesh_container_t::mesh_t;
-    using var_t = typename mesh_t::mesh_point_t;
+    using var_t = typename mesh_t::domain_pt_t;
     using value_t = typename solution_mesh_container_t::value_type;
     using rhs_t = RHSFunction;
 
@@ -20,7 +20,7 @@ template<
     void operator()(solution_mesh_container_t & solution, value_t const& initial_value)
     {
         // Step of a uniform mesh
-        var_t step = solution.get_mesh().get_step();
+        var_t step = solution.get_mesh().delta();
 
         // Number of unknown functions
         std::size_t N = initial_value.size();
@@ -37,7 +37,7 @@ template<
 
         while(true){
             // Value of the independent variable
-            var_t x = it->mesh_point.value;
+            var_t x = it->mesh_point;
 
             // Solution at this point
             value_t const& U(it->value);

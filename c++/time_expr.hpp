@@ -16,8 +16,6 @@
 #define exprtk_disable_string_capabilities
 #include "exprtk/exprtk.hpp"
 
-#include "mesh_base.hpp"
-
 namespace realevol {
 
 // Time-dependent expressions;
@@ -89,10 +87,10 @@ template<class Mesh, class Expr>
 bool try_reduce_to_constant(Expr& te, Mesh const& m)
 {
     auto it = m.begin();
-    auto value = te(it->value);
+    auto value = te(*it);
 
     for(it++; it != m.end(); it++)
-        if(!triqs::utility::is_zero(te(it->value) - value)) return false;
+        if(!triqs::utility::is_zero(te(*it) - value)) return false;
 
     te = Expr(value);
     return true;

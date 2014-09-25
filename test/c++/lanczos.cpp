@@ -6,13 +6,14 @@
 #include <triqs/arrays/vector.hpp>
 #include <triqs/arrays/blas_lapack/dot.hpp>
 #include <triqs/arrays/asserts.hpp>
+#include <triqs/gfs/meshes/segment.hpp>
 
-#include "uniform_mesh.hpp"
 #include "mesh_container.hpp"
 #include "fifo_mesh_container.hpp"
 
 using namespace realevol;
 using namespace triqs::arrays;
+using triqs::gfs::segment_mesh;
 
 const std::complex<double> I(0,1.0);
 
@@ -35,16 +36,16 @@ auto RHS = [](Vector const& sol, double t){
 };
 
 // Printing function
-auto printer = [](uniform_mesh<>::point_t mp, Vector const& x){
+auto printer = [](segment_mesh::mesh_point_t mp, Vector const& x){
     std::cout << std::fixed << std::setprecision(5)
-    << mp.value << "     " << x[0].real() << "     " << x[0].imag()
+    << double(mp) << "     " << x[0].real() << "     " << x[0].imag()
     << "     " << x[1].real() << "     " << x[1].imag()
     << std::endl; };
 
 int main()
 {
     // Time mesh on a segment [0;10.0] (201 points)
-    uniform_mesh<> mesh(0,10.0,201);
+    segment_mesh mesh(0,10.0,201);
 
     // Initial conditions
     Vector initial_values(2);

@@ -4,12 +4,13 @@
 #include <sstream>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <triqs/gfs/meshes/segment.hpp>
 
 #include "time_expr.hpp"
 #include "c_time_expr.hpp"
-#include "uniform_mesh.hpp"
 
 using namespace realevol;
+using triqs::gfs::segment_mesh;
 
 int main()
 {
@@ -97,7 +98,7 @@ int main()
     // Test try_reduce_to_constant()
     expr_t te0t("0*t"), te1t("1*t");
     if(is_constant(te0t) || is_constant(te1t)) return EXIT_FAILURE;
-    uniform_mesh<> m(0,100,101);
+    segment_mesh m(0,100,101);
     try_reduce_to_constant(te0t, m);
     try_reduce_to_constant(te1t, m);
     if(!is_constant(te0t)) return EXIT_FAILURE;
@@ -230,7 +231,7 @@ int main()
     // Test try_reduce_to_constant()
     expr_t te0t("0*t","2"), te1t("1*t","t^3");
     if(is_constant(te0t) || is_constant(te1t)) return EXIT_FAILURE;
-    uniform_mesh<> m(0,100,101);
+    segment_mesh m(0,100,101);
     try_reduce_to_constant(te0t, m);
     try_reduce_to_constant(te1t, m);
     if(!is_constant(te0t)) return EXIT_FAILURE;
