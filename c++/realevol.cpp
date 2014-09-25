@@ -1,5 +1,7 @@
 #include "realevol.hpp"
-#include "uniform_mesh.hpp"
+
+#include <triqs/gfs/domains/R.hpp>
+#include <triqs/gfs/meshes/segment.hpp>
 
 using namespace triqs::utility;
 
@@ -49,7 +51,7 @@ SOLVER_METHOD(void,help()) {
 
 // Explicit instantiations
 // Add more mesh types later if needed
-template class solver<uniform_mesh<>,false>;
-template class solver<uniform_mesh<>,true>;
+template class solver<triqs::gfs::segment_mesh,false>;
+template class solver<triqs::gfs::segment_mesh,true>;
 
 }

@@ -8,8 +8,6 @@
 #include <boost/tuple/tuple.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 
-#include "mesh_base.hpp"
-
 namespace realevol {
 
 template<class T, class Mesh>
@@ -20,9 +18,6 @@ public:
     using mesh_t = Mesh;
     using value_type = T;
     using size_type = typename std::deque<value_type>::size_type;
-
-    static_assert(std::is_base_of<mesh_base<typename mesh_t::node_index_t,typename mesh_t::value_t,mesh_t>,mesh_t>::value,
-                  "Mesh is not derived from mesh_base");
 
     struct overflow_t {
         std::function<void(fifo_mesh_container&)> overflow_handler;
@@ -47,7 +42,7 @@ public:
     }
 
     struct pair_t {
-        typename mesh_t::point_t mesh_point;
+        typename mesh_t::mesh_point_t mesh_point;
         value_type & value;
     };
 
@@ -90,7 +85,7 @@ public:
     template<typename ProcessorType>
     void process_front(ProcessorType processor, size_type n = 1) {
         for(int i=0; i<n && fifo.size()>0; ++i){
-            processor({front_at,mesh[front_at]},fifo.front());
+            processor({mesh,front_at},fifo.front());
             fifo.pop_front();
             ++front_at;
         }

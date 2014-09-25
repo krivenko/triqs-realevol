@@ -4,13 +4,14 @@
 
 #include <triqs/arrays/vector.hpp>
 
-#include "uniform_mesh.hpp"
+#include <triqs/gfs/meshes/segment.hpp>
 #include "mesh_container.hpp"
 #include "fifo_mesh_container.hpp"
 #include "runge_kutta.hpp"
 
 using namespace realevol;
 using namespace triqs::arrays;
+using triqs::gfs::segment_mesh;
 
 // Solve a motion equation of a classical harmonic oscillator with damping
 
@@ -29,13 +30,13 @@ auto RHS = [](Vector const& sol, double t){
 };
 
 // Printing function
-auto printer = [](uniform_mesh<>::point_t mp, Vector const& x){
-    std::cout << std::fixed << std::setprecision(5) << mp.value << "    " << x[Coordinate] << std::endl; }; 
+auto printer = [](segment_mesh::mesh_point_t mp, Vector const& x){
+    std::cout << std::fixed << std::setprecision(5) << double(mp) << "    " << x[Coordinate] << std::endl; }; 
 
 int main()
 {
     // Time mesh on a segment [0;20.0] (201 points)
-    uniform_mesh<> mesh(0,20.0,201);
+    segment_mesh mesh(0,20.0,201);
 
     // Initial conditions
     Vector initial_values(2);

@@ -2,24 +2,25 @@
 #include <cmath>
 #include <sstream>
 
-#include "uniform_mesh.hpp"
+#include <triqs/gfs/meshes/segment.hpp>
 #include "fifo_mesh_container.hpp"
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 
 using namespace realevol;
+using triqs::gfs::segment_mesh;
 
 template<class T> T sqr(T x) { return x*x; } 
 
-using mesh_t = uniform_mesh<>;
+using mesh_t = segment_mesh;
 using cont_t = fifo_mesh_container<int,mesh_t>;
 
 std::size_t pbs;
 void overflow_handler(cont_t & f)
 {
-    auto proc = [](mesh_t::point_t mp, cont_t::value_type v){
-        std::cout << "Processing element " << v << " at " << mp.value << std::endl;
+    auto proc = [](mesh_t::mesh_point_t mp, cont_t::value_type v){
+        std::cout << "Processing element " << v << " at " << double(mp) << std::endl;
     };
     f.process_front(proc,pbs);
 }
@@ -42,7 +43,7 @@ void run_test(std::size_t max_size, std::size_t proc_block_size, bool change_ele
             it->value = n;
         } else 
             std::cout << 999;
-        std::cout << " at " << it->mesh_point.value  << std::endl;
+        std::cout << " at " << double(it->mesh_point)  << std::endl;
         ++n;
     }
 }
