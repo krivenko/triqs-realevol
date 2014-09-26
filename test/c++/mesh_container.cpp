@@ -35,6 +35,7 @@ int main()
 
     if(!check_mesh_container(f1)) return EXIT_FAILURE;
 
+    // Test serialization
     std::stringstream ss;
     boost::archive::text_oarchive oar(ss);
     oar << f1;
@@ -43,6 +44,18 @@ int main()
     iar >> f2;
 
     if(!check_mesh_container(f2)) return EXIT_FAILURE;
+
+    // Test HDF5
+    triqs::h5::file hdf_file1("mesh_container.h5",H5F_ACC_TRUNC);
+    h5_write(hdf_file1, "container", f1);
+    hdf_file1.close();
+
+    mesh_container<double,segment_mesh> f3(m);
+    triqs::h5::file hdf_file2("mesh_container.h5",H5F_ACC_RDONLY);
+    h5_read(hdf_file2, "container", f3);
+    hdf_file2.close();
+
+    if(!check_mesh_container(f3)) return EXIT_FAILURE;
 
     return EXIT_SUCCESS;
 }

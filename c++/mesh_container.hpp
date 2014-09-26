@@ -97,9 +97,24 @@ private:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
-        ar & mesh;
         ar & boost::serialization::base_object<base_t>(*this);
+        ar & mesh;
     }
+
+    /// Write into HDF5
+    friend void h5_write(triqs::h5::group fg, std::string subgroup_name, mesh_container const &c) {
+        triqs::h5::group gr = fg.create_group(subgroup_name);
+        h5_write(gr, "vector", static_cast<base_t const&>(c));
+        h5_write(gr, "mesh", c.mesh);
+    }
+    /// Read from HDF5
+    friend void h5_read(triqs::h5::group fg, std::string subgroup_name, mesh_container &c) {
+        triqs::h5::group gr = fg.open_group(subgroup_name);
+        h5_read(gr, "vector", static_cast<base_t&>(c));
+        h5_read(gr, "mesh", c.mesh);
+        if(c.size() != c.mesh.size()) TRIQS_RUNTIME_ERROR << "Error reading from HDF5! Inconsistent sizes of the mesh and the data.";
+    }
+
 };
 
 }
