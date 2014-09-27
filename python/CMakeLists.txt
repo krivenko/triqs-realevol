@@ -7,7 +7,7 @@ set(python_destination applications/realevol)
 # make a local pytriqs copy
 triqs_prepare_local_pytriqs_merged_with_my_python(${python_destination})
 
-foreach(ext texpr ctexpr meshes operators coperators solver)
+foreach(ext texpr ctexpr meshes operators coperators)# solver)
     triqs_python_extension(${ext} ${python_destination})
     target_link_libraries(${ext} realevol_c)
     include_directories(${TRIQS_INCLUDE_ALL} ${CMAKE_SOURCE_DIR})

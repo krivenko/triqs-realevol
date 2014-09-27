@@ -19,6 +19,11 @@ int main()
     std::array<std::string,3> atoms {"1","2","3"};
     std::array<std::string,2> spins {"up","dn"};
 
+    std::set<std::string> all_indices;
+    for(auto a : atoms)
+        for(auto s : spins)
+            all_indices.insert(a+"-"+s);
+
     auto H = operator_t();
 
     // Chemical potential
@@ -39,6 +44,26 @@ int main()
     // Time mesh
     triqs::gfs::segment_mesh mesh(0,50.0,501);
 
+    // Solver object
+    using solver_t = solver<triqs::gfs::segment_mesh>;
+    solver_t S(all_indices);
+
+    // Parameters
+    auto params = solver_t::solve_parameters();
+
+    // Observables
+    dict_t<operator_t> observables;
+    observables["unity"] = operator_t() + 1.0; // ugly
+
+    // psi0: Sz=1/2
+    S.psi0({"1-up","2-up","3-dn"}) = 1.0;
+    S.solve(H,params,observables);
+    // TODO
+
+    // psi0: Sz=0
+    S.psi0().amplitudes()() = .0;
+    S.psi0({{"1-up"},{"1-dn"},{"2-up"},{"3-dn"}}) = 1.0;
+    S.solve(H,params,observables);
     // TODO
 
     return EXIT_SUCCESS;

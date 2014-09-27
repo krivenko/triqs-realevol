@@ -16,7 +16,7 @@ solver = class_(
         doc = "Solver class (version for real-valued operators)"
         )
 
-solver.add_constructor(signature="(std::vector<std::string> operator_indices)", doc="create an instance of Solver")
+solver.add_constructor(signature="(std::set<std::string> operator_indices)", doc="create an instance of Solver")
 module.add_class(solver)
 
 # Solver class (version for complex-valued operators)
@@ -28,7 +28,7 @@ csolver = class_(
         doc = "Solver class (version for complex-valued operators)"
         )
 
-csolver.add_constructor(signature="(std::vector<std::string> operator_indices)", doc="create an instance of Solver")
+csolver.add_constructor(signature="(std::set<std::string> operator_indices)", doc="create an instance of Solver")
 module.add_class(csolver)
 
 module.generate_code()
