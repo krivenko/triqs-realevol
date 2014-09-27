@@ -21,8 +21,7 @@ int main() {
   for (int i=0; i<2; ++i)
     for (int j=0; j<4; ++j)
       std::cout << "(" << i << "," << j << ") --> " << f1[{i,j}] << std::endl;
-  std::cout << "dim = " << f1.dimension() << std::endl;
-  std::cout << "n operators = " << f1.n_operators() << std::endl;
+  std::cout << "n operators = " << f1.size() << std::endl;
 
   std::cout << std::endl;
   fundamental_operator_set f2;
@@ -33,26 +32,26 @@ int main() {
   fundamental_operator_set f3;
   for (int i=0; i<4; ++i) f3.insert(i);
   std::cout << "2 --> " << f3[{2}] << std::endl;
-  std::cout << "dim = " << f3.dimension() << std::endl;
-  std::cout << "n operators = " << f3.n_operators() << std::endl;
+  std::cout << "n operators = " << f3.size() << std::endl;
 
   std::cout << std::endl;
   fundamental_operator_set f4;
   for (int i=0; i<2; ++i) f4.insert("up",i);
   for (int i=0; i<2; ++i) f4.insert("down",i);
   std::cout << "(down,0) --> " << f4[{"down",0}] << std::endl;
-  std::cout << "dim = " << f4.dimension() << std::endl;
-  std::cout << "n operators = " << f4.n_operators() << std::endl;
+  std::cout << "n operators = " << f4.size() << std::endl;
 
   std::cout << std::endl << "Part II: the complete_hilbert_space class" << std::endl << std::endl;
 
   hilbert_space h(f1);
-  std::cout << "dim = " << h.dimension() << std::endl;
+  std::cout << "dim = " << h.size() << std::endl;
   std::cout << "fock state for index 120 = " << h.get_fock_state(120) << std::endl;
   std::cout << "index of fock state 120 = " << h.get_state_index(h.get_fock_state(120)) << std::endl;
+  std::cout << "fock state for vacuum = " << h.get_fock_state(f1,{}) << std::endl;
+  std::cout << "fock state for c^+(0,1)c^+(1,3)|vac> = " << h.get_fock_state(f1,{{0,1},{1,3}}) << std::endl;
   hilbert_space h2;
   h2 = h;
-  std::cout << "dim = " << h.dimension() << std::endl;
+  std::cout << "dim = " << h.size() << std::endl;
   std::cout << std::endl;
 
   std::cout << std::endl << "Part III: the fock_state class" << std::endl << std::endl;
@@ -144,7 +143,7 @@ int main() {
   FOPS.insert("up",1);
   FOPS.insert("down",1);
   hilbert_space HS(FOPS);
-  std::cerr  << " HS dimension "<< HS.dimension() << std::endl;
+  std::cerr  << " HS dimension "<< HS.size() << std::endl;
 
   many_body_operator<double> quartic_op;
   quartic_op = -1.0*c_dag("up",0)*c_dag("down",1)*c("up",1)*c("down",0);
@@ -164,7 +163,7 @@ int main() {
   FOPS.insert("up",1);
   FOPS.insert("down",1);
   hilbert_space HS(FOPS);
-  std::cerr  << " HS dimension "<< HS.dimension() << std::endl;
+  std::cerr  << " HS dimension "<< HS.size() << std::endl;
 
   many_body_operator<time_expr> op;
   op = -1.0*c_dag<time_expr>("up",0)*c_dag<time_expr>("down",1)*c<time_expr>("up",1)*c<time_expr>("down",0);
@@ -197,7 +196,7 @@ int main() {
   FOPS.insert("up",1);
   FOPS.insert("down",1);
   hilbert_space HS(FOPS);
-  std::cerr  << " HS dimension "<< HS.dimension() << std::endl;
+  std::cerr  << " HS dimension "<< HS.size() << std::endl;
 
   many_body_operator<c_time_expr> op;
   op = -1.0_te*c_dag<c_time_expr>("up",0)*c_dag<c_time_expr>("down",1)*c<c_time_expr>("up",1)*c<c_time_expr>("down",0);
