@@ -22,12 +22,9 @@ template<
     lanczos(const rhs_t& hermitian_rhs /* must be Hermitian */, double gs_energy_convergence = 1e-10) :
         hermitian_rhs(hermitian_rhs), gs_energy_convergence(gs_energy_convergence) {}
 
-    void operator()(solution_mesh_container_t & solution, value_t const& initial_value, scalar_t rhs_prefactor = 1.0)
+    template<typename Iterator>
+    void operator()(Iterator first, Iterator last, scalar_t rhs_prefactor = 1.0)
     {
-        auto it = std::begin(solution);
-        // Set the initial value
-        it->value = initial_value;
-
         // Value of the independent variable
         var_t x;
 
@@ -38,24 +35,27 @@ template<
         // Lanczos worker object
         lanczos_worker<decltype(rhs_of_sol_only),value_t> lw(rhs_of_sol_only,gs_energy_convergence);
 
-        triqs::arrays::matrix<scalar_t> lanczos_exp(initial_value.size(),initial_value.size());
+        // Dimension of the problem
+        std::size_t N = (first->value).size();
+
+        triqs::arrays::matrix<scalar_t> lanczos_exp(N,N);
 
         while(true){
             // Value of the independent variable
-            var_t x = it->mesh_point;
+            var_t x = first->mesh_point;
 
             // Solution at current point
-            value_t const& U(it->value);
+            value_t const& U(first->value);
 
             // Construct the Krylov basis
             auto norm = std::sqrt(dot_product(U,U));
             lw(U/norm);
 
-            ++it;
-            if(it == std::end(solution)) break;
+            ++first;
+            if(first == last) break;
 
             // Step of the mesh
-            var_t step = it->mesh_point - x;
+            var_t step = first->mesh_point - x;
 
             // Construct the propagation exponent
             auto eigenvalues = lw.values();
@@ -68,7 +68,7 @@ template<
 
             // Propagate
             auto krylov_coeffs = norm * lanczos_exp(all, 0);
-            it->value = lw.krylov_2_fock(krylov_coeffs);
+            first->value = lw.krylov_2_fock(krylov_coeffs);
         }
     }
 

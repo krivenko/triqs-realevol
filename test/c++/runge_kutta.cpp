@@ -48,12 +48,13 @@ int main()
 
     // Solve the equation
     runge_kutta<decltype(solution1),decltype(RHS)> solver1(RHS);
-    solver1(solution1,initial_values);
+    solution1[0] = initial_values;
+    solver1(begin(solution1),end(solution1));
 
     // Print the solution
     std::cout << "========== Test I ==========" << std::endl;
     for(auto e : solution1) printer(e.mesh_point,e.value);
-
+/*
     // Sought solution (fifo mesh container)
     auto handler = [](fifo_mesh_container<Vector,decltype(mesh)> & c) { c.process_front(printer,5); };
     fifo_mesh_container<Vector,decltype(mesh)> solution2(mesh,{handler,10},2);
@@ -62,6 +63,6 @@ int main()
     runge_kutta<decltype(solution2),decltype(RHS)> solver2(RHS);
     std::cout << "========== Test II =========" << std::endl;
     solver2(solution2,initial_values);
-
+*/
     return EXIT_SUCCESS;
 }
