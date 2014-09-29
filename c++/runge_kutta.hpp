@@ -17,17 +17,17 @@ template<
 
     runge_kutta(const rhs_t& rhs) : rhs(rhs) {}
 
-    void operator()(solution_mesh_container_t & solution, value_t const& initial_value)
+    template<typename Iterator>
+    void operator()(Iterator first, Iterator last)
     {
         // Step of a uniform mesh
-        var_t step = solution.get_mesh().delta();
+#warning Reduce these 3 lines to 1, when #131 is fixed
+        auto second = first;
+        ++second;
+        var_t step = second->mesh_point - first->mesh_point;
 
         // Number of unknown functions
-        std::size_t N = initial_value.size();
-
-        // Set the initial value
-        auto it = std::begin(solution);
-        it->value = initial_value;
+        std::size_t N = (first->value).size();
 
         // Temporaries
         value_t rhs_arg(N), X1(N), X2(N), X3(N), X4(N);
@@ -36,11 +36,12 @@ template<
         auto rhs_of_var_only = std::bind(rhs, std::cref(rhs_arg), _1);
 
         while(true){
+
             // Value of the independent variable
-            var_t x = it->mesh_point;
+            var_t x = first->mesh_point;
 
             // Solution at this point
-            value_t const& U(it->value);
+            value_t const& U(first->value);
 
             // Stage 1
             rhs_arg = U;
@@ -58,10 +59,10 @@ template<
             rhs_arg = U + step*X3;
             X4 = rhs_of_var_only(x + step);
 
-            ++it;
-            if(it == std::end(solution)) break;
+            ++first;
+            if(first == last) break;
 
-            it->value = U + step/6.0*(X1 + 2.0*X2 + 2.0*X3 + X4);
+            first->value = U + step/6.0*(X1 + 2.0*X2 + 2.0*X3 + X4);
         }
     }
 

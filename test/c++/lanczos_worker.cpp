@@ -79,12 +79,12 @@ int main() {
     // Mixture of all 5 eigenstates
     psi0.push_back({I/sqrt(15.0),{sqrt(2.0/15.0)},{1.0/sqrt(5.0)},{2.0/sqrt(15.0)},{1.0/sqrt(3.0)}});
 
-    lanczos_worker<decltype(H), vector<std::complex<double>>> kw(H,1e-10);
+    lanczos_worker<decltype(H), vector<std::complex<double>>> lw(H,1e-10);
 
     for(int n = 0; n < 5; ++n){
         // Check dimensions of Krylov's subspaces
-        kw(psi0[n]);
-        if(kw.values().size() != n+1) return EXIT_FAILURE;
+        lw(psi0[n]);
+        if(lw.values().size() != n+1) return EXIT_FAILURE;
     }
     }
 
