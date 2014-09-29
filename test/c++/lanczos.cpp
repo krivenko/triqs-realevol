@@ -9,7 +9,7 @@
 #include <triqs/gfs/meshes/segment.hpp>
 
 #include "mesh_container.hpp"
-#include "fifo_mesh_container.hpp"
+#include "mesh_container_cyclic.hpp"
 
 using namespace realevol;
 using namespace triqs::arrays;
@@ -64,15 +64,28 @@ int main()
     std::cout << "========== Test I ==========" << std::endl;
     for(auto e : solution1) printer(e.mesh_point,e.value);
 
-    /*
-    // Sought solution (fifo mesh container)
-    auto handler = [](fifo_mesh_container<Vector,decltype(mesh)> & c) { c.process_front(printer,5); };
-    fifo_mesh_container<Vector,decltype(mesh)> solution2(mesh,{handler,10},2);
+    // Sought solution (cyclic container)
+    mesh_container_cyclic<Vector,decltype(mesh)> solution2(mesh,10,2);
 
     // Solve the equation & print the solution
-    lanczos<decltype(solution2),decltype(RHS)> solver2(RHS);
     std::cout << "========== Test II =========" << std::endl;
-    solver2(solution2,initial_values,I);*/
+    lanczos<decltype(solution2),decltype(RHS)> solver2(RHS);
+    solution2[0] = initial_values;
+
+    auto st_size = solution2.storage_size();
+    auto it1 = std::begin(solution2);
+    auto it2 = it1 + st_size;
+    while(true){
+        solver2(it1,it2,I);
+        std::for_each(it1,it2-1,[](decltype(solution2)::pair_t e){ printer(e.mesh_point,e.value); });
+
+        if(it2 == std::end(solution2)) break;
+
+        it1 += st_size-1;
+        it2 += st_size-1;
+        if(it2 > std::end(solution2)) it2 = std::end(solution2);
+    }
+    printer((it2-1)->mesh_point,(it2-1)->value);
 
     return EXIT_SUCCESS;
 }

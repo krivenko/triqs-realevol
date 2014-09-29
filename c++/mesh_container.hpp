@@ -28,7 +28,7 @@ public:
 
     mesh_container(const mesh_t& mesh, base_t const& value) : base_t(value), mesh(mesh) {}
 
-    const mesh_t get_mesh() const {
+    mesh_t const& get_mesh() const {
         return mesh;
     }
 
@@ -47,7 +47,7 @@ public:
 
     // Iterator over pairs mesh point-value pairs (const)
     struct const_pair_t {
-        typename mesh_t::point_t mesh_point;
+        typename mesh_t::mesh_point_t mesh_point;
         value_type const& value;
         const_pair_t(_const_iter const& it) : mesh_point(boost::get<0>(*it)), value(boost::get<1>(*it)) {}
     };
