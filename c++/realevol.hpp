@@ -9,13 +9,14 @@
 #include <triqs/parameters.hpp>
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/h5/map.hpp>
-#include <triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp>
-#include <triqs/draft/hilbert_space_tools/hilbert_space.hpp>
-#include <triqs/draft/hilbert_space_tools/state.hpp>
 
 #include "mesh_container.hpp"
 #include "time_expr_r.hpp"
 #include "time_expr_c.hpp"
+
+#include <triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp>
+#include <triqs/draft/hilbert_space_tools/hilbert_space.hpp>
+#include <triqs/draft/hilbert_space_tools/state.hpp>
 
 namespace realevol {
 
@@ -38,11 +39,8 @@ class solver {
 
 public:
 
-    using operator_t = typename std::conditional<
-        ComplexOperators,
-        many_body_operator<time_expr_c>,
-        many_body_operator<time_expr_r>
-    >::type;
+    using operator_coeff_t = typename std::conditional<ComplexOperators,time_expr_c,time_expr_r>::type;
+    using operator_t = many_body_operator<operator_coeff_t>;
 
     solver(std::set<std::string> const& operator_indices);
 

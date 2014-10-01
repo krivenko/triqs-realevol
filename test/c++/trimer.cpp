@@ -50,6 +50,7 @@ int main()
 
     // Parameters
     auto params = solver_t::solve_parameters();
+    params["verbosity"] = 2;
 
     // Observables
     dict_t<operator_t> observables;
