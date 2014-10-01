@@ -1,3 +1,5 @@
-from realevol import texpr, is_constant, is_zero
+from realevol import texpr
+from realevol import rmesh
+from realevol import is_constant, is_zero
 
-__all__ = ['texpr','is_constant','is_zero']
+__all__ = ['texpr','rmesh','is_constant','is_zero']
