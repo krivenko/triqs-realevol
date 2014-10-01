@@ -13,7 +13,5 @@ target_link_libraries(realevol_core realevol_c)
 include_directories(${TRIQS_INCLUDE_ALL} ${CMAKE_SOURCE_DIR})
 triqs_set_rpath_for_target(realevol_core)
 
-#add_dependencies(python_wrap_operators python_wrap_texpr)
-
 #configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.py.in ${CMAKE_BINARY_DIR}/pytriqs/${python_destination}/version.py)
 #install (FILES ${CMAKE_BINARY_DIR}/pytriqs/${python_destination}/version.py DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${python_destination})
