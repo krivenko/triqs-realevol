@@ -1,4 +1,5 @@
 from realevol_core import texpr_r, texpr_c
+from realevol_core import rmesh
 from realevol_core import is_constant, is_zero
 
 class texpr(object):
