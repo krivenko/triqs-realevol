@@ -6,8 +6,8 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <triqs/gfs/meshes/segment.hpp>
 
-#include "time_expr.hpp"
-#include "c_time_expr.hpp"
+#include "time_expr_r.hpp"
+#include "time_expr_c.hpp"
 
 using namespace realevol;
 using triqs::gfs::segment_mesh;
@@ -16,7 +16,7 @@ int main()
 {
     {
     // Test real-valued expressions
-    using expr_t = time_expr;
+    using expr_t = time_expr_r;
 
     expr_t te1("t^2"), te2("t + sin(pi/2)"), te3("sqrt(9.0) + 1.5");
 
@@ -119,7 +119,7 @@ int main()
     }
     {
     // Test complex-valued expressions
-    using expr_t = c_time_expr;
+    using expr_t = time_expr_c;
 
     const std::complex<double> I(0,1);
 

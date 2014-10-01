@@ -7,8 +7,8 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/serialization/complex.hpp>
 
-#include "time_expr.hpp"
-#include "c_time_expr.hpp"
+#include "time_expr_r.hpp"
+#include "time_expr_c.hpp"
 #include <triqs/operators/many_body_operator.hpp>
 
 using namespace realevol;
@@ -177,7 +177,7 @@ int main()
 
     {
     // Test real-expression-valued operators
-    using scalar_t = time_expr;
+    using scalar_t = time_expr_r;
     using operator_t = many_body_operator<scalar_t>;
 
     std::cout << std::endl;
@@ -241,7 +241,7 @@ int main()
 
     {
     // Test complex-expression-valued operators
-    using scalar_t = c_time_expr;
+    using scalar_t = time_expr_c;
     using operator_t = many_body_operator<scalar_t>;
 
     auto I = scalar_t{.0,1.0};

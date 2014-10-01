@@ -2,7 +2,7 @@
 #include <array>
 #include <triqs/gfs/meshes/segment.hpp>
 
-#include "../c++/time_expr.hpp"
+#include "../c++/time_expr_r.hpp"
 #include "../c++/realevol.hpp"
 
 using namespace realevol;
@@ -10,9 +10,9 @@ using namespace realevol;
 double hbar = 1.0;
 double U = 1.0;
 double mu = 0.5*U;
-time_expr V = "0.3*(1 - exp(-4*t))";
+time_expr_r V = "0.3*(1 - exp(-4*t))";
 
-using operator_t = many_body_operator<time_expr>;
+using operator_t = many_body_operator<time_expr_r>;
 
 int main()
 {
@@ -29,15 +29,15 @@ int main()
     // Chemical potential
     for(auto a : atoms)
         for(auto s : spins)
-            H += -mu*n<time_expr>(a+"-"+s);
+            H += -mu*n<time_expr_r>(a+"-"+s);
     // Hubbard interaction
-    for(auto a : atoms) H += U*n<time_expr>(a+"-up")*n<time_expr>(a+"-dn");
+    for(auto a : atoms) H += U*n<time_expr_r>(a+"-up")*n<time_expr_r>(a+"-dn");
     // Hopping between atoms
     for(auto s : spins){
         for(auto a1 : atoms)
         for(auto a2 : atoms){
             if(a1==a2) continue;
-            H += V*c_dag<time_expr>(a1+"-"+s)*c<time_expr>(a2+"-"+s);
+            H += V*c_dag<time_expr_r>(a1+"-"+s)*c<time_expr_r>(a2+"-"+s);
         }
     }
 
