@@ -1,4 +1,4 @@
-from pytriqs.applications.realevol.realevol import texpr_r, texpr_c
+from pytriqs.applications.realevol.realevol import texpr
 from pytriqs.applications.realevol.realevol import use_complex_operators, Operator, c, c_dag, n, dagger
 from itertools import product
 
@@ -86,18 +86,18 @@ print "y =", y
 
 print "-x=", -x
 print
-print "x + 2.0*I =", x + 2.0*1j 
-print "2.0*I + x =", 2.0*1j + x 
+print "x + 2.0*I =", x + 2.0*1j
+print "2.0*I + x =", 2.0*1j + x
 print "x - 2.0*I =", x - 2.0*1j
-print "2.0*I - x =", 2.0*1j - x 
-print "3.0*I*y =", (3.0*1j)*y 
-print "y*3.0*I =", y*(3.0*1j) 
-print "x + 2.0*t*I =", x + texpr_c("2*t")*1j 
-print "2.0*t*I + x =", texpr_c("2*t")*1j + x 
-print "x - 2.0*t*I =", x - texpr_c("2*t")*1j 
-print "2.0*t*I - x =", texpr_c("2.0*t")*1j - x 
-print "3.0*t*I*y =", texpr_c("3.0*t")*1j*y 
-print "y*3.0*I*t =", y*texpr_c("3.0*t")*1j
+print "2.0*I - x =", 2.0*1j - x
+print "3.0*I*y =", (3.0*1j)*y
+print "y*3.0*I =", y*(3.0*1j)
+print "x + 2.0*t*I =", x + texpr("2*t",0)*1j
+print "2.0*t*I + x =", texpr("2*t",0)*1j + x
+print "x - 2.0*t*I =", x - texpr("2*t",0)*1j
+print "2.0*t*I - x =", texpr("2.0*t",0)*1j - x
+print "3.0*t*I*y =", texpr("3.0*t",0)*1j*y
+print "y*3.0*I*t =", y*texpr("3.0*t",0)*1j
 print "x + y =", x + y
 print "x - y =", x - y
 print "(x + y)*(x - y) =", (x + y)*(x - y)
