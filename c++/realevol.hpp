@@ -14,8 +14,8 @@
 #include <triqs/draft/hilbert_space_tools/state.hpp>
 
 #include "mesh_container.hpp"
-#include "time_expr.hpp"
-#include "c_time_expr.hpp"
+#include "time_expr_r.hpp"
+#include "time_expr_c.hpp"
 
 namespace realevol {
 
@@ -40,8 +40,8 @@ public:
 
     using operator_t = typename std::conditional<
         ComplexOperators,
-        many_body_operator<c_time_expr>,
-        many_body_operator<time_expr>
+        many_body_operator<time_expr_c>,
+        many_body_operator<time_expr_r>
     >::type;
 
     solver(std::set<std::string> const& operator_indices);
