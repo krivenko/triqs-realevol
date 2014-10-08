@@ -123,31 +123,31 @@ module.add_function(signature="many_body_operator<time_expr_c> dagger(many_body_
                     doc="Hermitian conjugate")
 
 ## Solver class
-#module.add_include("c++/realevol.hpp")
+module.add_include("c++/realevol.hpp")
 
-## Solver class (version for real-valued operators)
-#solver_r = class_(
-        #py_type = "Solver_r",
-        #c_type = "solver<segment_mesh,false>",
-        #c_type_absolute = "realevol::solver<segment_mesh,false>",
-        #is_printable= False,
-        #doc = "Solver class (version for real-valued operators)"
-        #)
+# Solver class (version for real-valued operators)
+solver_r = class_(
+        py_type = "Solver_r",
+        c_type = "solver<segment_mesh,false>",
+        c_type_absolute = "realevol::solver<segment_mesh,false>",
+        is_printable= False,
+        doc = "Solver class (version for real-valued operators)"
+        )
 
-#solver_r.add_constructor(signature="(std::set<std::string> operator_indices)", doc="create an instance of Solver")
-#module.add_class(solver_r)
+solver_r.add_constructor(signature="(std::set<std::string> operator_indices)", doc="create an instance of Solver")
+module.add_class(solver_r)
 
-## Solver class (version for complex-valued operators)
-#solver_c = class_(
-        #py_type = "Solver_c",
-        #c_type = "solver<segment_mesh,true>",
-        #c_type_absolute = "realevol::solver<segment_mesh,true>",
-        #is_printable= False,
-        #doc = "Solver class (version for complex-valued operators)"
-        #)
+# Solver class (version for complex-valued operators)
+solver_c = class_(
+        py_type = "Solver_c",
+        c_type = "solver<segment_mesh,true>",
+        c_type_absolute = "realevol::solver<segment_mesh,true>",
+        is_printable= False,
+        doc = "Solver class (version for complex-valued operators)"
+        )
 
-#solver_c.add_constructor(signature="(std::set<std::string> operator_indices)", doc="create an instance of Solver")
-#module.add_class(solver_c)
+solver_c.add_constructor(signature="(std::set<std::string> operator_indices)", doc="create an instance of Solver")
+module.add_class(solver_c)
 
 # Generate the module
 module.generate_code()
