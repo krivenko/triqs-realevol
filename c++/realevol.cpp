@@ -5,6 +5,7 @@
 #include <triqs/draft/hilbert_space_tools/imperative_operator.hpp>
 
 #include "space_partition.hpp"
+#include "schroedinger_worker.hpp"
 
 using namespace triqs::utility;
 
@@ -49,7 +50,11 @@ SOLVER_METHOD(void,solve(operator_t h, parameters_t params, dict_t<operator_t> o
         }
     }
 
-    // TODO
+    // Construct workers to solve Schroedinger equation
+//     for(auto sp : subspaces) {
+//         schroedinger_worker<> worker();
+//     }
+
 }
 
 SOLVER_METHOD(parameters_t,solve_parameters()) {
@@ -61,6 +66,7 @@ SOLVER_METHOD(parameters_t,solve_parameters()) {
     pdef.add_field("verbosity", (world.rank()==0 ? int(1) : int(0)), "Verbosity level")
         //.add_field("mesh", triqs::params::no_default<Mesh>(), "Time mesh to solve the Schroedinger equation")
         .add_field("planck_constant", double(1.0), "Planck constant");
+        //.add_field("ode_solve_method", triqs::params::no_default<ode_solve_method>(), "Method to solve Schroedinger equation");
         //.add_field("mesh_downsampling", dict_t<int>({}), "Mesh downsampling factors for the observables");
 
     return pdef;
