@@ -3,9 +3,14 @@
 #include <triqs/gfs/meshes/segment.hpp>
 
 #include "../c++/time_expr_r.hpp"
-#include "../c++/realevol.hpp"
+#include "../c++/solver.hpp"
 
 using namespace realevol;
+
+using triqs::utility::many_body_operator;
+using triqs::utility::c;
+using triqs::utility::c_dag;
+using triqs::utility::n;
 
 double hbar = 1.0;
 double U = 1.0;
@@ -49,22 +54,22 @@ int main()
     solver_t S(all_indices);
 
     // Parameters
-    auto params = solver_t::solve_parameters();
-    params["verbosity"] = 2;
+    auto params = solve_parameters_t<operator_t,triqs::gfs::segment_mesh>(H,mesh);
+    params.verbosity = 2;
 
     // Observables
-    dict_t<operator_t> observables;
-    observables["unity"] = operator_t() + 1.0; // ugly
+    std::map<std::string,operator_t> observables;
+    params.observables["unity"] = operator_t() + 1.0; // ugly
 
     // psi0: Sz=1/2
     S.psi0({"1-up","2-up","3-dn"}) = 1.0;
-    S.solve(H,params,observables);
+    S.solve(params);
     // TODO
 
     // psi0: Sz=0
     S.psi0().amplitudes()() = .0;
     S.psi0({{"1-up"},{"1-dn"},{"2-up"},{"3-dn"}}) = 1.0;
-    S.solve(H,params,observables);
+    S.solve(params);
     // TODO
 
     return EXIT_SUCCESS;
