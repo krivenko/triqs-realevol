@@ -18,11 +18,14 @@ struct solve_parameters_t {
  /// Planck constant
  double planck_constant = 1.0;
 
- // Time mesh to solve the Schroedinger equation
+ /// Time mesh to solve the Schroedinger equation
  Mesh mesh;
 
- //.add_field("ode_solve_method", triqs::params::no_default<ode_solve_method>(), "Method to solve Schroedinger equation");
- //.add_field("mesh_downsampling", dict_t<int>({}), "Mesh downsampling factors for the observables");
+ /// Method to solve the Schroedinger equation
+ enum ode_solve_method {runge_kutta, lanzcos} method = lanzcos;
+
+ /// Mesh downsampling factors for the observables
+ std::map<std::string,int> mesh_downsampling = (std::map<std::string,int>{});
 
  solve_parameters_t(OperatorType const& h, Mesh const& mesh) : h(h), mesh(mesh) {}
 };
