@@ -50,11 +50,11 @@ int main()
     triqs::gfs::segment_mesh mesh(0,50.0,501);
 
     // Solver object
-    using solver_t = solver<triqs::gfs::segment_mesh>;
+    using solver_t = solver<false>;
     solver_t S(all_indices);
 
     // Parameters
-    auto params = solve_parameters_t<operator_t,triqs::gfs::segment_mesh>(H,mesh);
+    auto params = solve_parameters_t<operator_t>(H,mesh);
     params.verbosity = 2;
 
     // Observables

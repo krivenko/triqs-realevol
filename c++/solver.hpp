@@ -9,6 +9,7 @@
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/h5/map.hpp>
 
+#include "any_mesh.hpp"
 #include "mesh_container.hpp"
 #include "time_expr_r.hpp"
 #include "time_expr_c.hpp"
@@ -27,14 +28,14 @@ using triqs::utility::state;
 
 using dcomplex = std::complex<double>;
 
-template<typename Mesh, bool ComplexOperators = false>
+template<bool ComplexOperators = false>
 class solver {
 
     fundamental_operator_set fops;
     hilbert_space hs;
     state<hilbert_space,dcomplex,false> init_state;
 
-    std::map<std::string,mesh_container<double,Mesh>> results;
+    std::map<std::string,any_mesh_container_t<double>> results;
 
     boost::mpi::communicator comm;      // define the communicator, here MPI_COMM_WORLD
 
@@ -46,7 +47,7 @@ public:
     solver(std::set<std::string> const& operator_indices);
 
     TRIQS_WRAP_ARG_AS_DICT
-    void solve(solve_parameters_t<operator_t,Mesh> const& p);
+    void solve(solve_parameters_t<operator_t> const& p);
 
     decltype(init_state) & psi0() { return init_state; }
 
