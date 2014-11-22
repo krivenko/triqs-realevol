@@ -3,7 +3,7 @@
 namespace realevol {
 
 // All the arguments of the solve function
-template<typename OperatorType, typename Mesh>
+template<typename OperatorType>
 struct solve_parameters_t {
 
  /// Hamiltonian
@@ -19,7 +19,7 @@ struct solve_parameters_t {
  double planck_constant = 1.0;
 
  /// Time mesh to solve the Schroedinger equation
- Mesh mesh;
+ any_mesh_t mesh;
 
  /// Method to solve the Schroedinger equation
  enum ode_solve_method {runge_kutta, lanzcos} method = lanzcos;
@@ -27,6 +27,6 @@ struct solve_parameters_t {
  /// Mesh downsampling factors for the observables
  std::map<std::string,int> mesh_downsampling = (std::map<std::string,int>{});
 
- solve_parameters_t(OperatorType const& h, Mesh const& mesh) : h(h), mesh(mesh) {}
+ solve_parameters_t(OperatorType const& h, any_mesh_t const& mesh) : h(h), mesh(mesh) {}
 };
 }

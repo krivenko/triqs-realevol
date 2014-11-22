@@ -3,7 +3,7 @@ from wrap_generator import *
 
 module = module_(full_name = "pytriqs.applications.realevol.meshes", doc = "Various time meshes")
 module.add_include("<triqs/arrays.hpp>")
-module.add_include("<triqs/gfs/meshes/segment.hpp>")
+module.add_include("c++/any_mesh.hpp")
 module.add_using("triqs::gfs::segment_mesh")
 
 # Regular mesh on a segment
