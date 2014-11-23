@@ -25,10 +25,13 @@ solver<ComplexOperators>::solver(std::set<indices_t> const& operator_indices) :
 template<typename SolverType>
 struct solve_visitor : public boost::static_visitor<results_t> {
 
-    SolverType const& S;
-    solve_parameters_t<typename SolverType::operator_t> const& p;
+    using operator_t = typename SolverType::operator_t;
+    using operator_coeff_t = typename SolverType::operator_coeff_t;
 
-    solve_visitor(SolverType const& S, solve_parameters_t<typename SolverType::operator_t> const& p) :
+    SolverType const& S;
+    solve_parameters_t<operator_t> const& p;
+
+    solve_visitor(SolverType const& S, solve_parameters_t<operator_t> const& p) :
         S(S), p(p) {}
 
     // Constructs and runs simulations for different time mesh types
@@ -43,8 +46,8 @@ struct solve_visitor : public boost::static_visitor<results_t> {
             }
         }
 
-        imperative_operator<hilbert_space,typename SolverType::operator_coeff_t,false> hamiltonian(p.h, S.fops);
-        state<hilbert_space,typename SolverType::operator_coeff_t,true> st(S.hs);
+        imperative_operator<hilbert_space,operator_coeff_t,false> hamiltonian(p.h, S.fops);
+        state<hilbert_space,operator_coeff_t,true> st(S.hs);
 
         // Split the Hilbert space
         space_partition<decltype(st),decltype(hamiltonian)> SP(st, hamiltonian);
@@ -65,7 +68,7 @@ struct solve_visitor : public boost::static_visitor<results_t> {
             }
         }
 
-        simulation<typename SolverType::operator_t,Mesh> sim;
+        simulation<operator_t,Mesh> sim(S.comm,subspaces,S.init_state,p);
 
         // TODO
 
