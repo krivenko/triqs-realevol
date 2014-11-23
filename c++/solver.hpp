@@ -27,6 +27,7 @@ using triqs::utility::hilbert_space;
 using triqs::utility::state;
 
 using dcomplex = std::complex<double>;
+using results_t = std::map<std::string,any_mesh_container_t<double>>;
 
 template<bool ComplexOperators = false>
 class solver {
@@ -35,8 +36,9 @@ class solver {
     hilbert_space hs;
     state<hilbert_space,dcomplex,false> init_state;
 
-    std::map<std::string,any_mesh_container_t<double>> results;
+    results_t results;
 
+    boost::mpi::environment env;
     boost::mpi::communicator comm;      // define the communicator, here MPI_COMM_WORLD
 
 public:
@@ -58,7 +60,6 @@ public:
     }
 
     decltype(results) const& get_results() const { return results; }
-    static void help();
 };
 
 }
