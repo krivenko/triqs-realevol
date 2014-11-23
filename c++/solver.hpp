@@ -3,6 +3,7 @@
 #include <set>
 #include <string>
 #include <utility>
+#include <memory>
 #include <boost/mpi/environment.hpp>
 #include <boost/mpi/communicator.hpp>
 
@@ -29,6 +30,8 @@ using triqs::utility::state;
 using dcomplex = std::complex<double>;
 using results_t = std::map<std::string,any_mesh_container_t<double>>;
 
+template<typename SolverType> struct solve_visitor;
+
 template<bool ComplexOperators = false>
 class solver {
 
@@ -41,6 +44,8 @@ class solver {
     boost::mpi::environment env;
     boost::mpi::communicator comm;      // define the communicator, here MPI_COMM_WORLD
 
+    friend struct solve_visitor<solver<ComplexOperators>>;
+
 public:
 
     using operator_coeff_t = typename std::conditional<ComplexOperators,time_expr_c,time_expr_r>::type;
@@ -52,10 +57,17 @@ public:
     TRIQS_WRAP_ARG_AS_DICT
     void solve(solve_parameters_t<operator_t> const& p);
 
+    /// Set of parameters used in the last call to solve
+    solve_parameters_t<operator_t> get_last_solve_parameters() const {return *_last_solve_parameters;}
+
     decltype(init_state) & psi0() { return init_state; }
     dcomplex & psi0(std::set<indices_t> const& indices) { return init_state(hs.get_fock_state(fops,indices)); }
 
     decltype(results) const& get_results() const { return results; }
+
+private:
+
+    std::unique_ptr<solve_parameters_t<operator_t>> _last_solve_parameters; // parameters of the last call to solve
 };
 
 }
