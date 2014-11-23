@@ -45,19 +45,15 @@ public:
 
     using operator_coeff_t = typename std::conditional<ComplexOperators,time_expr_c,time_expr_r>::type;
     using operator_t = many_body_operator<operator_coeff_t>;
+    using indices_t = typename operator_t::indices_t;
 
-    solver(std::set<std::string> const& operator_indices);
+    solver(std::set<indices_t> const& operator_indices);
 
     TRIQS_WRAP_ARG_AS_DICT
     void solve(solve_parameters_t<operator_t> const& p);
 
     decltype(init_state) & psi0() { return init_state; }
-
-    dcomplex & psi0(std::set<std::string> const& indices) {
-        std::set<fundamental_operator_set::indices_t> tmp;
-        for(auto const & i : indices) tmp.insert({i});
-        return init_state(hs.get_fock_state(fops,tmp));
-    }
+    dcomplex & psi0(std::set<indices_t> const& indices) { return init_state(hs.get_fock_state(fops,indices)); }
 
     decltype(results) const& get_results() const { return results; }
 };
