@@ -24,6 +24,9 @@ struct solve_parameters_t {
  /// Method to solve the Schroedinger equation
  enum ode_solve_method {runge_kutta, lanzcos} method = lanzcos;
 
+ /// Keep in memory the state vector on this number of time points
+ long psi_time_points = 10;
+
  /// Mesh downsampling factors for the observables
  std::map<std::string,int> mesh_downsampling = (std::map<std::string,int>{});
 
