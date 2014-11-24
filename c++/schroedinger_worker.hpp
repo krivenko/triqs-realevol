@@ -69,8 +69,6 @@ public:
         solution(mesh,stored_psi_values), rhs(hamiltonian,fops,hbar) {
     }
 
-    bool is_trivial_solution() const;
-
 };
 
 }

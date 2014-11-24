@@ -15,22 +15,11 @@
 #include "time_expr_r.hpp"
 #include "time_expr_c.hpp"
 #include "solve_parameters.hpp"
-
-#include <triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp>
-#include <triqs/draft/hilbert_space_tools/hilbert_space.hpp>
-#include <triqs/draft/hilbert_space_tools/state.hpp>
+#include "simulation.hpp"
 
 namespace realevol {
 
-using triqs::utility::many_body_operator;
-using triqs::utility::fundamental_operator_set;
-using triqs::utility::hilbert_space;
-using triqs::utility::state;
-
 using dcomplex = std::complex<double>;
-using results_t = std::map<std::string,any_mesh_container_t<double>>;
-
-template<typename SolverType> struct solve_visitor;
 
 template<bool ComplexOperators = false>
 class solver {
@@ -44,12 +33,10 @@ class solver {
     boost::mpi::environment env;
     boost::mpi::communicator comm;      // define the communicator, here MPI_COMM_WORLD
 
-    friend struct solve_visitor<solver<ComplexOperators>>;
-
 public:
 
-    using operator_coeff_t = typename std::conditional<ComplexOperators,time_expr_c,time_expr_r>::type;
-    using operator_t = many_body_operator<operator_coeff_t>;
+    using operator_coeff_t = typename simulation<ComplexOperators>::operator_coeff_t;
+    using operator_t = typename simulation<ComplexOperators>::operator_t;
     using indices_t = typename operator_t::indices_t;
 
     solver(std::set<indices_t> const& operator_indices);
