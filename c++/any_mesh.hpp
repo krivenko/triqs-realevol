@@ -3,7 +3,7 @@
 #include <boost/variant.hpp>
 #include <boost/mpl/transform.hpp>
 
-#include <triqs/gfs/meshes/segment.hpp>
+#include <triqs/gfs.hpp>
 
 #include "./mesh_container.hpp"
 #include "./mesh_container_cyclic.hpp"

@@ -22,8 +22,6 @@ time_expr_r V = "0.3*(1 - exp(-4*t))";
 // Real-valued version of the solver
 using solver_t = solver<false>;
 
-using operator_t = many_body_operator<time_expr_r>;
-
 int main()
 {
     std::array<int,3> atoms {1,2,3};
@@ -34,7 +32,7 @@ int main()
         for(auto s : spins)
             all_indices.insert({a,s});
 
-    auto H = operator_t();
+    auto H = operator_t<false>();
 
     // Chemical potential
     for(auto a : atoms)
@@ -58,12 +56,12 @@ int main()
     solver_t S(all_indices);
 
     // Parameters
-    auto params = solve_parameters_t<operator_t>(H,mesh);
+    auto params = solve_parameters_t<false>(H,mesh);
     params.verbosity = 2;
 
     // Observables
-    std::map<std::string,operator_t> observables;
-    params.observables["unity"] = operator_t() + 1.0; // ugly
+    std::map<std::string,operator_t<false>> observables;
+    params.observables["unity"] = operator_t<false>() + 1.0; // ugly
 
     // psi0: Sz=1/2
     S.psi0({{1,"up"},{2,"up"},{3,"dn"}}) = 1.0;
