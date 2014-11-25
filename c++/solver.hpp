@@ -35,17 +35,15 @@ class solver {
 
 public:
 
-    using operator_coeff_t = typename simulation<ComplexOperators>::operator_coeff_t;
-    using operator_t = typename simulation<ComplexOperators>::operator_t;
-    using indices_t = typename operator_t::indices_t;
+    using indices_t = typename operator_t<ComplexOperators>::indices_t;
 
     solver(std::set<indices_t> const& operator_indices);
 
     TRIQS_WRAP_ARG_AS_DICT
-    void solve(solve_parameters_t<operator_t> const& p);
+    void solve(solve_parameters_t<ComplexOperators> const& p);
 
     /// Set of parameters used in the last call to solve
-    solve_parameters_t<operator_t> get_last_solve_parameters() const {return *_last_solve_parameters;}
+    solve_parameters_t<ComplexOperators> get_last_solve_parameters() const {return *_last_solve_parameters;}
 
     decltype(init_state) & psi0() { return init_state; }
     dcomplex & psi0(std::set<indices_t> const& indices) { return init_state(hs.get_fock_state(fops,indices)); }
@@ -54,7 +52,7 @@ public:
 
 private:
 
-    std::unique_ptr<solve_parameters_t<operator_t>> _last_solve_parameters; // parameters of the last call to solve
+    std::unique_ptr<solve_parameters_t<ComplexOperators>> _last_solve_parameters; // parameters of the last call to solve
 };
 
 }
