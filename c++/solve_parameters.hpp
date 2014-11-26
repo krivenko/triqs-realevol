@@ -7,7 +7,7 @@ using operator_coeff_t = typename std::conditional<ComplexOperators,time_expr_c,
 template<bool ComplexOperators>
 using operator_t = triqs::utility::many_body_operator<operator_coeff_t<ComplexOperators>>;
 
-enum ode_solve_method {runge_kutta_method, lanczos_method};
+enum ode_solve_method {method_runge_kutta, method_lanczos};
 
 // All the arguments of the solve function
 template<bool ComplexOperators>
@@ -23,16 +23,16 @@ struct solve_parameters_t {
  std::map<std::string,operator_t<ComplexOperators>> observables = {};
 
  /// Planck constant
- double planck_constant = 1.0;
+ double hbar = 1.0;
 
  /// Time mesh to solve the Schroedinger equation
  any_mesh_t mesh;
 
  /// Method to solve the Schroedinger equation
- ode_solve_method method = lanczos_method;
+ ode_solve_method method = method_lanczos;
 
  /// Keep in memory the state vector on this number of time points
- long psi_time_points = 10;
+ long stored_psi_values = 10;
 
  /// Mesh downsampling factors for the observables
  std::map<std::string,int> mesh_downsampling = (std::map<std::string,int>{});

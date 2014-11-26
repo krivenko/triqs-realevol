@@ -58,6 +58,7 @@ int main()
     // Parameters
     auto params = solve_parameters_t<false>(H,mesh);
     params.verbosity = 2;
+    params.stored_psi_values = 20;
 
     // Observables
     std::map<std::string,operator_t<false>> observables;
@@ -65,12 +66,14 @@ int main()
 
     // psi0: Sz=1/2
     S.psi0({{1,"up"},{2,"up"},{3,"dn"}}) = 1.0;
+    params.method = method_lanczos;
     S.solve(params);
     // TODO
 
     // psi0: Sz=0
     S.psi0().amplitudes()() = .0;
     S.psi0({{1,"up"},{1,"dn"},{2,"up"},{3,"dn"}}) = 1.0;
+    params.method = method_runge_kutta;
     S.solve(params);
     // TODO
 
