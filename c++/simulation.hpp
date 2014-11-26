@@ -83,6 +83,8 @@ public:
 
         std::map<std::string,mesh_container<double,Mesh>> results;
 
+                // TODO: pass results to run_my_jobs()
+
         switch(method) {
             case method_runge_kutta:
                 run_my_jobs<Mesh,method_runge_kutta>(m);
@@ -94,8 +96,10 @@ public:
                 TRIQS_RUNTIME_ERROR << "Unknown method to solve the Schroedinger equation: " << method;
         }
 
-        // TODO: pass results to run_my_jobs()
+        comm.barrier();
 
+
+        // TODO: collect results
         results_t variant_results;
         for(auto const& r : results) variant_results.emplace(r);
         return variant_results;
@@ -157,7 +161,11 @@ private:
             std::cout << "Distribution of " << scheduler_jobs.size() << " nontrivial subspaces over "
                       << comm.size() << " nodes:" << std::endl;
             for(int nsch = 0; nsch < schedules.size(); ++nsch){
-                if(schedules[nsch].empty()) continue;
+                if(schedules[nsch].empty()){
+                    std::cout << "Warning: not enough invariant subspaces to occupy Nodes "
+                              << nsch <<  "-" << comm.size()-1 << std::endl;
+                    break;
+                }
                 std::cout << "Node " << nsch << ": ";
                 for(auto const& job : schedules[nsch]) std::cout << job.index << " ";
                 std::cout << std::endl;
@@ -181,7 +189,7 @@ private:
 
     template<typename Mesh, ode_solve_method Method>
     void run_my_jobs(Mesh const& mesh) {
-        if(my_rank > schedules.size()-1) return;    // Nothing to do on this MPI node
+        if(schedules[my_rank].empty()) return; // Nothing to do on this MPI node
 
         auto const& my_schedule = schedules[my_rank];
 
