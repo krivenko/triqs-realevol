@@ -60,11 +60,11 @@ public:
     // Returns true when the end of the mesh is reached
     bool operator()() {
         solver(it1,it2);
-        if(it2 == std::end(solution)) return false;
+        if(it2 == std::end(solution)) return true;
         it1 += solution.storage_size()-1;
         it2 += solution.storage_size()-1;
         if(it2 > std::end(solution)) it2 = std::end(solution);
-        return true;
+        return false;
     }
 };
 

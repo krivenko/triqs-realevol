@@ -72,7 +72,9 @@ int main()
 
     // psi0: Sz=0
     S.psi0().amplitudes()() = .0;
-    S.psi0({{1,"up"},{1,"dn"},{2,"up"},{3,"dn"}}) = 1.0;
+    //S.psi0({{1,"up"},{1,"dn"},{2,"up"},{3,"dn"}}) = 1.0;
+    S.psi0({{1,"up"},{1,"dn"},{2,"up"},{3,"dn"}}) = 1.0/sqrt(2.0);
+    S.psi0({{1,"up"},{2,"up"},{3,"dn"}}) = 1.0/sqrt(2.0);
     params.method = method_runge_kutta;
     S.solve(params);
     // TODO
