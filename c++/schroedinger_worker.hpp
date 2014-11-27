@@ -41,21 +41,17 @@ private:
         state_t operator()(state_t const& psi, double t) const { return h(psi,t)/(1_j*hbar); }
     };
 
-    solution_t solution;
+    solution_t & solution;
     rhs_t rhs;
     runge_kutta<solution_t,rhs_t> solver;
     typename solution_t::iterator it1, it2;
 
 public:
 
-    schroedinger_worker(imp_operator_t const& hamiltonian, state_t const& psi0,
-                        mesh_t const& mesh, double hbar,
-                        int stored_psi_values) :
-        solution(mesh,stored_psi_values), rhs(hamiltonian,hbar), solver(rhs),
+    schroedinger_worker(imp_operator_t const& hamiltonian, solution_t & solution, double hbar) :
+        rhs(hamiltonian,hbar), solution(solution), solver(rhs),
         it1(std::begin(solution)), it2(it1 + solution.storage_size())
-    {
-        solution[0] = psi0;
-    }
+    {}
 
     // Returns true when the end of the mesh is reached
     bool operator()() {
@@ -86,22 +82,18 @@ private:
         state_t operator()(state_t const& psi, double t) const { return h(psi,t); }
     };
 
-    solution_t solution;
     rhs_t rhs;
+    solution_t & solution;
     double hbar;
     lanczos<solution_t,rhs_t> solver;
     typename solution_t::iterator it1, it2;
 
 public:
 
-    schroedinger_worker(imp_operator_t const& hamiltonian, state_t const& psi0,
-                        mesh_t const& mesh, double hbar,
-                        int stored_psi_values) :
-        solution(mesh,stored_psi_values), rhs(hamiltonian), hbar(hbar), solver(rhs),
+    schroedinger_worker(imp_operator_t const& hamiltonian, solution_t & solution, double hbar) :
+        rhs(hamiltonian), solution(solution), hbar(hbar), solver(rhs),
         it1(std::begin(solution)), it2(it1 + solution.storage_size())
-    {
-        solution[0] = psi0;
-    }
+    {}
 
     // Returns true when the end of the mesh is reached
     bool operator()() {
