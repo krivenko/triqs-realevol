@@ -74,7 +74,8 @@ template <typename StateType, typename OperatorType> class space_partition {
     if (triqs::utility::is_zero(amplitude)) return;
     auto f_subspace = subspaces.find_set(f);
     if((!diagonal_only) || i_subspace==f_subspace)
-      mapping.insert(std::make_pair(i_subspace,f_subspace));
+      mapping.insert(std::make_pair(representative_to_index[i_subspace],
+                                    representative_to_index[f_subspace]));
    });
   }
 
