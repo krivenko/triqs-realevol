@@ -9,6 +9,7 @@
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/vector.hpp>
 #include <triqs/utility/dressed_iterator.hpp>
+#include <triqs/utility/exceptions.hpp>
 
 namespace realevol {
 
@@ -23,10 +24,10 @@ public:
 
     // vector-compatible constructors
     template<class... ValueConstructorArgs>
-    explicit mesh_container(const mesh_t& mesh, ValueConstructorArgs && ...vc_args) :
+    explicit mesh_container(mesh_t const& mesh, ValueConstructorArgs && ...vc_args) :
         base_t(mesh.size(),value_type(vc_args...)), mesh(mesh) {}
 
-    mesh_container(const mesh_t& mesh, base_t const& value) : base_t(value), mesh(mesh) {}
+    mesh_container(mesh_t const& mesh, base_t const& value) : base_t(value), mesh(mesh) {}
 
     mesh_t const& get_mesh() const {
         return mesh;
@@ -84,8 +85,8 @@ public:
     }
 
     // Insert contents of the container into a stream as two columns
-    friend std::ostream& operator<<(std::ostream & os, mesh_container const& MC) {
-        for(auto e : MC) os << e.mesh_point.value << '\t' << e.value << std::endl;
+    friend std::ostream& operator<<(std::ostream & os, mesh_container & MC) {
+        for(auto e : MC) os << e.mesh_point << '\t' << e.value << std::endl;
         return os;
     }
 
