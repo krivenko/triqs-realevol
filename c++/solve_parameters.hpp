@@ -35,7 +35,7 @@ struct solve_parameters_t {
  long stored_psi_values = 10;
 
  /// Mesh downsampling factors for the observables
- std::map<std::string,int> mesh_downsampling = (std::map<std::string,int>{});
+ //std::map<std::string,int> mesh_downsampling = (std::map<std::string,int>{});
 
  solve_parameters_t(operator_t<ComplexOperators> const& h, any_mesh_t const& mesh) : h(h), mesh(mesh) {}
 };
