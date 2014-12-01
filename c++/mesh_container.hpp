@@ -119,3 +119,11 @@ private:
 };
 
 }
+
+namespace triqs {
+namespace mpi {
+
+template <typename T, typename Mesh>
+struct mpi_impl<realevol::mesh_container<T,Mesh>> : mpi_impl<std::vector<T>> {};
+
+}}
