@@ -27,8 +27,8 @@
 namespace realevol {
 
 using namespace triqs::utility;
+using std::complex;
 
-using dcomplex = std::complex<double>;
 using results_t = std::map<std::string,any_mesh_container_t<double>>;
 
 template<bool ComplexOperators>
@@ -36,8 +36,8 @@ class simulation : public boost::static_visitor<results_t> {
 
     using op_on_space_t = imperative_operator<hilbert_space,operator_coeff_t<ComplexOperators>,false>;
     using op_on_subspace_t = imperative_operator<sub_hilbert_space,operator_coeff_t<ComplexOperators>,false>;
-    using state_on_space_t = state<hilbert_space,dcomplex,false>;
-    using state_on_subspace_t = state<sub_hilbert_space,dcomplex,false>;
+    using state_on_space_t = state<hilbert_space,complex<double>,false>;
+    using state_on_subspace_t = state<sub_hilbert_space,complex<double>,false>;
 
     using space_partition_t = space_partition<state<hilbert_space,operator_coeff_t<ComplexOperators>,true>,op_on_space_t>;
 
@@ -122,7 +122,7 @@ public:
 
         comm.barrier();
 
-        // Sum results over all MPI ranks
+        // Sum results over all MPI processes
         results_t variant_results;
         for(auto & r : results){
             triqs::mpi::all_reduce_in_place(r.second,comm);
@@ -202,7 +202,7 @@ private:
         std::vector<mesh_container_cyclic<state_on_subspace_t,Mesh>> solutions;
         solutions.reserve(my_schedule.size());
 
-        observables_worker<ComplexOperators,Mesh> obs_worker(mesh,observables);
+        observables_worker<ComplexOperators,Mesh> obs_worker(mesh,observables,solutions,fops,SP,subspace_disp_table);
 
         for(auto const& job : my_schedule){
             solutions.emplace_back(mesh,stored_psi_values);
@@ -215,10 +215,10 @@ private:
             for(auto & worker : workers) {
                 done = worker();
             }
-            // TODO: Measure observables
+            obs_worker(stored_psi_values);
         }
 
-        return obs_worker.get_results();
+        return std::move(obs_worker.get_results());
     }
 };
 

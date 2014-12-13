@@ -7,6 +7,9 @@
 #include <boost/mpi/environment.hpp>
 #include <boost/mpi/communicator.hpp>
 
+#include "time_expr_r.hpp"
+#include "time_expr_c.hpp"
+
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/h5/map.hpp>
 
