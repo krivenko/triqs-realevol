@@ -1,6 +1,5 @@
 #pragma once
 
-#include <complex>
 #include <string>
 #include <vector>
 #include <map>
@@ -9,14 +8,9 @@
 #include <boost/mpi/communicator.hpp>
 #include <boost/mpi/collectives.hpp>
 
-#include <triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp>
-#include <triqs/draft/hilbert_space_tools/hilbert_space.hpp>
-#include <triqs/draft/hilbert_space_tools/imperative_operator.hpp>
-#include <triqs/draft/hilbert_space_tools/state.hpp>
-#include <triqs/utility/draft/numeric_ops.hpp>
-
 #include <triqs/mpi/base.hpp>
 
+#include "common.hpp"
 #include "any_mesh.hpp"
 #include "mesh_container.hpp"
 #include "space_partition.hpp"
@@ -26,44 +20,41 @@
 
 namespace realevol {
 
-using namespace triqs::utility;
-using std::complex;
+using var_results_t = std::map<std::string,any_mesh_container_t<double>>;
 
-using results_t = std::map<std::string,any_mesh_container_t<double>>;
+struct remote_index_t {
+    int rank;
+    int local_index;
+};
 
-template<bool ComplexOperators>
-class simulation : public boost::static_visitor<results_t> {
-
-    using op_on_space_t = imperative_operator<hilbert_space,operator_coeff_t<ComplexOperators>,false>;
-    using op_on_subspace_t = imperative_operator<sub_hilbert_space,operator_coeff_t<ComplexOperators>,false>;
-    using state_on_space_t = state<hilbert_space,complex<double>,false>;
-    using state_on_subspace_t = state<sub_hilbert_space,complex<double>,false>;
-
-    using space_partition_t = space_partition<state<hilbert_space,operator_coeff_t<ComplexOperators>,true>,op_on_space_t>;
+template<bool ComplexOp>
+class simulation : public boost::static_visitor<var_results_t> {
 
     fundamental_operator_set fops;
-    space_partition_t SP;
+    space_partition_t<ComplexOp> SP;
     std::vector<sub_hilbert_space> subspaces;
     std::vector<state_on_subspace_t> sub_init_states;
-    op_on_subspace_t hamiltonian;
+    op_on_subspace_t<ComplexOp> hamiltonian;
     double hbar;
     ode_solve_method method;
     long stored_psi_values;
-    std::map<std::string,operator_t<ComplexOperators>> observables;
+    std::map<std::string,operator_t<ComplexOp>> observables;
 
     // MPI data structures
     boost::mpi::communicator & comm;
     std::vector<schedule_t<int>> schedules;
-    std::vector<std::pair<int,int>> subspace_disp_table;  // subspace -> (rank,local id)
+    std::vector<remote_index_t> subspace_disp_table;  // subspace -> remote_index
+
+    template<bool,typename> friend class observables_worker;
 
 public:
 
-    using params_t = solve_parameters_t<ComplexOperators>;
+    using params_t = solve_parameters_t<ComplexOp>;
 
     simulation(boost::mpi::communicator & comm,
                fundamental_operator_set const& fops,
                hilbert_space const& hs,
-               state<hilbert_space,std::complex<double>,false> const& init_state,
+               state<hilbert_space,dcomplex,false> const& init_state,
                params_t const& p
               ) :
         comm(comm),
@@ -99,12 +90,12 @@ public:
         distribute_jobs(init_state,p);
     }
 
-    template<typename Mesh> results_t operator()(Mesh const& m) {
+    template<typename Mesh> var_results_t operator()(Mesh const& m) {
 
-        std::map<std::string,mesh_container<double,Mesh>> results;
+        results_t<Mesh> results;
 
         if(schedules[comm.rank()].empty()) { // Nothing to do on this MPI node
-            results = observables_worker<ComplexOperators,Mesh>::init_results(m,observables);
+            for(auto const& obs : observables) results.emplace(obs.first,typename results_t<Mesh>::mapped_type(m,.0));
         } else {
             stored_psi_values = std::min(stored_psi_values,m.size());
 
@@ -123,7 +114,7 @@ public:
         comm.barrier();
 
         // Sum results over all MPI processes
-        results_t variant_results;
+        var_results_t variant_results;
         for(auto & r : results){
             triqs::mpi::all_reduce_in_place(r.second,comm);
             variant_results.emplace(r);
@@ -142,11 +133,11 @@ private:
 
         for(int spn = 0; spn < subspaces.size(); ++spn) {
             // Project the initial state on this subspace
-            all_sub_init_states[spn] = project<state<sub_hilbert_space, std::complex<double>, false>>(init_state,subspaces[spn]);
+            all_sub_init_states[spn] = project<state<sub_hilbert_space, dcomplex, false>>(init_state,subspaces[spn]);
 
             // Any non-zero amplitudes in this subspace?
             bool nontrivial = false;
-            foreach(all_sub_init_states[spn],[&nontrivial](int i, std::complex<double> a){
+            foreach(all_sub_init_states[spn],[&nontrivial](int i, dcomplex a){
                 if(!triqs::utility::is_zero(a)) nontrivial = true;
             });
 
@@ -179,36 +170,35 @@ private:
             sub_init_states.push_back(all_sub_init_states[job.index]);
 
         // Fill subspace_disp_table
-        subspace_disp_table.resize(subspaces.size(),std::make_pair(-1,0));
+        subspace_disp_table.resize(subspaces.size(),{-1,0});
         for(int nsch = 0; nsch < schedules.size(); ++nsch) {
-            int local_id = 0;
+            int local_index = 0;
             for(auto const& job : schedules[nsch]) {
-                subspace_disp_table[job.index] = std::make_pair(nsch,local_id);
-                local_id++;
+                subspace_disp_table[job.index] = {nsch,local_index};
+                local_index++;
             }
         }
     }
 
     template<typename Mesh, ode_solve_method Method>
-    typename observables_worker<ComplexOperators,Mesh>::results_t
-    run_my_jobs(Mesh const& mesh) {
+    results_t<Mesh> run_my_jobs(Mesh const& mesh) {
 
         auto const& my_schedule = schedules[comm.rank()];
 
         // Workers to solve the equation
-        std::vector<schroedinger_worker<ComplexOperators,Mesh,Method>> workers;
+        std::vector<schroedinger_worker<ComplexOp,Mesh,Method>> workers;
         workers.reserve(my_schedule.size());
         // Container with partial solutions:
-        std::vector<mesh_container_cyclic<state_on_subspace_t,Mesh>> solutions;
-        solutions.reserve(my_schedule.size());
+        std::vector<mesh_container_cyclic<state_on_subspace_t,Mesh>> solution_parts;
+        solution_parts.reserve(my_schedule.size());
 
-        observables_worker<ComplexOperators,Mesh> obs_worker(mesh,observables,solutions,fops,SP,subspace_disp_table);
+        observables_worker<ComplexOp,Mesh> obs_worker(mesh,observables,solution_parts,*this);
 
         for(auto const& job : my_schedule){
-            solutions.emplace_back(mesh,stored_psi_values);
-            solutions.back()[0] = sub_init_states.back();
+            solution_parts.emplace_back(mesh,stored_psi_values);
+            solution_parts.back()[0] = sub_init_states.back();
 
-            workers.emplace_back(hamiltonian,solutions.back(),hbar);
+            workers.emplace_back(hamiltonian,solution_parts.back(),hbar);
         }
 
         for(bool done = false; !done;) {
