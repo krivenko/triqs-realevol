@@ -28,6 +28,7 @@ state_on_space_t zero_state;
 boost::mpi::communicator const& comm;
 std::set<int> relevant_local_parts;     // indices in solution_parts
 std::multimap<int,int> parts_to_send;   // index in solution_parts -> destination rank
+int num_parts_to_recv;                  // the number of bra-vector parts to receive
 
 static const int mpi_tag = 1;
 
@@ -76,12 +77,15 @@ observables_worker(Mesh const& mesh,
         }
     }
 
-    // Fill relevant_local_parts and parts_to_send
+    // Fill relevant_local_parts, parts_to_send and num_parts_to_recv
+    num_parts_to_recv = 0;
     for(auto const& conn : connections) {
         auto const& ri = sim.subspace_disp_table[conn.first];
         if(ri.rank == comm.rank()) {
             relevant_local_parts.insert(ri.local_index);
             parts_to_send.emplace(ri.local_index,sim.subspace_disp_table[conn.second].rank);
+        } else {
+            if(sim.subspace_disp_table[conn.second].rank == comm.rank()) num_parts_to_recv++;
         }
     }
 }
@@ -91,8 +95,8 @@ void operator()(long num_time_points) {
         cur_time_point += num_time_points;
         return;
     }
-
-    for(;num_time_points>0; --num_time_points) {
+    for(; num_time_points>0 && cur_time_point < mesh.size();
+        --num_time_points, ++cur_time_point) {
 
         auto t = mesh[cur_time_point];
         state_on_space_t bra(zero_state), ket(zero_state);
@@ -100,11 +104,7 @@ void operator()(long num_time_points) {
         fill_ket(ket);
         fill_bra(bra);
 
-        for(auto & d : data) {
-            d.result[cur_time_point] = std::real(dot_product(bra,d.op(ket,t)));
-        }
-
-        cur_time_point++;
+        for(auto & d : data) d.result[cur_time_point] = std::real(dot_product(bra,d.op(ket,t)));
     }
 }
 
@@ -118,13 +118,13 @@ private:
 
     void embed_state(state_on_subspace_t const& src, state_on_space_t & dst) const {
         auto const& src_hs = src.get_hilbert();
-        foreach(src,[&dst,&src_hs](int i, dcomplex v){dst(src_hs.get_fock_state(i)) = v;});
+        foreach(src,[&dst,&src_hs](int i, dcomplex v){ dst(src_hs.get_fock_state(i)) = v; });
     }
 
     // Fill the ket vector (local-only operation)
     void fill_ket(state_on_space_t & ket) const {
         for(auto index : relevant_local_parts) {
-            auto const& sub_st = solution_parts[cur_time_point][index];
+            auto const& sub_st = solution_parts[index][cur_time_point];
             embed_state(sub_st,ket);
         }
     }
@@ -134,13 +134,20 @@ private:
         // isend + local fill phase
         for(auto const& p : parts_to_send) {
             if(p.second == comm.rank())
-                embed_state(solution_parts[cur_time_point][p.first],bra);
+                embed_state(solution_parts[p.first][cur_time_point],bra);
+            // FIXME
             //else
-            //    comm.isend(p.second,mpi_tag,solution_parts[cur_time_point][p.first]);
+            //    comm.isend(p.second,mpi_tag,solution_parts[p.first][cur_time_point]);
         }
 
-        // irecv phase
-        {
+        // recv phase
+        int n = num_parts_to_recv;
+        while(n) {
+            state_on_subspace_t sub_st;
+            // FIXME
+            //comm.recv(boost::mpi::any_source,mpi_tag,sub_st);
+            embed_state(sub_st,bra);
+            n--;
         }
 
         comm.barrier();

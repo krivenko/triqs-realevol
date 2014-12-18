@@ -20,6 +20,9 @@ solver<ComplexOperators>::solver(std::set<indices_t> const& operator_indices) :
 template<bool ComplexOperators>
 void solver<ComplexOperators>::solve(solve_parameters_t<ComplexOperators> const& p) {
 
+    // FIXME
+    if(comm.size()>1) TRIQS_RUNTIME_ERROR << "Running on more than one MPI node is not yet supported.";
+
     _last_solve_parameters.reset(new solve_parameters_t<ComplexOperators>(p));
 
     boost::timer::auto_cpu_timer solve_timer(p.verbosity >= 1 ? "Simulation took %w seconds\n" : "");
