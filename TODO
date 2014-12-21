@@ -1,0 +1,5 @@
+* Make 'trimer' test pass
+* Add exponential mesh
+* Enable MPI support (depends on 'state' class serialization in hilbert_space_tools)
+* Rewrite Python wrappers (depends on Python wrapper generator)
+* Sparsified meshes for observables
