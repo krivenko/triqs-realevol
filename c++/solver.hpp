@@ -43,10 +43,10 @@ public:
     /// Set of parameters used in the last call to solve
     solve_parameters_t<ComplexOp> get_last_solve_parameters() const {return *_last_solve_parameters;}
 
-    decltype(init_state) & psi0() { return init_state; }
+    state<hilbert_space,dcomplex,false> & psi0() { return init_state; }
     dcomplex & psi0(std::set<indices_t> const& indices) { return init_state(hs.get_fock_state(fops,indices)); }
 
-    decltype(results) const& get_results() const { return results; }
+    var_results_t const& get_results() const { return results; }
 
 private:
 
