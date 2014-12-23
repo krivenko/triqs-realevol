@@ -80,7 +80,7 @@ public:
         it1(std::begin(solution)), it2(it1 + solution.storage_size())
     {}
 
-    // Returns true when the end of the mesh is reached-
+    // Returns true when the end of the mesh is reached
     bool operator()() {
         solver(it1,it2,1.0/(1_j*hbar));
         if(it2 == std::end(solution)) return true;
