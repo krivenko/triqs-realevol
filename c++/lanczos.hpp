@@ -42,7 +42,7 @@ template<
 
         while(true){
             // Value of the independent variable
-            var_t x = first->mesh_point;
+            x = first->mesh_point;
 
             // Solution at current point
             value_t const& U(first->value);
