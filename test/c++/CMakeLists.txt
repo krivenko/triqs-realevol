@@ -14,7 +14,7 @@ foreach(t ${SIMPLE_TESTS})
 endforeach(t)
 
 # HDF5 tests
-set(HDF5_TESTS trimer) 
+set(HDF5_TESTS trimer_lanczos trimer_rk)
 foreach(t ${HDF5_TESTS})
     add_executable(${t} ${CMAKE_CURRENT_SOURCE_DIR}/${t}.cpp)
     triqs_set_rpath_for_target(${t})
