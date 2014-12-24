@@ -43,7 +43,7 @@ mu = U/2
 V = lambda t: 0.3*(1.0 - np.exp(-4.0*t))
 
 tmin, tmax = 0.0, 50.0
-N_t = 501
+N_t = 1001
 dt = (tmax-tmin)/(N_t-1)
 
 def H(t):
@@ -72,7 +72,7 @@ psi0 = np.dot(cd1up*cd2up*cd3dn,vac)
 SO.set_initial_value(psi0,t=tmin)
 
 psi = [np.ravel(psi0)]
-while SO.successful() and SO.t < tmax:
+while SO.successful() and SO.t <= tmax-dt:
     SO.integrate(SO.t+dt)
     psi.append(SO.y)
 
@@ -94,7 +94,7 @@ psi0 = np.dot(cd1dn*cd1up*cd2up*cd3dn,vac)
 SO.set_initial_value(psi0,t=tmin)
 
 psi = [np.ravel(psi0)]
-while SO.successful() and SO.t < tmax:
+while SO.successful() and SO.t <= tmax-dt:
     SO.integrate(SO.t+dt)
     psi.append(SO.y)
 
