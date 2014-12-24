@@ -71,7 +71,7 @@ int main()
     }
 
     // Time mesh
-    segment_mesh mesh(0,50.0,501);
+    segment_mesh mesh(0,50.0,1001);
 
     // Solver object
     solver_t S(all_indices);
