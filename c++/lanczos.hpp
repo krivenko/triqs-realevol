@@ -46,7 +46,7 @@ template<
 
         for(;next != last; ++first, ++next){
             // Value of the independent variable
-            x = first->mesh_point;
+            x = 0.5*(first->mesh_point + next->mesh_point);
 
             // Solution at current point
             value_t const& U(first->value);
