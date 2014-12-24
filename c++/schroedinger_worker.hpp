@@ -44,9 +44,10 @@ public:
     bool operator()() {
         solver(it1,it2);
         if(it2 == std::end(solution)) return true;
-        it1 += solution.storage_size()-1;
-        it2 += solution.storage_size()-1;
-        if(it2 > std::end(solution)) it2 = std::end(solution);
+
+        auto st_size = solution.storage_size();
+        it1 += (it1 == std::begin(solution) ? st_size-1 : st_size);
+        it2 = std::min(it2+st_size,std::end(solution));
         return false;
     }
 };
@@ -84,9 +85,10 @@ public:
     bool operator()() {
         solver(it1,it2,1.0/(1_j*hbar));
         if(it2 == std::end(solution)) return true;
-        it1 += solution.storage_size()-1;
-        it2 += solution.storage_size()-1;
-        if(it2 > std::end(solution)) it2 = std::end(solution);
+
+        auto st_size = solution.storage_size();
+        it1 += (it1 == std::begin(solution) ? st_size-1 : st_size);
+        it2 = std::min(it2+st_size,std::end(solution));
         return false;
     }
 };

@@ -23,7 +23,7 @@ namespace h5 = triqs::h5;
 double hbar = 1.0;
 double U = 1.0;
 double mu = 0.5*U;
-time_expr_r V = "0.3*(1 - exp(-4*t))";
+auto V = "0.3*(1 - exp(-4*t))"_te;
 
 struct write_obs : public boost::static_visitor<> {
 
@@ -66,7 +66,7 @@ int main()
         for(auto a1 : atoms)
         for(auto a2 : atoms){
             if(a1==a2) continue;
-            H += V*c_dag<time_expr_r>(a1,s)*c<time_expr_r>(a2,s);
+            H += -V*c_dag<time_expr_r>(a1,s)*c<time_expr_r>(a2,s);
         }
     }
 
