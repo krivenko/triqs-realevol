@@ -98,7 +98,7 @@ public:
 
     using state_type = StateType ;
 
-    lanczos_worker(OperatorType const& H, real_scalar_t gs_energy_convergence = 1e-10)
+    lanczos_worker(OperatorType const& H, real_scalar_t gs_energy_convergence)
         : H(H), gs_energy_convergence(gs_energy_convergence), tdw(reserved_krylov_dim)
     {
         alpha.reserve(reserved_krylov_dim);
