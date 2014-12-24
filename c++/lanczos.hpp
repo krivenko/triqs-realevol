@@ -24,7 +24,11 @@ template<
 
     template<typename Iterator>
     void operator()(Iterator first, Iterator last, scalar_t rhs_prefactor = 1.0)
+    // Takes the initial value from *first
+    // Fills a range (first,last)
     {
+        auto next = first; ++next;
+
         // Value of the independent variable
         var_t x;
 
@@ -40,7 +44,7 @@ template<
 
         triqs::arrays::matrix<scalar_t> lanczos_exp(N,N);
 
-        while(true){
+        for(;next != last; ++first, ++next){
             // Value of the independent variable
             x = first->mesh_point;
 
@@ -51,11 +55,8 @@ template<
             auto norm = std::sqrt(dot_product(U,U));
             lw(U/norm);
 
-            ++first;
-            if(first == last) break;
-
             // Step of the mesh
-            var_t step = first->mesh_point - x;
+            var_t step = next->mesh_point - first->mesh_point;
 
             // Construct the propagation exponent
             auto eigenvalues = lw.values();
@@ -68,7 +69,7 @@ template<
 
             // Propagate
             auto krylov_coeffs = norm * lanczos_exp(all, 0);
-            first->value = lw.krylov_2_fock(krylov_coeffs);
+            next->value = lw.krylov_2_fock(krylov_coeffs);
         }
     }
 

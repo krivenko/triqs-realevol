@@ -19,12 +19,12 @@ template<
 
     template<typename Iterator>
     void operator()(Iterator first, Iterator last)
+    // Takes the initial value from *first
+    // Fills a range (first,last)
     {
+        auto next = first; ++next;
         // Step of a uniform mesh
-#warning Reduce these 3 lines to 1, when #131 is fixed
-        auto second = first;
-        ++second;
-        var_t step = second->mesh_point - first->mesh_point;
+        var_t step = next->mesh_point - first->mesh_point;
 
         // Number of unknown functions
         std::size_t N = (first->value).size();
@@ -35,7 +35,7 @@ template<
         using std::placeholders::_1;
         auto rhs_of_var_only = std::bind(rhs, std::cref(rhs_arg), _1);
 
-        while(true){
+        for(;next != last; ++first, ++next){
 
             // Value of the independent variable
             var_t x = first->mesh_point;
@@ -59,10 +59,7 @@ template<
             rhs_arg = U + step*X3;
             X4 = rhs_of_var_only(x + step);
 
-            ++first;
-            if(first == last) break;
-
-            first->value = U + step/6.0*(X1 + 2.0*X2 + 2.0*X3 + X4);
+            next->value = U + step/6.0*(X1 + 2.0*X2 + 2.0*X3 + X4);
         }
     }
 
