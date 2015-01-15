@@ -26,3 +26,6 @@ if (${TRIQS_WITH_PYTHON_SUPPORT})
   add_subdirectory(test)
  endif(${Tests})
 endif(${TRIQS_WITH_PYTHON_SUPPORT})
+
+# Compile C++ benchmarks
+add_subdirectory(benchmark)
