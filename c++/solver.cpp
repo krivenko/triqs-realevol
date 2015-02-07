@@ -7,9 +7,9 @@
 
 namespace realevol {
 
-using triqs::utility::imperative_operator;
-using triqs::utility::sub_hilbert_space;
-using triqs::utility::fock_state_t;
+using triqs::hilbert_space::imperative_operator;
+using triqs::hilbert_space::sub_hilbert_space;
+using triqs::hilbert_space::fock_state_t;
 
 template<bool ComplexOperators>
 solver<ComplexOperators>::solver(std::set<indices_t> const& operator_indices) :

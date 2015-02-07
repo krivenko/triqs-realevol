@@ -7,25 +7,26 @@
 #include "time_expr_c.hpp"
 
 #include <triqs/operators/many_body_operator.hpp>
-#include <triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp>
-#include <triqs/draft/hilbert_space_tools/hilbert_space.hpp>
-#include <triqs/draft/hilbert_space_tools/imperative_operator.hpp>
-#include <triqs/draft/hilbert_space_tools/state.hpp>
+#include <triqs/hilbert_space/fundamental_operator_set.hpp>
+#include <triqs/hilbert_space/hilbert_space.hpp>
+#include <triqs/hilbert_space/imperative_operator.hpp>
+#include <triqs/hilbert_space/state.hpp>
+#include <triqs/hilbert_space/space_partition.hpp>
 #include <triqs/utility/draft/numeric_ops.hpp>
 
 #include "mesh_container.hpp"
-#include "space_partition.hpp"
 
 namespace realevol {
 
 using dcomplex = std::complex<double>;
 
 using triqs::utility::many_body_operator;
-using triqs::utility::imperative_operator;
-using triqs::utility::state;
-using triqs::utility::fundamental_operator_set;
-using triqs::utility::hilbert_space;
-using triqs::utility::sub_hilbert_space;
+using triqs::hilbert_space::imperative_operator;
+using triqs::hilbert_space::state;
+using triqs::hilbert_space::fundamental_operator_set;
+using triqs::hilbert_space::hilbert_space;
+using triqs::hilbert_space::sub_hilbert_space;
+using triqs::hilbert_space::space_partition;
 
 template<bool ComplexOp> using operator_coeff_t = typename std::conditional<ComplexOp,time_expr_c,time_expr_r>::type;
 template<bool ComplexOp> using operator_t = many_body_operator<operator_coeff_t<ComplexOp>>;
