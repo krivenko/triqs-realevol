@@ -13,10 +13,12 @@
 #include "common.hpp"
 #include "any_mesh.hpp"
 #include "mesh_container.hpp"
-#include "space_partition.hpp"
 #include "lpt_scheduler.hpp"
 #include "schroedinger_worker.hpp"
 #include "observables_worker.hpp"
+
+using triqs::hilbert_space::project;
+using triqs::hilbert_space::fock_state_t;
 
 namespace realevol {
 
