@@ -1,29 +1,54 @@
+/*******************************************************************************
+ *
+ * TRIQS: a Toolbox for Research in Interacting Quantum Systems
+ *
+ * Copyright (C) 2015 I. Krivenko
+ *
+ * TRIQS is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * TRIQS is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * TRIQS. If not, see <http://www.gnu.org/licenses/>.
+ *
+ ******************************************************************************/
+#include <test_tools.hpp>
+
 #include <cstdlib>
 #include <cmath>
 #include <complex>
 #include <sstream>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
-#include <triqs/gfs/meshes/segment.hpp>
+//#include <triqs/gfs/meshes/segment.hpp>
+#include <triqs/utility/complex_ops.hpp>
 
-#include "time_expr_r.hpp"
-#include "time_expr_c.hpp"
+#include "time_expr.hpp"
 
 using namespace realevol;
-using triqs::gfs::segment_mesh;
+//using triqs::gfs::segment_mesh;
 
-int main()
-{
-    {
-    // Test real-valued expressions
-    using expr_t = time_expr_r;
+time_expr te1("t^2"), te2("t + sin(pi/2)"), te3("sqrt(9.0) + 1.5");
+time_expr te4("t^2",1.0), te5("t + sin(pi/2)","t^3");
+time_expr te6("sqrt(9.0) + 1.5","2.9"), te7(1.9+2.8_j);
 
-    expr_t te1("t^2"), te2("t + sin(pi/2)"), te3("sqrt(9.0) + 1.5");
+TEST(time_expr,is_constant){
 
-    // Check whether the expressions really depend on time
-    if(is_constant(te1) || is_constant(te2) || !is_constant(te3))
-        return EXIT_FAILURE;
+  EXPECT_FALSE(is_constant(te1));
+  EXPECT_FALSE(is_constant(te2));
+  EXPECT_TRUE(is_constant(te3));
+  EXPECT_FALSE(is_constant(te4));
+  EXPECT_FALSE(is_constant(te5));
+  EXPECT_TRUE(is_constant(te6));
+  EXPECT_TRUE(is_constant(te7));
 
+/*
     // Write to a archive
     std::stringstream archive_str;
     boost::archive::text_oarchive oa(archive_str);
@@ -85,7 +110,7 @@ int main()
         if(std::abs(halfppte2(T[i]) - (0.5*TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
     }
 
-    // Division of expressions 
+    // Division of expressions
     expr_t te1dte2 = te1 / te2;
     expr_t te1dhalf = te1 / 0.5;
     expr_t halfdte2 = 0.5 / te2;
@@ -118,17 +143,9 @@ int main()
     if(tel2 != 0.3_te) return EXIT_FAILURE;
     }
     {
-    // Test complex-valued expressions
-    using expr_t = time_expr_c;
-
-    const std::complex<double> I(0,1);
 
     expr_t te1("t^2",1.0), te2("t + sin(pi/2)","t^3");
     expr_t te3("sqrt(9.0) + 1.5","2.9"), te4(1.9+I*2.8);
-
-    // Check whether the expressions really depend on time
-    if(is_constant(te1) || is_constant(te2) || !is_constant(te3) || !is_constant(te4))
-        return EXIT_FAILURE;
 
     // Write to a archive
     std::stringstream archive_str;
@@ -214,7 +231,7 @@ int main()
         if(std::abs(ihalfppte2(T[i]) - (0.5*I*TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
     }
 
-    // Division of expressions 
+    // Division of expressions
     expr_t te1dte2 = te1 / te2;
     expr_t te1dhalf = te1 / 0.5;
     expr_t halfdte2 = 0.5 / te2;
@@ -243,6 +260,7 @@ int main()
     if(tel1 != "t^3-2*t"_cte) return EXIT_FAILURE;
     if(tel2 != 0.3_cte) return EXIT_FAILURE;
 
-    }
-    return EXIT_SUCCESS;
+    }*/
 }
+
+MAKE_MAIN;

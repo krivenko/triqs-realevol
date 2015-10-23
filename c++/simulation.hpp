@@ -29,29 +29,28 @@ struct remote_index_t {
     int local_index;
 };
 
-template<bool ComplexOp>
 class simulation : public boost::static_visitor<var_results_t> {
 
     fundamental_operator_set fops;
-    space_partition_t<ComplexOp> SP;
+    space_partition_t SP;
     std::vector<sub_hilbert_space> subspaces;
     std::vector<state_on_subspace_t> sub_init_states;
-    op_on_subspace_t<ComplexOp> hamiltonian;
+    op_on_subspace_t hamiltonian;
     double hbar;
     ode_solve_method method;
     long stored_psi_values;
-    std::map<std::string,operator_t<ComplexOp>> observables;
+    std::map<std::string,operator_t> observables;
 
     // MPI data structures
     boost::mpi::communicator & comm;
     std::vector<schedule_t<int>> schedules;
     std::vector<remote_index_t> subspace_disp_table;  // subspace -> remote_index
 
-    template<bool,typename> friend class observables_worker;
+    template<typename> friend class observables_worker;
 
 public:
 
-    using params_t = solve_parameters_t<ComplexOp>;
+    using params_t = solve_parameters_t;
 
     simulation(boost::mpi::communicator & comm,
                fundamental_operator_set const& fops,
@@ -188,13 +187,13 @@ private:
         auto const& my_schedule = schedules[comm.rank()];
 
         // Workers to solve the equation
-        std::vector<schroedinger_worker<ComplexOp,Mesh,Method>> workers;
+        std::vector<schroedinger_worker<Mesh,Method>> workers;
         workers.reserve(my_schedule.size());
         // Container with partial solutions:
         std::vector<mesh_container_cyclic<state_on_subspace_t,Mesh>> solution_parts;
         solution_parts.reserve(my_schedule.size());
 
-        observables_worker<ComplexOp,Mesh> obs_worker(mesh,observables,solution_parts,*this);
+        observables_worker<Mesh> obs_worker(mesh,observables,solution_parts,*this);
 
         for(auto const& job : my_schedule){
             solution_parts.emplace_back(mesh,stored_psi_values);
