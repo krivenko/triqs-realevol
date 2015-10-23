@@ -9,10 +9,10 @@ using namespace triqs::utility;
 
 namespace realevol {
 
-template<bool ComplexOp, typename Mesh, ode_solve_method Method> class schroedinger_worker;
+template<typename Mesh, ode_solve_method Method> class schroedinger_worker;
 
 // Runge-Kutta version
-template<bool ComplexOp, typename Mesh> class schroedinger_worker<ComplexOp,Mesh,method_runge_kutta> {
+template<typename Mesh> class schroedinger_worker<Mesh,method_runge_kutta> {
 
 public:
     using mesh_t = Mesh;
@@ -21,10 +21,10 @@ public:
 private:
     // RHS part of Schroedinger's equation
     struct rhs_t {
-        op_on_subspace_t<ComplexOp> h;
+        op_on_subspace_t h;
         double hbar;
 
-        rhs_t(op_on_subspace_t<ComplexOp> const& hamiltonian, double hbar) : h(hamiltonian), hbar(hbar) {}
+        rhs_t(op_on_subspace_t const& hamiltonian, double hbar) : h(hamiltonian), hbar(hbar) {}
         state_on_subspace_t operator()(state_on_subspace_t const& psi, double t) const { return h(psi,t)/(1_j*hbar); }
     };
 
@@ -35,7 +35,7 @@ private:
 
 public:
 
-    schroedinger_worker(op_on_subspace_t<ComplexOp> const& hamiltonian, solution_t & solution, double hbar) :
+    schroedinger_worker(op_on_subspace_t const& hamiltonian, solution_t & solution, double hbar) :
         rhs(hamiltonian,hbar), solution(solution), solver(rhs),
         it1(std::begin(solution)), it2(it1 + solution.storage_size())
     {}
@@ -53,7 +53,7 @@ public:
 };
 
 // Lanczos version
-template<bool ComplexOp, typename Mesh> class schroedinger_worker<ComplexOp,Mesh,method_lanczos> {
+template<typename Mesh> class schroedinger_worker<Mesh,method_lanczos> {
 
 public:
     using mesh_t = Mesh;
@@ -62,9 +62,9 @@ public:
 private:
     // RHS part of Schroedinger's equation
     struct rhs_t {
-        op_on_subspace_t<ComplexOp> h;
+        op_on_subspace_t h;
 
-        rhs_t(op_on_subspace_t<ComplexOp> const& hamiltonian) : h(hamiltonian) {}
+        rhs_t(op_on_subspace_t const& hamiltonian) : h(hamiltonian) {}
         state_on_subspace_t operator()(state_on_subspace_t const& psi, double t) const { return h(psi,t); }
     };
 
@@ -76,7 +76,7 @@ private:
 
 public:
 
-    schroedinger_worker(op_on_subspace_t<ComplexOp> const& hamiltonian, solution_t & solution, double hbar) :
+    schroedinger_worker(op_on_subspace_t const& hamiltonian, solution_t & solution, double hbar) :
         rhs(hamiltonian), solution(solution), hbar(hbar), solver(rhs),
         it1(std::begin(solution)), it2(it1 + solution.storage_size())
     {}
