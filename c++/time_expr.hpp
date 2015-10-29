@@ -27,6 +27,7 @@
 
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/split_member.hpp>
+#include <boost/concept_check.hpp>
 
 #include <triqs/utility/draft/numeric_ops.hpp>
 #include <triqs/utility/mini_vector.hpp>
@@ -38,6 +39,8 @@
 #include "exprtk/exprtk.hpp"
 
 namespace realevol {
+
+using dcomplex = std::complex<double>;
 
 // Time-dependent expressions;
 class time_expr : public boost::operators<time_expr>
@@ -54,7 +57,7 @@ public:
   time_expr();
   time_expr(double r);
   time_expr(double r, double i);
-  time_expr(std::complex<double> const& z);
+  time_expr(dcomplex const& z);
   time_expr(std::string const& re_str);
   time_expr(const char* str);
 
@@ -66,7 +69,7 @@ public:
   time_expr(double r, const char* im_str);
 
   time_expr(time_expr const&);
-  time_expr(time_expr &&);
+  time_expr(time_expr &&) = default;
 
   // Assignments
   time_expr & operator=(double r);
@@ -87,7 +90,7 @@ public:
   bool is_real() const { return _is_real; }
 
   // Evaluation of the expression
-  std::complex<double> operator()(double t) const;
+  dcomplex operator()(double t) const;
 
   friend bool is_constant(time_expr const& te) {
     return exprtk::expression_helper<double>::is_constant(te.re) &&
@@ -103,6 +106,10 @@ public:
   friend std::ostream& operator<<(std::ostream& os, time_expr const& te);
 
 private:
+
+  inline exprtk::symbol_table<double> create_sym_table() const;
+  inline void init_re_expr(std::string const& str, exprtk::symbol_table<double> & symt);
+  inline void init_im_expr(std::string const& str, exprtk::symbol_table<double> & symt);
 
   // Methods for boost::serialization
   friend class boost::serialization::access;

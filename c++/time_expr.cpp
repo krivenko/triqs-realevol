@@ -25,6 +25,27 @@ namespace realevol {
 // Global exprtk::parser object
 exprtk::parser<double> parser;
 
+// Helper methods
+exprtk::symbol_table<double> time_expr::create_sym_table() const {
+  exprtk::symbol_table<double> symt;
+  symt.add_variable("t",arg);
+  symt.add_constants();
+  return symt;
+}
+
+void time_expr::init_re_expr(std::string const& str, exprtk::symbol_table<double> & symt) {
+  re.register_symbol_table(symt);
+  parser.compile(str,re);
+  if(exprtk::expression_helper<double>::is_constant(re))
+    this->re_str = std::to_string(re());
+}
+void time_expr::init_im_expr(std::string const& str, exprtk::symbol_table<double> & symt) {
+  im.register_symbol_table(symt);
+  parser.compile(str,im);
+  if(exprtk::expression_helper<double>::is_constant(im))
+    this->im_str = std::to_string(im());
+}
+
 // Constructors
 time_expr::time_expr() : time_expr(.0) {}
 
@@ -32,7 +53,7 @@ time_expr::time_expr(double r) : time_expr(std::to_string(r)) {}
 
 time_expr::time_expr(double r, double i) : time_expr(std::to_string(r),std::to_string(i)) {}
 
-time_expr::time_expr(std::complex<double> const& z) : time_expr(z.real(),z.imag()) {}
+time_expr::time_expr(dcomplex const& z) : time_expr(z.real(),z.imag()) {}
 
 time_expr::time_expr(const char* str) : time_expr(std::string(str)) {}
 
@@ -46,82 +67,74 @@ time_expr::time_expr(double r, const char* im_str) : time_expr(std::to_string(r)
 
 time_expr::time_expr(std::string const& str) :
   _is_real(true), re_str(str) {
-  exprtk::symbol_table<double> symt;
-  symt.add_variable("t",arg);
-  symt.add_constants();
-  re.register_symbol_table(symt);
-  parser.compile(str,re);
-  if(exprtk::expression_helper<double>::is_constant(re))
-    this->re_str = std::to_string(re());
+  auto symt = create_sym_table();
+  init_re_expr(str,symt);
 }
 
 time_expr::time_expr(std::string const& re_str, std::string const& im_str) :
   _is_real(false), re_str(re_str), im_str(im_str) {
-  exprtk::symbol_table<double> symt;
-  symt.add_variable("t",arg);
-  symt.add_constants();
-  re.register_symbol_table(symt);
-  im.register_symbol_table(symt);
+  auto symt = create_sym_table();
+  init_re_expr(re_str,symt);
+  init_im_expr(im_str,symt);
+}
+
+time_expr::time_expr(time_expr const& te) :
+  _is_real(te._is_real), re_str(te.re_str), im_str(te.im_str) {
+  auto symt = create_sym_table();
+  init_re_expr(re_str,symt);
+  if(!_is_real) init_im_expr(im_str,symt);
+}
+
+dcomplex time_expr::operator()(double t) const {
+    arg = t;
+    return _is_real ? re.value() : dcomplex(re.value(),im.value());
+}
+
+std::ostream& operator<<(std::ostream& os, time_expr const& te)
+{
+  return te._is_real ? (os << te.re_str) :
+                       (os << "(" << te.re_str << "," << te.im_str << ")");
+}
+
+time_expr time_expr::operator-() const
+{
+  return _is_real ? time_expr("-(" + re_str + ")") :
+                    time_expr("-(" + re_str + ")","-(" + im_str + ")");
+}
+
+time_expr & time_expr::operator=(const time_expr& te) {
+  re_str = te.re_str;
   parser.compile(re_str,re);
-  parser.compile(im_str,im);
-  if(exprtk::expression_helper<double>::is_constant(re))
-    this->re_str = std::to_string(re());
-  if(exprtk::expression_helper<double>::is_constant(im))
-    this->im_str = std::to_string(im());
+  if(!te._is_real) {
+    im_str = te.im_str;
+    if(_is_real) {
+      auto symt = create_sym_table();
+      init_im_expr(im_str,symt);
+    } else
+      parser.compile(im_str,im);
+  }
+  _is_real = te._is_real;
+  return *this;
+}
+
+time_expr & time_expr::operator=(std::string const& str) {
+  _is_real = true;
+  re_str = str;
+  parser.compile(re_str,re);
+  return *this;
+}
+
+time_expr & time_expr::operator=(const char* expr) {
+  *this = std::string(expr);
+  return *this;
+}
+
+time_expr & time_expr::operator=(double r) {
+  *this = std::to_string(r);
+  return *this;
 }
 
 /*
-time_expr::time_expr(time_expr const& te) :
-  _is_real(te._is_real), re_str(te.re_str), im_str(te.im_str), re(te.re), im(te.im), arg(te.arg) {
-  exprtk::symbol_table<double> symt;
-  symt.add_variable("t",arg);
-  symt.add_constants();
-  expr.register_symbol_table(symt);
-  parser.compile(str,expr);
-}
-
-auto time_expr_r::operator()(double t) const -> double
-{
-    arg = t;
-    return expr.value();
-}
-
-std::ostream& operator<<(std::ostream& os, time_expr_r const& te)
-{
-    return (os << te.str);
-}
-
-auto time_expr_r::operator-() const -> time_expr_r
-{
-    return time_expr_r("-(" + str + ")");
-}
-
-auto time_expr_r::operator=(const time_expr_r& te) -> time_expr_r &
-{
-    this->str = te.str;
-    parser.compile(str,expr);
-    return *this;
-}
-
-auto time_expr_r::operator=(std::string const& str) -> time_expr_r &
-{
-    this->str = str;
-    parser.compile(str,expr);
-    return *this;
-}
-
-auto time_expr_r::operator=(const char* expr) -> time_expr_r &
-{
-    *this = std::string(expr);
-    return *this;
-}
-
-auto time_expr_r::operator=(double r) -> time_expr_r &
-{
-    *this = boost::lexical_cast<std::string>(r);
-    return *this;
-}
-
 auto time_expr_r::operator+=(const time_expr_r& te) -> time_expr_r &
 {
     str = "(" + str + ")+(" + te.str + ")";
@@ -157,10 +170,11 @@ auto time_expr_r::operator/=(const time_expr_r& te) -> time_expr_r &
         str = boost::lexical_cast<std::string>(expr());
     return *this;
 }
-
-bool time_expr_r::operator==(const time_expr_r& te) const
-{
-    return str == te.str;
-}
 */
+bool time_expr::operator==(const time_expr& te) const {
+  if(_is_real != te._is_real) return false;
+  return re_str == te.re_str &&
+        (_is_real ? true : (im_str == te.im_str));
+}
+
 }
