@@ -33,17 +33,26 @@ exprtk::symbol_table<double> time_expr::create_sym_table() const {
   return symt;
 }
 
-void time_expr::init_re_expr(std::string const& str, exprtk::symbol_table<double> & symt) {
-  re.register_symbol_table(symt);
-  parser.compile(str,re);
+void time_expr::recompile_re_expr() {
+  bool res = parser.compile(re_str,re);
+  if(!res) TRIQS_RUNTIME_ERROR << "ExprTk error in the real part '" << re_str << "': " << parser.error();
   if(exprtk::expression_helper<double>::is_constant(re))
-    this->re_str = std::to_string(re());
+    re_str = std::to_string(re());
 }
-void time_expr::init_im_expr(std::string const& str, exprtk::symbol_table<double> & symt) {
-  im.register_symbol_table(symt);
-  parser.compile(str,im);
+void time_expr::recompile_im_expr() {
+  bool res = parser.compile(im_str,im);
+  if(!res) TRIQS_RUNTIME_ERROR << "ExprTk error in the imaginary part '" << im_str << "': " << parser.error();
   if(exprtk::expression_helper<double>::is_constant(im))
-    this->im_str = std::to_string(im());
+    im_str = std::to_string(im());
+}
+
+void time_expr::init_re_expr(exprtk::symbol_table<double> & symt) {
+  re.register_symbol_table(symt);
+  recompile_re_expr();
+}
+void time_expr::init_im_expr(exprtk::symbol_table<double> & symt) {
+  im.register_symbol_table(symt);
+  recompile_im_expr();
 }
 
 // Constructors
@@ -68,59 +77,64 @@ time_expr::time_expr(double r, const char* im_str) : time_expr(std::to_string(r)
 time_expr::time_expr(std::string const& str) :
   _is_real(true), re_str(str) {
   auto symt = create_sym_table();
-  init_re_expr(str,symt);
+  init_re_expr(symt);
 }
 
 time_expr::time_expr(std::string const& re_str, std::string const& im_str) :
   _is_real(false), re_str(re_str), im_str(im_str) {
   auto symt = create_sym_table();
-  init_re_expr(re_str,symt);
-  init_im_expr(im_str,symt);
+  init_re_expr(symt);
+  init_im_expr(symt);
 }
 
 time_expr::time_expr(time_expr const& te) :
   _is_real(te._is_real), re_str(te.re_str), im_str(te.im_str) {
   auto symt = create_sym_table();
-  init_re_expr(re_str,symt);
-  if(!_is_real) init_im_expr(im_str,symt);
+  init_re_expr(symt);
+  if(!_is_real) init_im_expr(symt);
 }
 
 dcomplex time_expr::operator()(double t) const {
-    arg = t;
-    return _is_real ? re.value() : dcomplex(re.value(),im.value());
+  arg = t;
+  return _is_real ? re.value() : dcomplex(re.value(),im.value());
 }
 
-std::ostream& operator<<(std::ostream& os, time_expr const& te)
-{
+std::ostream& operator<<(std::ostream& os, time_expr const& te) {
   return te._is_real ? (os << te.re_str) :
                        (os << "(" << te.re_str << "," << te.im_str << ")");
 }
 
-time_expr time_expr::operator-() const
-{
+time_expr time_expr::operator-() const {
   return _is_real ? time_expr("-(" + re_str + ")") :
                     time_expr("-(" + re_str + ")","-(" + im_str + ")");
 }
 
 time_expr & time_expr::operator=(const time_expr& te) {
   re_str = te.re_str;
-  parser.compile(re_str,re);
+  recompile_re_expr();
   if(!te._is_real) {
     im_str = te.im_str;
     if(_is_real) {
       auto symt = create_sym_table();
-      init_im_expr(im_str,symt);
+      init_im_expr(symt);
     } else
-      parser.compile(im_str,im);
+      recompile_im_expr();
+  } else {
+    im_str = "";
+    im.release();
   }
   _is_real = te._is_real;
   return *this;
 }
 
 time_expr & time_expr::operator=(std::string const& str) {
+  if(!_is_real) {
+    im_str = "";
+    im.release();
+  }
   _is_real = true;
   re_str = str;
-  parser.compile(re_str,re);
+  recompile_re_expr();
   return *this;
 }
 
@@ -134,43 +148,87 @@ time_expr & time_expr::operator=(double r) {
   return *this;
 }
 
-/*
-auto time_expr_r::operator+=(const time_expr_r& te) -> time_expr_r &
-{
-    str = "(" + str + ")+(" + te.str + ")";
-    parser.compile(str,expr);
-    if(exprtk::expression_helper<double>::is_constant(expr))
-        str = boost::lexical_cast<std::string>(expr());
-    return *this;
+time_expr & time_expr::operator+=(const time_expr& te) {
+  re_str = "(" + re_str + ")+(" + te.re_str + ")";
+  recompile_re_expr();
+  if(!te._is_real) {
+    if(_is_real) {
+      im_str = te.im_str;
+      auto symt = create_sym_table();
+      init_im_expr(symt);
+      _is_real = false;
+    } else {
+      im_str = "(" + im_str + ")+(" + te.im_str + ")";
+      recompile_im_expr();
+    }
+  }
+  return *this;
 }
 
-auto time_expr_r::operator-=(const time_expr_r& te) -> time_expr_r &
-{
-    str = "(" + str + ")-(" + te.str + ")";
-    parser.compile(str,expr);
-    if(exprtk::expression_helper<double>::is_constant(expr))
-        str = boost::lexical_cast<std::string>(expr());
-    return *this;
+time_expr & time_expr::operator-=(const time_expr& te) {
+  re_str = "(" + re_str + ")-(" + te.re_str + ")";
+  recompile_re_expr();
+  if(!te._is_real) {
+    if(_is_real) {
+      im_str = "-(" + te.im_str + ")";
+      auto symt = create_sym_table();
+      init_im_expr(symt);
+      _is_real = false;
+    } else {
+      im_str = "(" + im_str + ")-(" + te.im_str + ")";
+      recompile_im_expr();
+    }
+  }
+  return *this;
 }
 
-auto time_expr_r::operator*=(const time_expr_r& te) -> time_expr_r &
-{
-    str = "(" + str + ")*(" + te.str + ")";
-    parser.compile(str,expr);
-    if(exprtk::expression_helper<double>::is_constant(expr))
-        str = boost::lexical_cast<std::string>(expr());
-    return *this;
+time_expr & time_expr::operator*=(const time_expr& te) {
+  auto new_re_str = "(" + re_str + ")*(" + te.re_str + ")";
+  if(!_is_real || !te._is_real) {
+    if(!_is_real && !te._is_real) {
+      new_re_str += "-(" + im_str + ")*(" + te.im_str + ")";
+      im_str = "(" + re_str + ")*(" + te.im_str + ")+(" + im_str + ")*(" + te.re_str + ")";
+      recompile_im_expr();
+    } else if(te._is_real) {
+      im_str = "(" + im_str + ")*(" + te.re_str + ")";
+      recompile_im_expr();
+    } else { // _is_real
+      im_str = "(" + re_str + ")*(" + te.im_str + ")";
+      auto symt = create_sym_table();
+      init_im_expr(symt);
+      _is_real = false;
+    }
+  }
+  re_str = new_re_str;
+  recompile_re_expr();
+  return *this;
 }
 
-auto time_expr_r::operator/=(const time_expr_r& te) -> time_expr_r &
-{
-    str = "(" + str + ")/(" + te.str + ")";
-    parser.compile(str,expr);
-    if(exprtk::expression_helper<double>::is_constant(expr))
-        str = boost::lexical_cast<std::string>(expr());
-    return *this;
+time_expr & time_expr::operator/=(const time_expr& te) {
+  auto denom = "(" + te.re_str + ")^2";
+  auto new_re_str = "(" + re_str + ")*(" + te.re_str + ")";
+  if(!_is_real || !te._is_real) {
+    if(!_is_real && !te._is_real) {
+      denom += "+(" + te.im_str + ")^2";
+      new_re_str += "+(" + im_str + ")*(" + te.im_str + ")";
+      im_str = "((" + im_str + ")*(" + te.re_str + ")-(" + re_str + ")*(" + te.im_str + "))/(" + denom + ")";
+      recompile_im_expr();
+    } else if(te._is_real) {
+      im_str = "(" + im_str + ")*(" + te.re_str + ")/(" + denom + ")";
+      recompile_im_expr();
+    } else { // _is_real
+      denom += "+(" + te.im_str + ")^2";
+      im_str = "-(" + re_str + ")*(" + te.im_str + ")/(" + denom + ")";
+      auto symt = create_sym_table();
+      init_im_expr(symt);
+      _is_real = false;
+    }
+  }
+  re_str = "(" + new_re_str + ")/(" + denom + ")";
+  recompile_re_expr();
+  return *this;
 }
-*/
+
 bool time_expr::operator==(const time_expr& te) const {
   if(_is_real != te._is_real) return false;
   return re_str == te.re_str &&
