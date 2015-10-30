@@ -89,6 +89,15 @@ public:
   // Is this expression real?
   bool is_real() const { return _is_real; }
 
+  // Real part
+  time_expr real() const { return time_expr(re_str); }
+
+  // Imaginary part
+  time_expr imag() const { return _is_real ? time_expr() : time_expr(im_str); }
+
+  // Complex conjugate
+  time_expr conj() const { return _is_real ? *this : time_expr(re_str,"-(" + im_str + ")"); }
+
   // Evaluation of the expression
   dcomplex operator()(double t) const;
 
@@ -107,59 +116,64 @@ public:
 
 private:
 
-  inline exprtk::symbol_table<double> create_sym_table() const;
-  inline void init_re_expr(std::string const& str, exprtk::symbol_table<double> & symt);
-  inline void init_im_expr(std::string const& str, exprtk::symbol_table<double> & symt);
+  exprtk::symbol_table<double> create_sym_table() const;
+  void recompile_re_expr();
+  void recompile_im_expr();
+  void init_re_expr(exprtk::symbol_table<double> & symt);
+  void init_im_expr(exprtk::symbol_table<double> & symt);
 
   // Methods for boost::serialization
   friend class boost::serialization::access;
-/*
+
   template<class Archive>
   void save(Archive & ar, const unsigned int version) const {
     ar & _is_real;
     ar & TRIQS_MAKE_NVP("re_str",re_str);
     if(!_is_real) ar & TRIQS_MAKE_NVP("im_str",im_str);
   }
-
   template<class Archive>
   void load(Archive & ar, const unsigned int version) {
-    // TODO
+    bool was_real = _is_real;
     ar & _is_real;
-    std::string str;
-
-    if(_is_real) {
-      ar & str;
-      *this = time_expr(str);
+    ar & re_str;
+    recompile_re_expr();
+    if(!_is_real) {
+      ar & im_str;
+      if(was_real) {
+        auto symt = create_sym_table();
+        init_im_expr(symt);
+      } else
+        recompile_im_expr();
     } else {
-      ar & str;
+      im_str = "";
+      im.release();
     }
   }
-  BOOST_SERIALIZATION_SPLIT_MEMBER()*/
+  BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
 
 inline time_expr operator ""_te (long double r){ return time_expr(r); }
 inline time_expr operator ""_te(const char* expr, std::size_t) { return time_expr(expr); };
 
-/*
 // Replace the expression with a constant if it takes equal values at all mesh points
-template<class Mesh, class Expr>
-bool try_reduce_to_constant(Expr& te, Mesh const& m)
-{
-    auto it = m.begin();
-    auto value = te(*it);
+template<class Mesh>
+bool try_reduce_to_constant(time_expr & te, Mesh const& m) {
+  auto it = m.begin();
+  auto value = te(*it);
 
-    for(it++; it != m.end(); it++)
-        if(!triqs::utility::is_zero(te(*it) - value)) return false;
+  using triqs::utility::is_zero;
+  for(it++; it != m.end(); it++)
+    if(!is_zero(te(*it) - value)) return false;
 
-    te = Expr(value);
-    return true;
-}*/
+  te = time_expr(value);
+  return true;
+}
 
 }
 
 namespace triqs { namespace utility {
 
 inline bool is_zero(realevol::time_expr const& te, double = 0 /* neglected */) { return te.is_zero(); }
-inline realevol::time_expr conj(realevol::time_expr const& te) { return te; }
+inline realevol::time_expr conj(realevol::time_expr const& te) { return te.conj(); }
 
 }}

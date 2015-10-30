@@ -26,20 +26,50 @@
 #include <sstream>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
-//#include <triqs/gfs/meshes/segment.hpp>
+#include <triqs/gfs/gf.hpp>
+#include <triqs/gfs/meshes/segment.hpp>
 #include <triqs/utility/complex_ops.hpp>
 
 #include "time_expr.hpp"
 
 using namespace realevol;
-//using triqs::gfs::segment_mesh;
+using triqs::gfs::segment_mesh;
 
 time_expr te1("t^2"), te2("t + sin(pi/2)"), te3("sqrt(9.0) + 1.5");
 time_expr te4("t^2",1.0), te5("t + sin(pi/2)","t^3");
 time_expr te6("sqrt(9.0) + 1.5","2.9"), te7(1.9+2.8_j);
 
-TEST(time_expr,is_constant){
+double T[] = {0, 0.1, 10, 55};
+dcomplex TE1_res[] = {0, 0.01, 100, 3025};
+dcomplex TE2_res[] = {1, 1.1, 11, 56};
+dcomplex TE3_res[] = {4.5, 4.5, 4.5, 4.5};
+dcomplex TE4_res[] = {{0,1.0}, {0.01,1.0}, {100,1.0}, {3025,1.0}};
+dcomplex TE5_res[] = {{1,0}, {1.1,0.001}, {11,1000}, {56,166375}};
+dcomplex TE6_res[] = {{4.5,2.9}, {4.5,2.9}, {4.5,2.9}, {4.5,2.9}};
+dcomplex TE7_res[] = {{1.9,2.8}, {1.9,2.8}, {1.9,2.8}, {1.9,2.8}};
 
+TEST(time_expr,Assignments) {
+  time_expr tea;
+  tea = te1; EXPECT_EQ(te1,tea);
+  tea = "t^2"; EXPECT_EQ(te1,tea);
+  tea = std::string("t^2"); EXPECT_EQ(te1,tea);
+  tea = 4.5; EXPECT_EQ(te3,tea);
+  tea = 0.7_te; EXPECT_EQ(time_expr("0.7"),tea);
+  tea = "2*t+4*t^3"_te; EXPECT_EQ(time_expr("2*t+4*t^3"),tea);
+  tea = "8-t"_te; EXPECT_EQ(time_expr("8-t"),tea);
+  tea = time_expr("t^2",1.0); EXPECT_EQ(time_expr("t^2",1.0),tea);
+  tea = time_expr{2.0,5.0}; EXPECT_EQ(time_expr("2.0","5.0"),tea);
+  EXPECT_EQ(time_expr(2.0,5.0),tea);
+}
+
+TEST(time_expr,Literals) {
+  time_expr tel1 = "t^3-2*t";
+  time_expr tel2 = 0.3;
+  EXPECT_EQ(tel1,"t^3-2*t"_te);
+  EXPECT_EQ(tel2,0.3_te);
+}
+
+TEST(time_expr,is_constant) {
   EXPECT_FALSE(is_constant(te1));
   EXPECT_FALSE(is_constant(te2));
   EXPECT_TRUE(is_constant(te3));
@@ -47,220 +77,154 @@ TEST(time_expr,is_constant){
   EXPECT_FALSE(is_constant(te5));
   EXPECT_TRUE(is_constant(te6));
   EXPECT_TRUE(is_constant(te7));
+}
 
-/*
-    // Write to a archive
-    std::stringstream archive_str;
-    boost::archive::text_oarchive oa(archive_str);
-    oa << te1; oa << te2; oa << te3;
+TEST(time_expr,RealImag) {
+  time_expr te0 = "0";
 
-    // Read from an archive
-    boost::archive::text_iarchive ia(archive_str);
-    expr_t read_expr;
-    ia >> read_expr; if(read_expr != te1) return EXIT_FAILURE;
-    ia >> read_expr; if(read_expr != te2) return EXIT_FAILURE;
-    ia >> read_expr; if(read_expr != te3) return EXIT_FAILURE;
+  using namespace triqs::utility;
+  EXPECT_TRUE(is_zero(te0));
+  EXPECT_FALSE(is_zero(te1));
+  EXPECT_EQ(time_expr("sqrt(9.0) + 1.5"),te3.real());
+  EXPECT_EQ(time_expr(),te3.imag());
+  EXPECT_EQ(time_expr("sqrt(9.0) + 1.5"),conj(te3));
+  EXPECT_EQ(time_expr("t + sin(pi/2)"),te5.real());
+  EXPECT_EQ(time_expr("t^3"),te5.imag());
+  EXPECT_EQ(time_expr("t + sin(pi/2)","-(t^3)"),conj(te5));
+}
 
-    // Check correctness of numerical expressions
-    double T[] = {0, 0.1, 10, 55};
-    double TE1_res[] = {0, 0.01, 100, 3025};
-    double TE2_res[] = {1, 1.1, 11, 56};
-    double TE3_res[] = {4.5, 4.5, 4.5, 4.5};
+TEST(time_expr,Evaluation) {
+  for(int i = 0; i < 4; ++i){
+    double t = T[i];
+    EXPECT_CLOSE(TE1_res[i],te1(t));
+    EXPECT_CLOSE(TE2_res[i],te2(t));
+    EXPECT_CLOSE(TE3_res[i],te3(t));
+    EXPECT_CLOSE(TE4_res[i],te4(t));
+    EXPECT_CLOSE(TE5_res[i],te5(t));
+    EXPECT_CLOSE(TE6_res[i],te6(t));
+    EXPECT_CLOSE(TE7_res[i],te7(t));
+  }
+}
 
-    for(int i = 0; i < 4; ++i){
-        if(std::abs(te1(T[i]) - TE1_res[i]) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(te2(T[i]) - TE2_res[i]) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(te3(T[i]) - TE3_res[i]) >= 1e-10) return EXIT_FAILURE;
-    }
+TEST(time_expr,UnaryMinus) {
+  time_expr mte2 = -te2;
+  time_expr mte5 = -te5;
+  for(int i = 0; i < 4; ++i) {
+    double t = T[i];
+    EXPECT_CLOSE(-TE2_res[i],mte2(t));
+    EXPECT_CLOSE(-TE5_res[i],mte5(t));
+  }
+}
 
-    // Unary minus
-    expr_t mte2 = -te2;
-    for(int i = 0; i < 4; ++i){
-        if(std::abs(mte2(T[i]) - (-TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
-    }
+TEST(time_expr,Addition) {
+  time_expr te1pte2 = te1 + te2;
+  time_expr te1phalf = te1 + 0.5;
+  time_expr halfpte2 = 0.5 + te2;
+  time_expr te1pihalf = te1 + 0.5_j;
+  time_expr ihalfpte2 = 0.5_j + te2;
 
-    // Addition of expressions
-    expr_t te1pte2 = te1 + te2;
-    expr_t te1phalf = te1 + 0.5;
-    expr_t halfpte2 = 0.5 + te2;
+  for(int i = 0; i < 4; ++i){
+    double t = T[i];
+    EXPECT_CLOSE(TE1_res[i]+TE2_res[i],te1pte2(t));
+    EXPECT_CLOSE(TE1_res[i]+0.5,te1phalf(t));
+    EXPECT_CLOSE(0.5+TE2_res[i],halfpte2(t));
+    EXPECT_CLOSE(TE1_res[i]+0.5_j,te1pihalf(t));
+    EXPECT_CLOSE(0.5_j+TE2_res[i],ihalfpte2(t));
+  }
+}
 
-    for(int i = 0; i < 4; ++i){
-        if(std::abs(te1pte2(T[i]) - (TE1_res[i]+TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(te1phalf(T[i]) - (TE1_res[i]+0.5)) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(halfpte2(T[i]) - (0.5+TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
-    }
+TEST(time_expr,Subtraction) {
+  time_expr te1mte2 = te1 - te2;
+  time_expr te1mhalf = te1 - 0.5;
+  time_expr halfmte2 = 0.5 - te2;
+  time_expr te1mihalf = te1 - 0.5_j;
+  time_expr ihalfmte2 = 0.5_j - te2;
 
-    // Subtraction of expressions
-    expr_t te1mte2 = te1 - te2;
-    expr_t te1mhalf = te1 - 0.5;
-    expr_t halfmte2 = 0.5 - te2;
-    for(int i = 0; i < 4; ++i){
-        if(std::abs(te1mte2(T[i]) - (TE1_res[i]-TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(te1mhalf(T[i]) - (TE1_res[i]-0.5)) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(halfmte2(T[i]) - (0.5-TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
-    }
+  for(int i = 0; i < 4; ++i){
+    double t = T[i];
+    EXPECT_CLOSE(TE1_res[i]-TE2_res[i],te1mte2(t));
+    EXPECT_CLOSE(TE1_res[i]-0.5,te1mhalf(t));
+    EXPECT_CLOSE(0.5-TE2_res[i],halfmte2(t));
+    EXPECT_CLOSE(TE1_res[i]-0.5_j,te1mihalf(t));
+    EXPECT_CLOSE(0.5_j-TE2_res[i],ihalfmte2(t));
+  }
+}
 
-    // Multiplication of expressions
-    expr_t te1ppte2 = te1 * te2;
-    expr_t te1pphalf = te1 * 0.5;
-    expr_t halfppte2 = 0.5 * te2;
-    for(int i = 0; i < 4; ++i){
-        if(std::abs(te1ppte2(T[i]) - (TE1_res[i]*TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(te1pphalf(T[i]) - (TE1_res[i]*0.5)) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(halfppte2(T[i]) - (0.5*TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
-    }
+TEST(time_expr,Multiplication) {
+  time_expr te1ppte2 = te1 * te2;
+  time_expr te5ppte6 = te5 * te6;
+  time_expr te1pphalf = te1 * 0.5;
+  time_expr halfppte2 = 0.5 * te2;
+  time_expr te1ppihalf = te1 * 0.5_j;
+  time_expr ihalfppte2 = 0.5_j * te2;
 
-    // Division of expressions
-    expr_t te1dte2 = te1 / te2;
-    expr_t te1dhalf = te1 / 0.5;
-    expr_t halfdte2 = 0.5 / te2;
-    for(int i = 0; i < 4; ++i){
-        if(std::abs(te1dte2(T[i]) - (TE1_res[i]/TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(te1dhalf(T[i]) - (TE1_res[i]/0.5)) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(halfdte2(T[i]) - (0.5/TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
-    }
+  for(long i = 0; i < 4; ++i){
+    double t = T[i];
+    EXPECT_CLOSE(TE1_res[i]*TE2_res[i],te1ppte2(t));
+    EXPECT_CLOSE(TE5_res[i]*TE6_res[i],te5ppte6(t));
+    EXPECT_CLOSE(TE1_res[i]*0.5,te1pphalf(t));
+    EXPECT_CLOSE(0.5*TE2_res[i],halfppte2(t));
+    EXPECT_CLOSE(TE1_res[i]*0.5_j,te1ppihalf(t));
+    EXPECT_CLOSE(0.5_j*TE2_res[i],ihalfppte2(t));
+  }
+}
 
-    // Test try_reduce_to_constant()
-    expr_t te0t("0*t"), te1t("1*t");
-    if(is_constant(te0t) || is_constant(te1t)) return EXIT_FAILURE;
-    segment_mesh m(0,100,101);
-    try_reduce_to_constant(te0t, m);
-    try_reduce_to_constant(te1t, m);
-    if(!is_constant(te0t)) return EXIT_FAILURE;
-    if(is_constant(te1t)) return EXIT_FAILURE;
+TEST(time_expr,Division) {
+  time_expr te1dte2 = te1 / te2;
+  time_expr te5dte6 = te5 / te6;
+  time_expr te1dhalf = te1 / 0.5;
+  time_expr halfdte2 = 0.5 / te2;
+  time_expr te1dihalf = te1 / 0.5_j;
+  time_expr ihalfdte2 = 0.5_j / te2;
 
-    // Test assignments
-    expr_t tea;
-    tea = te1t; if(tea != te1t) return EXIT_FAILURE;
-    tea = "1*t"; if(tea != te1t) return EXIT_FAILURE;
-    tea = std::string("1*t"); if(tea != te1t) return EXIT_FAILURE;
-    tea = .0; if(tea != te0t) return EXIT_FAILURE;
+  for(int i = 0; i < 4; ++i){
+    double t = T[i];
+    EXPECT_CLOSE(TE1_res[i]/TE2_res[i],te1dte2(t));
+    EXPECT_CLOSE(TE5_res[i]/TE6_res[i],te5dte6(t));
+    EXPECT_CLOSE(TE1_res[i]/0.5,te1dhalf(t));
+    EXPECT_CLOSE(0.5/TE2_res[i],halfdte2(t));
+    EXPECT_CLOSE(TE1_res[i]/0.5_j,te1dihalf(t));
+    EXPECT_CLOSE(0.5_j/TE2_res[i],ihalfdte2(t));
+  }
+}
 
-    // Test user-defined literals
-    expr_t tel1 = "t^3-2*t";
-    expr_t tel2 = 0.3;
-    if(tel1 != "t^3-2*t"_te) return EXIT_FAILURE;
-    if(tel2 != 0.3_te) return EXIT_FAILURE;
-    }
-    {
+TEST(time_expr,try_reduce_to_constant) {
+  segment_mesh m(0,100,101);
 
-    expr_t te1("t^2",1.0), te2("t + sin(pi/2)","t^3");
-    expr_t te3("sqrt(9.0) + 1.5","2.9"), te4(1.9+I*2.8);
+  time_expr te0t("0*t"), te1t("1*t"),
+            te0t2("0*t","2"), te1tt3("1*t","t^3");
+  EXPECT_FALSE(is_constant(te0t));
+  EXPECT_FALSE(is_constant(te1t));
+  EXPECT_FALSE(is_constant(te0t2));
+  EXPECT_FALSE(is_constant(te1tt3));
 
-    // Write to a archive
-    std::stringstream archive_str;
-    boost::archive::text_oarchive oa(archive_str);
-    oa << te1; oa << te2; oa << te3;
+  try_reduce_to_constant(te0t, m);
+  try_reduce_to_constant(te1t, m);
+  try_reduce_to_constant(te0t2, m);
+  try_reduce_to_constant(te1tt3, m);
 
-    // Read from an archive
-    boost::archive::text_iarchive ia(archive_str);
-    expr_t read_expr;
-    ia >> read_expr; if(read_expr != te1) return EXIT_FAILURE;
-    ia >> read_expr; if(read_expr != te2) return EXIT_FAILURE;
-    ia >> read_expr; if(read_expr != te3) return EXIT_FAILURE;
+  EXPECT_TRUE(is_constant(te0t));
+  EXPECT_FALSE(is_constant(te1t));
+  EXPECT_TRUE(is_constant(te0t2));
+  EXPECT_FALSE(is_constant(te1tt3));
+}
 
-    // Test assignments
-    expr_t tea;
-    tea = expr_t("t^2",1.0); if(tea != expr_t("t^2",1.0)) return EXIT_FAILURE;
-    tea = 0.7_te; if(tea != expr_t("0.7")) return EXIT_FAILURE;
-    tea = "2*t+4*t^3"_te; if(tea != expr_t("2*t+4*t^3")) return EXIT_FAILURE;
-    tea = "8-t"_te; if(tea != expr_t("8-t")) return EXIT_FAILURE;
-    tea = {2.0,5.0}; if(tea != expr_t("2.0","5.0")) return EXIT_FAILURE;
-    if(tea != expr_t(2.0,5.0)) return EXIT_FAILURE;
+TEST(time_expr,Serialization) {
+  // Write to an archive
+  std::stringstream archive_str;
+  boost::archive::text_oarchive oa(archive_str);
+  oa << te1 << te2 << te3 << te4 << te5 << te6 << te7;
 
-    // Check correctness of numerical expressions
-    double T[] = {0, 0.1, 10, 55};
-    std::complex<double> TE1_res[] = {{0,1.0}, {0.01,1.0}, {100,1.0}, {3025,1.0}};
-    std::complex<double> TE2_res[] = {{1,0}, {1.1,0.001}, {11,1000}, {56,166375}};
-    std::complex<double> TE3_res[] = {{4.5,2.9}, {4.5,2.9}, {4.5,2.9}, {4.5,2.9}};
-    std::complex<double> TE4_res[] = {{1.9,2.8}, {1.9,2.8}, {1.9,2.8}, {1.9,2.8}};
-
-    for(int i = 0; i < 4; ++i){
-        if(std::abs(te1(T[i]) - TE1_res[i]) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(te2(T[i]) - TE2_res[i]) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(te3(T[i]) - TE3_res[i]) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(te4(T[i]) - TE4_res[i]) >= 1e-10) return EXIT_FAILURE;
-    }
-
-    // Unary minus
-    expr_t mte2 = -te2;
-    for(int i = 0; i < 4; ++i){
-        if(std::abs(mte2(T[i]) - (-TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
-    }
-
-    // Addition of expressions
-    expr_t te1pte2 = te1 + te2;
-    expr_t te1phalf = te1 + 0.5;
-    expr_t halfpte2 = 0.5 + te2;
-    expr_t te1pihalf = te1 + 0.5*I;
-    expr_t ihalfpte2 = 0.5*I + te2;
-
-    for(int i = 0; i < 4; ++i){
-        if(std::abs(te1pte2(T[i]) - (TE1_res[i]+TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(te1phalf(T[i]) - (TE1_res[i]+0.5)) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(halfpte2(T[i]) - (0.5+TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(te1pihalf(T[i]) - (TE1_res[i]+0.5*I)) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(ihalfpte2(T[i]) - (0.5*I+TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
-    }
-
-    // Subtraction of expressions
-    expr_t te1mte2 = te1 - te2;
-    expr_t te1mhalf = te1 - 0.5;
-    expr_t halfmte2 = 0.5 - te2;
-    expr_t te1mihalf = te1 - 0.5*I;
-    expr_t ihalfmte2 = 0.5*I - te2;
-    for(int i = 0; i < 4; ++i){
-        if(std::abs(te1mte2(T[i]) - (TE1_res[i]-TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(te1mhalf(T[i]) - (TE1_res[i]-0.5)) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(halfmte2(T[i]) - (0.5-TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(te1mihalf(T[i]) - (TE1_res[i]-0.5*I)) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(ihalfmte2(T[i]) - (0.5*I-TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
-    }
-
-    // Multiplication of expressions
-    expr_t te1ppte2 = te1 * te2;
-    expr_t te1pphalf = te1 * 0.5;
-    expr_t halfppte2 = 0.5 * te2;
-    expr_t te1ppihalf = te1 * 0.5*I;
-    expr_t ihalfppte2 = 0.5*I * te2;
-    for(int i = 0; i < 4; ++i){
-        if(std::abs(te1ppte2(T[i]) - (TE1_res[i]*TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(te1pphalf(T[i]) - (TE1_res[i]*0.5)) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(halfppte2(T[i]) - (0.5*TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(te1ppihalf(T[i]) - (TE1_res[i]*0.5*I)) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(ihalfppte2(T[i]) - (0.5*I*TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
-    }
-
-    // Division of expressions
-    expr_t te1dte2 = te1 / te2;
-    expr_t te1dhalf = te1 / 0.5;
-    expr_t halfdte2 = 0.5 / te2;
-    expr_t te1dihalf = te1 / (0.5*I);
-    expr_t ihalfdte2 = (0.5*I) / te2;
-    for(int i = 0; i < 4; ++i){
-        if(std::abs(te1dte2(T[i]) - (TE1_res[i]/TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(te1dhalf(T[i]) - (TE1_res[i]/0.5)) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(halfdte2(T[i]) - (0.5/TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(te1dihalf(T[i]) - (TE1_res[i]/(0.5*I))) >= 1e-10) return EXIT_FAILURE;
-        if(std::abs(ihalfdte2(T[i]) - ((0.5*I)/TE2_res[i])) >= 1e-10) return EXIT_FAILURE;
-    }
-
-    // Test try_reduce_to_constant()
-    expr_t te0t("0*t","2"), te1t("1*t","t^3");
-    if(is_constant(te0t) || is_constant(te1t)) return EXIT_FAILURE;
-    segment_mesh m(0,100,101);
-    try_reduce_to_constant(te0t, m);
-    try_reduce_to_constant(te1t, m);
-    if(!is_constant(te0t)) return EXIT_FAILURE;
-    if(is_constant(te1t)) return EXIT_FAILURE;
-
-    // Test user-defined literals
-    expr_t tel1 = "t^3-2*t";
-    expr_t tel2 = 0.3;
-    if(tel1 != "t^3-2*t"_cte) return EXIT_FAILURE;
-    if(tel2 != 0.3_cte) return EXIT_FAILURE;
-
-    }*/
+  // Read from an archive
+  boost::archive::text_iarchive ia(archive_str);
+  time_expr read_expr;
+  ia >> read_expr; EXPECT_EQ(te1,read_expr);
+  ia >> read_expr; EXPECT_EQ(te2,read_expr);
+  ia >> read_expr; EXPECT_EQ(te3,read_expr);
+  ia >> read_expr; EXPECT_EQ(te4,read_expr);
+  ia >> read_expr; EXPECT_EQ(te5,read_expr);
+  ia >> read_expr; EXPECT_EQ(te6,read_expr);
+  ia >> read_expr; EXPECT_EQ(te7,read_expr);
 }
 
 MAKE_MAIN;
