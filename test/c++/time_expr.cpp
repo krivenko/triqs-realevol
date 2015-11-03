@@ -191,8 +191,8 @@ TEST(time_expr,Division) {
 TEST(time_expr,try_reduce_to_constant) {
   segment_mesh m(0,100,101);
 
-  time_expr te0t("0*t"), te1t("1*t"),
-            te0t2("0*t","2"), te1tt3("1*t","t^3");
+  time_expr te0t("sgn(t - 200)"), te1t("1*t"),
+            te0t2("sgn(t - 200)","2"), te1tt3("1*t","t^3");
   EXPECT_FALSE(is_constant(te0t));
   EXPECT_FALSE(is_constant(te1t));
   EXPECT_FALSE(is_constant(te0t2));
