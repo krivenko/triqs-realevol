@@ -1,134 +1,85 @@
-from pytriqs.applications.realevol.realevol import texpr, is_constant
+from pytriqs.applications.impurity_solvers.realevol.texpr import texpr, is_constant, is_zero, conj
 from math import sin, sqrt, pi
+from numpy import array
 
-print "===== Part I: Real-valued expressions ====="
+TE = [texpr("t^2"),
+      texpr("t + sin(pi/2)"),
+      texpr("sqrt(9.0) + 1.5"),
+      texpr("t^2",1.0),
+      texpr("t + sin(pi/2)","t^3"),
+      texpr("sqrt(9.0) + 1.5","2.9"),
+      texpr(1.9+2.8j)]
 
-te1 = texpr("t^2")
-te2 = texpr("t + sin(pi/2)")
-te3 = texpr("sqrt(9.0) + 1.5")
+TE_ref = [lambda t: t**2,
+          lambda t: t+sin(pi/2),
+          lambda t: sqrt(9.0)+1.5,
+          lambda t: t**2+1j,
+          lambda t: t+sin(pi/2)+((t**3)*1j),
+          lambda t: sqrt(9.0)+1.5+2.9j,
+          lambda t: 1.9+2.8j]
 
-print "Check whether the expressions really depend on time"
-print is_constant(te1)
-print is_constant(te2)
-print is_constant(te3)
-if is_constant(te1) or is_constant(te2) or not is_constant(te3): exit(-1)
-
-print "Check correctness of numerical expressions"
-def check(x,y):
-    print x,y
-    if abs(x-y) >= 1e-10: exit(-1)
-
-for t in [0, 0.1, 10, 55]:
-    print "========","t =",t,"========"
-    te1_ref = t**2
-    te2_ref = t+sin(pi/2)
-    te3_ref = sqrt(9.0)+1.5
-    check(te1(t),te1_ref)
-    check(te2(t),te2_ref)
-    check(te3(t),te3_ref)
-
-    print "Unary minus"
-    mte2 = -te2
-    check(mte2(t),-te2_ref) 
-
-    print "Addition of expressions"
-    te1pte2 = te1 + te2
-    te1phalf = te1 + 0.5
-    halfpte2 = 0.5 + te2
-    check(te1pte2(t),te1_ref+te2_ref)
-    check(te1phalf(t),te1_ref+0.5)
-    check(halfpte2(t),0.5+te2_ref)
-
-    print "Subtraction of expressions"
-    te1mte2 = te1 - te2
-    te1mhalf = te1 - 0.5
-    halfmte2 = 0.5 - te2
-    check(te1mte2(t),te1_ref-te2_ref)
-    check(te1mhalf(t),te1_ref-0.5)
-    check(halfmte2(t),0.5-te2_ref)
-
-    print "Multiplication of expressions"
-    te1ppte2 = te1 * te2
-    te1pphalf = te1 * 0.5
-    halfppte2 = 0.5 * te2
-    check(te1ppte2(t),te1_ref*te2_ref)
-    check(te1pphalf(t),te1_ref*0.5)
-    check(halfppte2(t),0.5*te2_ref)
-
-    print "Division of expressions by a scalar"
-    te1dhalf = te1 / 0.5
-    check(te1dhalf(t),te1_ref/0.5)
-
-print "===== Part II: Complex-valued expressions ====="
-
-te1 = texpr("t^2",1.0)
-te2 = texpr("t + sin(pi/2)","t^3")
-te3 = texpr("sqrt(9.0) + 1.5","2.9")
-te4 = texpr(1.9+2.8j);
+def tab_print(title, A):
+  print ("%20s "*(A.shape[0] + 1)) % ((title,) + tuple(a for a in A))
 
 print "Check whether the expressions really depend on time"
-print is_constant(te1)
-print is_constant(te2)
-print is_constant(te3)
-print is_constant(te4)
-if is_constant(te1) or is_constant(te2) or not is_constant(te3) or not is_constant(te4): exit(-1)
+for te in TE: print is_constant(te)
 
 print "Check correctness of numerical expressions"
-def check(x,y):
-    print x,y
-    if abs(x-y) >= 1e-10: exit(-1)
 
-for t in [0, 0.1, 10, 55]:
-    print "========","t =",t,"========"
-    te1_ref = t**2+1j
-    te2_ref = t+sin(pi/2)+((t**3)*1j)
-    te3_ref = sqrt(9.0)+1.5+2.9j
-    te4_ref = 1.9+2.8j
-    check(te1(t),te1_ref)
-    check(te2(t),te2_ref)
-    check(te3(t),te3_ref)
-    check(te4(t),te4_ref)
+T = [0, 0.25, 16, 64]
+tab_print("t:", array(T))
 
-    print "Unary minus"
-    mte2 = -te2
-    check(mte2(t),-te2_ref)
+vals = lambda f: array(map(f,T),dtype=complex)
 
-    print "Addition of expressions"
-    e1pte2 = te1 + te2
-    te1phalf = te1 + texpr(0.5)
-    halfpte2 = texpr(0.5) + te2
-    te1pihalf = te1 + texpr(0.5j)
-    ihalfpte2 = texpr(0.5j) + te2
-    check(e1pte2(t),te1_ref+te2_ref)
-    check(te1phalf(t),te1_ref+0.5)
-    check(halfpte2(t),0.5+te2_ref)
-    check(te1pihalf(t),te1_ref+0.5j)
-    check(ihalfpte2(t),0.5j+te2_ref)
+print "Evaluation"
+for n, (te, te_ref) in enumerate(zip(TE,TE_ref)):
+    tab_print("te[%i]" % n, vals(te))
+    tab_print("te_ref[%i]" % n, vals(te_ref))
 
-    print "Subtraction of expressions"
-    e1mte2 = te1 - te2
-    te1mhalf = te1 - texpr(0.5)
-    halfmte2 = texpr(0.5) - te2
-    te1mihalf = te1 - texpr(0.5j)
-    ihalfmte2 = texpr(0.5j) - te2
-    check(e1mte2(t),te1_ref-te2_ref)
-    check(te1mhalf(t),te1_ref-0.5)
-    check(halfmte2(t),0.5-te2_ref)
-    check(te1mihalf(t),te1_ref-0.5j)
-    check(ihalfmte2(t),0.5j-te2_ref)
+print "Unary minus"
+tab_print("-te[1]", vals(-TE[1]))
+tab_print("-te_ref[1]", -vals(TE_ref[1]))
+tab_print("-te[4]", vals(-TE[4]))
+tab_print("-te_ref[4]", -vals(TE_ref[4]))
 
-    print "Multiplication of expressions"
-    te1ppte2 = te1 * te2
-    te1pphalf = te1 * texpr(0.5)
-    halfppte2 = texpr(0.5) * te2
-    te1ppihalf = te1 * texpr(0.5j)
-    ihalfppte2 = texpr(0.5j) * te2
-    check(te1ppte2(t),te1_ref*te2_ref)
-    check(te1pphalf(t),te1_ref*0.5)
-    check(halfppte2(t),0.5*te2_ref)
-    check(te1ppihalf(t),te1_ref*0.5j)
-    check(ihalfppte2(t),0.5j*te2_ref)
+print "Addition of expressions"
+tab_print("te[0]+te[1]", vals(TE[0]) + vals(TE[1]))
+tab_print("te_ref[0]+te_ref[1]", vals(TE_ref[0]) + vals(TE_ref[1]))
+tab_print("te[0]+0.5", vals(TE[0] + 0.5))
+tab_print("te_ref[0]+0.5", vals(TE_ref[0]) + 0.5)
+tab_print("0.5+te[1]", vals(0.5 + TE[1]))
+tab_print("0.5+te_ref[1]", 0.5 + vals(TE_ref[1]))
+tab_print("te[0]+0.5j", vals(TE[0] + 0.5j))
+tab_print("te_ref[0]+0.5j", vals(TE_ref[0]) + 0.5j)
+tab_print("0.5j+te[1]", vals(0.5j + TE[1]))
+tab_print("0.5j+te_ref[1]", 0.5j + vals(TE_ref[1]))
 
-    print "Division of expressions"
-    te1dhalf = te1 / texpr(0.5)
-    check(te1dhalf(t),te1_ref/0.5)
+print "Subtraction of expressions"
+tab_print("te[0]-te[1]", vals(TE[0]) - vals(TE[1]))
+tab_print("te_ref[0]-te_ref[1]", vals(TE_ref[0]) - vals(TE_ref[1]))
+tab_print("te[0]-0.5", vals(TE[0] - 0.5))
+tab_print("te_ref[0]-0.5", vals(TE_ref[0]) - 0.5)
+tab_print("0.5-te[1]", vals(0.5 - TE[1]))
+tab_print("0.5-te_ref[1]", 0.5 - vals(TE_ref[1]))
+tab_print("te[0]-0.5j", vals(TE[0] - 0.5j))
+tab_print("te_ref[0]-0.5j", vals(TE_ref[0]) - 0.5j)
+tab_print("0.5j-te[1]", vals(0.5j - TE[1]))
+tab_print("0.5j-te_ref[1]", 0.5j - vals(TE_ref[1]))
+
+print "Multiplication of expressions"
+tab_print("te[0]*te[1]", vals(TE[0]) * vals(TE[1]))
+tab_print("te_ref[0]*te_ref[1]", vals(TE_ref[0]) * vals(TE_ref[1]))
+tab_print("te[0]*0.5", vals(TE[0] * 0.5))
+tab_print("te_ref[0]*0.5", vals(TE_ref[0]) * 0.5)
+tab_print("0.5*te[1]", vals(0.5 * TE[1]))
+tab_print("0.5*te_ref[1]", 0.5 * vals(TE_ref[1]))
+tab_print("te[0]*0.5j", vals(TE[0] * 0.5j))
+tab_print("te_ref[0]*0.5j", vals(TE_ref[0]) * 0.5j)
+tab_print("0.5j*te[1]", vals(0.5j * TE[1]))
+tab_print("0.5j*te_ref[1]", 0.5j * vals(TE_ref[1]))
+
+print "Division of expressions by a scalar"
+tab_print("te[4]/0.5", vals(TE[4]/0.5))
+tab_print("te_ref[4]/0.5", vals(TE_ref[4])/0.5)
+tab_print("te[4]/0.5j", vals(TE[4]/0.5j))
+tab_print("te_ref[4]/0.5j", vals(TE_ref[4])/0.5j)
