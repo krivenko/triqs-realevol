@@ -19,6 +19,12 @@
 #
 ################################################################################
 
-from texpr import texpr, is_constant, is_zero, conj
+version = "@REALEVOL_VERSION@"
+triqs_hash = "@REALEVOL_GIT_HASH@"
+realevol_hash = "@REALEVOL_GIT_HASH@"
 
-__all__ = ['texpr','is_constant','is_zero','conj']
+def show_version():
+  print "\nYou are using the realevol solver version %s\n"% (version,)
+
+def show_git_hash():
+  print "\nYou are using the realevol solver git hash %s based on triqs git hash %s\n"%(realevol_hash, triqs_hash)
