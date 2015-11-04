@@ -69,7 +69,7 @@ public:
   time_expr(double r, const char* im_str);
 
   time_expr(time_expr const&);
-  time_expr(time_expr &&) = default;
+  time_expr(time_expr &&);
 
   // Assignments
   time_expr & operator=(double r);

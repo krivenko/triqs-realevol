@@ -22,7 +22,7 @@ def tab_print(title, A):
   print ("%20s "*(A.shape[0] + 1)) % ((title,) + tuple(a for a in A))
 
 print "Check whether the expressions really depend on time"
-for te in TE: print is_constant(te)
+for n,te in enumerate(TE): print "te[%i]:" % n, is_constant(te)
 
 print "Check correctness of numerical expressions"
 

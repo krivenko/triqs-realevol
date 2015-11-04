@@ -94,6 +94,15 @@ time_expr::time_expr(time_expr const& te) :
   if(!_is_real) init_im_expr(symt);
 }
 
+time_expr::time_expr(time_expr && te) :
+  _is_real(std::move(te._is_real)),
+  re_str(std::move(te.re_str)),
+  im_str(std::move(te.im_str)) {
+  auto symt = create_sym_table();
+  init_re_expr(symt);
+  if(!_is_real) init_im_expr(symt);
+}
+
 dcomplex time_expr::operator()(double t) const {
   arg = t;
   return _is_real ? re.value() : dcomplex(re.value(),im.value());
