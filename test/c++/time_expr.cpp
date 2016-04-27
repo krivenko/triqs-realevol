@@ -18,7 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include <test_tools.hpp>
+#include <triqs/test_tools/arrays.hpp>
 
 #include <cstdlib>
 #include <cmath>
@@ -26,7 +26,7 @@
 #include <sstream>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
-#include <triqs/gfs/gf.hpp>
+#include <triqs/gfs.hpp>
 #include <triqs/gfs/meshes/segment.hpp>
 #include <triqs/utility/complex_ops.hpp>
 
