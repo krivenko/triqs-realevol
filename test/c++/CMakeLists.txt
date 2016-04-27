@@ -11,7 +11,7 @@ set(SIMPLE_TESTS time_expr)
 foreach(t ${SIMPLE_TESTS})
     add_executable(${t} ${CMAKE_CURRENT_SOURCE_DIR}/${t}.cpp)
     triqs_set_rpath_for_target(${t})
-    triqs_add_test_C_simple(${t})
+    triqs_add_cpp_test(${t})
 endforeach(t)
 
 # HDF5 tests

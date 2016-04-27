@@ -29,7 +29,7 @@
 #include <boost/serialization/split_member.hpp>
 #include <boost/concept_check.hpp>
 
-#include <triqs/utility/draft/numeric_ops.hpp>
+#include <triqs/utility/numeric_ops.hpp>
 #include <triqs/utility/mini_vector.hpp>
 
 // Disable some features of ExprTk to speed up compilation

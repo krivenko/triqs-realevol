@@ -1,4 +1,4 @@
-from pytriqs.applications.impurity_solvers.realevol.texpr import texpr, is_constant, is_zero, conj
+from realevol.texpr import texpr, is_constant, is_zero, conj
 from math import sin, sqrt, pi
 from numpy import array
 
