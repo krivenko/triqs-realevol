@@ -25,10 +25,6 @@
 #include <ostream>
 #include <boost/operators.hpp>
 
-#include <boost/serialization/string.hpp>
-#include <boost/serialization/split_member.hpp>
-#include <boost/concept_check.hpp>
-
 #include <triqs/utility/numeric_ops.hpp>
 #include <triqs/utility/mini_vector.hpp>
 
@@ -122,34 +118,6 @@ private:
   void init_re_expr(exprtk::symbol_table<double> & symt);
   void init_im_expr(exprtk::symbol_table<double> & symt);
 
-  // Methods for boost::serialization
-  friend class boost::serialization::access;
-
-  template<class Archive>
-  void save(Archive & ar, const unsigned int version) const {
-    ar & _is_real;
-    ar & TRIQS_MAKE_NVP("re_str",re_str);
-    if(!_is_real) ar & TRIQS_MAKE_NVP("im_str",im_str);
-  }
-  template<class Archive>
-  void load(Archive & ar, const unsigned int version) {
-    bool was_real = _is_real;
-    ar & _is_real;
-    ar & re_str;
-    recompile_re_expr();
-    if(!_is_real) {
-      ar & im_str;
-      if(was_real) {
-        auto symt = create_sym_table();
-        init_im_expr(symt);
-      } else
-        recompile_im_expr();
-    } else {
-      im_str = "";
-      im.release();
-    }
-  }
-  BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
 
 inline time_expr operator ""_te (long double r){ return time_expr(r); }

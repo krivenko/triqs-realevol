@@ -19,8 +19,17 @@
  *
  ******************************************************************************/
 #include "time_expr.hpp"
+#include <sstream>
 
 namespace realevol {
+
+// Analog of std::to_string with controllable formating
+template<typename T> std::string to_string(T x) {
+ static std::stringstream ss;
+ ss.str("");
+ ss << x;
+ return ss.str();
+}
 
 // Global exprtk::parser object
 exprtk::parser<double> parser;
@@ -36,14 +45,18 @@ exprtk::symbol_table<double> time_expr::create_sym_table() const {
 void time_expr::recompile_re_expr() {
   bool res = parser.compile(re_str,re);
   if(!res) TRIQS_RUNTIME_ERROR << "ExprTk error in the real part '" << re_str << "': " << parser.error();
-  if(exprtk::expression_helper<double>::is_constant(re))
-    re_str = std::to_string(re());
+  if(exprtk::expression_helper<double>::is_constant(re)) {
+    re_str = to_string(re());
+    if(re_str == "-0") re_str = "0";
+  }
 }
 void time_expr::recompile_im_expr() {
   bool res = parser.compile(im_str,im);
   if(!res) TRIQS_RUNTIME_ERROR << "ExprTk error in the imaginary part '" << im_str << "': " << parser.error();
-  if(exprtk::expression_helper<double>::is_constant(im))
-    im_str = std::to_string(im());
+  if(exprtk::expression_helper<double>::is_constant(im)) {
+    im_str = to_string(im());
+    if(im_str == "-0") im_str = "0";
+  }
 }
 
 void time_expr::init_re_expr(exprtk::symbol_table<double> & symt) {
@@ -58,9 +71,9 @@ void time_expr::init_im_expr(exprtk::symbol_table<double> & symt) {
 // Constructors
 time_expr::time_expr() : time_expr(.0) {}
 
-time_expr::time_expr(double r) : time_expr(std::to_string(r)) {}
+time_expr::time_expr(double r) : time_expr(to_string(r)) {}
 
-time_expr::time_expr(double r, double i) : time_expr(std::to_string(r),std::to_string(i)) {}
+time_expr::time_expr(double r, double i) : time_expr(to_string(r),to_string(i)) {}
 
 time_expr::time_expr(dcomplex const& z) : time_expr(z.real(),z.imag()) {}
 
@@ -69,10 +82,10 @@ time_expr::time_expr(const char* str) : time_expr(std::string(str)) {}
 time_expr::time_expr(const char* re_str, const char* im_str) :
   time_expr(std::string(re_str),std::string(im_str)) {}
 
-time_expr::time_expr(std::string const& re_str, double i) : time_expr(re_str,std::to_string(i)) {}
-time_expr::time_expr(double r, std::string const& im_str) : time_expr(std::to_string(r),im_str) {}
-time_expr::time_expr(const char* re_str, double i) : time_expr(std::string(re_str),std::to_string(i)) {}
-time_expr::time_expr(double r, const char* im_str) : time_expr(std::to_string(r),std::string(im_str)) {}
+time_expr::time_expr(std::string const& re_str, double i) : time_expr(re_str,to_string(i)) {}
+time_expr::time_expr(double r, std::string const& im_str) : time_expr(to_string(r),im_str) {}
+time_expr::time_expr(const char* re_str, double i) : time_expr(std::string(re_str),to_string(i)) {}
+time_expr::time_expr(double r, const char* im_str) : time_expr(to_string(r),std::string(im_str)) {}
 
 time_expr::time_expr(std::string const& str) :
   _is_real(true), re_str(str) {
@@ -153,12 +166,18 @@ time_expr & time_expr::operator=(const char* expr) {
 }
 
 time_expr & time_expr::operator=(double r) {
-  *this = std::to_string(r);
+  *this = to_string(r);
   return *this;
 }
 
+inline std::string sum_str(std::string const& a, std::string const& b) {
+ if(a == "0") return b;
+ if(b == "0") return a;
+ return "(" + a + ")+(" + b + ")";
+}
+
 time_expr & time_expr::operator+=(const time_expr& te) {
-  re_str = "(" + re_str + ")+(" + te.re_str + ")";
+  re_str = sum_str(re_str, te.re_str);
   recompile_re_expr();
   if(!te._is_real) {
     if(_is_real) {
@@ -167,42 +186,61 @@ time_expr & time_expr::operator+=(const time_expr& te) {
       init_im_expr(symt);
       _is_real = false;
     } else {
-      im_str = "(" + im_str + ")+(" + te.im_str + ")";
+      im_str = sum_str(im_str, te.im_str);
       recompile_im_expr();
     }
   }
   return *this;
 }
 
+inline std::string unary_minus_str(std::string const& a) {
+ if(a == "0") return "0";
+ return "-(" + a + ")";
+}
+
+inline std::string sub_str(std::string const& a, std::string const& b) {
+ if(a == "0" && b == "0") return "0";
+ if(a == "0") return "-(" + b + ")";
+ if(b == "0") return a;
+ return "(" + a + ")-(" + b + ")";
+}
+
 time_expr & time_expr::operator-=(const time_expr& te) {
-  re_str = "(" + re_str + ")-(" + te.re_str + ")";
+  re_str = sub_str(re_str, te.re_str);
   recompile_re_expr();
   if(!te._is_real) {
     if(_is_real) {
-      im_str = "-(" + te.im_str + ")";
+      im_str = unary_minus_str(te.im_str);
       auto symt = create_sym_table();
       init_im_expr(symt);
       _is_real = false;
     } else {
-      im_str = "(" + im_str + ")-(" + te.im_str + ")";
+      im_str = sub_str(im_str, te.im_str);
       recompile_im_expr();
     }
   }
   return *this;
 }
 
+inline std::string prod_str(std::string const& a, std::string const& b) {
+ if(a == "0" || b == "0") return "0";
+ if(a == "1") return b;
+ if(b == "1") return a;
+ return "(" + a + ")*(" + b + ")";
+}
+
 time_expr & time_expr::operator*=(const time_expr& te) {
-  auto new_re_str = "(" + re_str + ")*(" + te.re_str + ")";
+  auto new_re_str = prod_str(re_str, te.re_str);
   if(!_is_real || !te._is_real) {
     if(!_is_real && !te._is_real) {
-      new_re_str += "-(" + im_str + ")*(" + te.im_str + ")";
-      im_str = "(" + re_str + ")*(" + te.im_str + ")+(" + im_str + ")*(" + te.re_str + ")";
+      new_re_str = sub_str(new_re_str, prod_str(im_str, te.im_str));
+      im_str = sum_str(prod_str(re_str, te.im_str), prod_str(im_str, te.re_str));
       recompile_im_expr();
     } else if(te._is_real) {
-      im_str = "(" + im_str + ")*(" + te.re_str + ")";
+      im_str = prod_str(im_str, te.re_str);
       recompile_im_expr();
     } else { // _is_real
-      im_str = "(" + re_str + ")*(" + te.im_str + ")";
+      im_str = prod_str(re_str, te.im_str);
       auto symt = create_sym_table();
       init_im_expr(symt);
       _is_real = false;
@@ -213,27 +251,39 @@ time_expr & time_expr::operator*=(const time_expr& te) {
   return *this;
 }
 
+inline std::string sqr_str(std::string const& a) {
+ if(a == "0") return "0";
+ if(a == "1") return "1";
+ return "(" + a + ")^2";
+}
+
+inline std::string div_str(std::string const& a, std::string const& b) {
+ if(a == "0" && b != "0") return "0";
+ if(b == "1") return a;
+ return "(" + a + ")/(" + b + ")";
+}
+
 time_expr & time_expr::operator/=(const time_expr& te) {
-  auto denom = "(" + te.re_str + ")^2";
-  auto new_re_str = "(" + re_str + ")*(" + te.re_str + ")";
+  auto denom = sqr_str(te.re_str);
+  auto new_re_str = prod_str(re_str, te.re_str);
   if(!_is_real || !te._is_real) {
     if(!_is_real && !te._is_real) {
-      denom += "+(" + te.im_str + ")^2";
-      new_re_str += "+(" + im_str + ")*(" + te.im_str + ")";
-      im_str = "((" + im_str + ")*(" + te.re_str + ")-(" + re_str + ")*(" + te.im_str + "))/(" + denom + ")";
+      denom = sum_str(denom, sqr_str(te.im_str));
+      new_re_str = sum_str(new_re_str, prod_str(im_str, te.im_str));
+      im_str = div_str(sub_str(prod_str(im_str, te.re_str), prod_str(re_str, te.im_str)), denom);
       recompile_im_expr();
     } else if(te._is_real) {
-      im_str = "(" + im_str + ")*(" + te.re_str + ")/(" + denom + ")";
+      im_str = div_str(prod_str(im_str, te.re_str), denom);
       recompile_im_expr();
     } else { // _is_real
-      denom += "+(" + te.im_str + ")^2";
-      im_str = "-(" + re_str + ")*(" + te.im_str + ")/(" + denom + ")";
+      denom = sum_str(denom, sqr_str(te.im_str));
+      im_str = div_str(unary_minus_str(prod_str(re_str, te.im_str)), denom);
       auto symt = create_sym_table();
       init_im_expr(symt);
       _is_real = false;
     }
   }
-  re_str = "(" + new_re_str + ")/(" + denom + ")";
+  re_str = div_str(new_re_str, denom);
   recompile_re_expr();
   return *this;
 }

@@ -24,8 +24,6 @@
 #include <cmath>
 #include <complex>
 #include <sstream>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
 #include <triqs/gfs.hpp>
 #include <triqs/gfs/meshes/segment.hpp>
 #include <triqs/utility/complex_ops.hpp>
@@ -207,24 +205,6 @@ TEST(time_expr,try_reduce_to_constant) {
   EXPECT_FALSE(is_constant(te1t));
   EXPECT_TRUE(is_constant(te0t2));
   EXPECT_FALSE(is_constant(te1tt3));
-}
-
-TEST(time_expr,Serialization) {
-  // Write to an archive
-  std::stringstream archive_str;
-  boost::archive::text_oarchive oa(archive_str);
-  oa << te1 << te2 << te3 << te4 << te5 << te6 << te7;
-
-  // Read from an archive
-  boost::archive::text_iarchive ia(archive_str);
-  time_expr read_expr;
-  ia >> read_expr; EXPECT_EQ(te1,read_expr);
-  ia >> read_expr; EXPECT_EQ(te2,read_expr);
-  ia >> read_expr; EXPECT_EQ(te3,read_expr);
-  ia >> read_expr; EXPECT_EQ(te4,read_expr);
-  ia >> read_expr; EXPECT_EQ(te5,read_expr);
-  ia >> read_expr; EXPECT_EQ(te6,read_expr);
-  ia >> read_expr; EXPECT_EQ(te7,read_expr);
 }
 
 MAKE_MAIN;
