@@ -1,115 +1,153 @@
-from pytriqs.applications.realevol.realevol import texpr
-from pytriqs.applications.realevol.realevol import use_complex_operators, Operator, c, c_dag, n, dagger
+from realevol.texpr import TExpr as te
+from realevol.operators import *
 from itertools import product
 
-def test_commutators(Cd,C):
-    print
-    print "Commutators:"
-    for cdi, ci in product(Cd,C):
-        print "[", cdi, ",", ci, "] =", cdi*ci - ci*cdi
+def check_str(ref_string, op): assert(str(op) == ref_string)
 
-def test_anticommutators(Cd,C):
-    print
-    print "Anticommutators:"
-    for cdi, ci in product(Cd,C):
-        print "{", cdi, ",", ci, "} =", cdi*ci + ci*cdi
-
-print "Real-expression-valued operators"
-print "====================================="
-
-use_complex_operators(False)
+# Operators without indices
+check_str("1*C^+() + 1*C() + -1*C^+()C()", c() + c_dag() - n())
 
 # Commutation relations
-C = [c(1), c(2), c(3)]
-Cd = [c_dag(1), c_dag(2), c_dag(3)]
+for i,j in product(range(3),range(3)):
+    ref = "1" if i==j else "0"
+    check_str(ref, c_dag("x",i)*c("x",j) + c("x",j)*c_dag("x",i))
+    ref = "%s2*C^+(x,%i)C(x,%i)" % ("-1 + " if i==j else "",i,j)
+    check_str(ref, c_dag("x",i)*c("x",j) - c("x",j)*c_dag("x",i))
+    ref = "1" if i==j else "0"
+    check_str(ref, a("x",i)*a_dag("x",j) - a_dag("x",j)*a("x",i))
+    ref = "%s2*A^+(x,%i)A(x,%i)" % ("1 + " if i==j else "",j,i)
+    check_str(ref, a("x",i)*a_dag("x",j) + a_dag("x",j)*a("x",i))
 
-test_anticommutators(Cd,C)
-test_commutators(Cd,C)
+# Algebra
+C = te("t^2") * c("",0)
+Cd = c_dag("",1);
+A = a("",0)
+Ad = te("sin(t)") * a_dag("",1);
 
-x = "t^2"*c(0)
-y = c_dag(1)
+check_table = [("t^2*C(,0)",C), ("1*C^+(,1)",Cd),("1*A(,0)",A),("sin(t)*A^+(,1)",Ad),
+               # Unary minus
+               ("-(t^2)*C(,0)",      -C),
+               ("-1*C^+(,1)",        -Cd),
+               ("-1*A(,0)",          -A),
+               ("-(sin(t))*A^+(,1)", -Ad),
+               # Addition
+               ("2 + t^2*C(,0)",          C + 2.0),
+               ("2 + 1*C^+(,1)",          Cd + 2.0),
+               ("2 + 1*A(,0)",            A + 2.0),
+               ("2 + sin(t)*A^+(,1)",     Ad + 2.0),
+               ("(0,2) + t^2*C(,0)",      C + 2.0j),
+               ("(0,2) + 1*C^+(,1)",      Cd + 2.0j),
+               ("(0,2) + 1*A(,0)",        A + 2.0j),
+               ("(0,2) + sin(t)*A^+(,1)", Ad + 2.0j),
+               ("2*t + t^2*C(,0)",          C + te("2*t")),
+               ("2*t + 1*C^+(,1)",          Cd + te("2*t")),
+               ("2*t + 1*A(,0)",            A + te("2*t")),
+               ("2*t + sin(t)*A^+(,1)",     Ad + te("2*t")),
+               ("(0,2*t) + t^2*C(,0)",      C + 1j*te("2*t")),
+               ("(0,2*t) + 1*C^+(,1)",      Cd + 1j*te("2*t")),
+               ("(0,2*t) + 1*A(,0)",        A + 1j*te("2*t")),
+               ("(0,2*t) + sin(t)*A^+(,1)", Ad + 1j*te("2*t")),
+               ("2 + t^2*C(,0)",          2.0 + C),
+               ("2 + 1*C^+(,1)",          2.0 + Cd),
+               ("2 + 1*A(,0)",            2.0 + A),
+               ("2 + sin(t)*A^+(,1)",     2.0 + Ad),
+               ("(0,2) + t^2*C(,0)",      2.0j + C),
+               ("(0,2) + 1*C^+(,1)",      2.0j + Cd),
+               ("(0,2) + 1*A(,0)",        2.0j + A),
+               ("(0,2) + sin(t)*A^+(,1)", 2.0j + Ad),
+               ("2*t + t^2*C(,0)",          te("2*t") + C),
+               ("2*t + 1*C^+(,1)",          te("2*t") + Cd),
+               ("2*t + 1*A(,0)",            te("2*t") + A),
+               ("2*t + sin(t)*A^+(,1)",     te("2*t") + Ad),
+               ("(0,2*t) + t^2*C(,0)",      te("2*t")*1j + C),
+               ("(0,2*t) + 1*C^+(,1)",      te("2*t")*1j + Cd),
+               ("(0,2*t) + 1*A(,0)",        te("2*t")*1j + A),
+               ("(0,2*t) + sin(t)*A^+(,1)", te("2*t")*1j + Ad),
+               ("1*C^+(,1) + t^2*C(,0) + sin(t)*A^+(,1) + 1*A(,0)", C + Cd + A + Ad),
+               # Subtraction
+               ("-2 + t^2*C(,0)",          C - 2.0),
+               ("-2 + 1*C^+(,1)",          Cd - 2.0),
+               ("-2 + 1*A(,0)",            A - 2.0),
+               ("-2 + sin(t)*A^+(,1)",     Ad - 2.0),
+               ("(0,-2) + t^2*C(,0)",      C - 2.0j),
+               ("(0,-2) + 1*C^+(,1)",      Cd - 2.0j),
+               ("(0,-2) + 1*A(,0)",        A - 2.0j),
+               ("(0,-2) + sin(t)*A^+(,1)", Ad - 2.0j),
+               ("-(2*t) + t^2*C(,0)",          C - te("2*t")),
+               ("-(2*t) + 1*C^+(,1)",          Cd - te("2*t")),
+               ("-(2*t) + 1*A(,0)",            A - te("2*t")),
+               ("-(2*t) + sin(t)*A^+(,1)",     Ad - te("2*t")),
+               ("(0,-(2*t)) + t^2*C(,0)",      C - te("2*t")*1j),
+               ("(0,-(2*t)) + 1*C^+(,1)",      Cd - te("2*t")*1j),
+               ("(0,-(2*t)) + 1*A(,0)",        A - te("2*t")*1j),
+               ("(0,-(2*t)) + sin(t)*A^+(,1)", Ad - te("2*t")*1j),
+               ("2 + -(t^2)*C(,0)",          2.0 - C),
+               ("2 + -1*C^+(,1)",            2.0 - Cd),
+               ("2 + -1*A(,0)",              2.0 - A),
+               ("2 + -(sin(t))*A^+(,1)",     2.0 - Ad),
+               ("(0,2) + -(t^2)*C(,0)",      2.0j - C),
+               ("(0,2) + -1*C^+(,1)",        2.0j - Cd),
+               ("(0,2) + -1*A(,0)",          2.0j - A),
+               ("(0,2) + -(sin(t))*A^+(,1)", 2.0j - Ad),
+               ("2*t + -(t^2)*C(,0)",          te("2*t") - C),
+               ("2*t + -1*C^+(,1)",            te("2*t") - Cd),
+               ("2*t + -1*A(,0)",              te("2*t") - A),
+               ("2*t + -(sin(t))*A^+(,1)",     te("2*t") - Ad),
+               ("(0,2*t) + -(t^2)*C(,0)",      te("2*t")*1j - C),
+               ("(0,2*t) + -1*C^+(,1)",        te("2*t")*1j - Cd),
+               ("(0,2*t) + -1*A(,0)",          te("2*t")*1j - A),
+               ("(0,2*t) + -(sin(t))*A^+(,1)", te("2*t")*1j - Ad),
+               ("-1*C^+(,1) + t^2*C(,0) + -(sin(t))*A^+(,1) + -1*A(,0)", C - Cd - A - Ad),
+               # Multiplication
+               ("(t^2)*(3)*C(,0)",          C * 3.0),
+               ("3*C^+(,1)",                Cd * 3.0),
+               ("3*A(,0)",                  A * 3.0),
+               ("(sin(t))*(3)*A^+(,1)",     Ad * 3.0),
+               ("(0,(t^2)*(3))*C(,0)",      C * 3.0j),
+               ("(0,3)*C^+(,1)",            Cd * 3.0j),
+               ("(0,3)*A(,0)",              A * 3.0j),
+               ("(0,(sin(t))*(3))*A^+(,1)", Ad * 3.0j),
+               ("(t^2)*(2*t)*C(,0)",          C * te("2*t")),
+               ("2*t*C^+(,1)",                Cd * te("2*t")),
+               ("2*t*A(,0)",                  A * te("2*t")),
+               ("(sin(t))*(2*t)*A^+(,1)",     Ad * te("2*t")),
+               ("(0,(t^2)*(2*t))*C(,0)",      C * te("2*t")*1j),
+               ("(0,2*t)*C^+(,1)",            Cd * te("2*t")*1j),
+               ("(0,2*t)*A(,0)",              A * te("2*t")*1j),
+               ("(0,(sin(t))*(2*t))*A^+(,1)", Ad * te("2*t")*1j),
+               ("(t^2)*(3)*C(,0)",       3.0 * C),
+               ("3*C^+(,1)",             3.0 * Cd),
+               ("3*A(,0)",               3.0 * A),
+               ("(sin(t))*(3)*A^+(,1)",  3.0 * Ad),
+               ("(0,(t^2)*(3))*C(,0)",   3.0j * C),
+               ("(0,3)*C^+(,1)",         3.0j * Cd),
+               ("(0,3)*A(,0)",           3.0j * A),
+               ("(0,(sin(t))*(3))*A^+(,1)", 3.0j * Ad),
+               ("(t^2)*(2*t)*C(,0)",          te("2*t") * C),
+               ("2*t*C^+(,1)",                te("2*t") * Cd),
+               ("2*t*A(,0)",                  te("2*t") * A),
+               ("(sin(t))*(2*t)*A^+(,1)",     te("2*t") * Ad),
+               ("(0,(t^2)*(2*t))*C(,0)",      te("2*t")*1j * C),
+               ("(0,2*t)*C^+(,1)",            te("2*t")*1j * Cd),
+               ("(0,2*t)*A(,0)",              te("2*t")*1j * A),
+               ("(0,(sin(t))*(2*t))*A^+(,1)", te("2*t")*1j * Ad),
+               ("-2 + 2*C^+(,2)C(,2) + -2*C^+(,2)A^+(,2) + 2*C(,2)A(,2) + -1*[A^+(,2)]^2 + 1*[A(,2)]^2",
+                    (c("",2) + c_dag("",2) + a("",2) + a_dag("",2))*
+                    (c("",2) - c_dag("",2) + a("",2) - a_dag("",2)))
+               ]
 
-print
-print "Algebra:"
-print "x =", x
-print "y =", y
+for ref_string, op in check_table: check_str(ref_string, op)
 
-print "-x=", -x
-print
-print "x + 2.0 =", x + 2.0
-print "2.0 + x =", 2.0 + x
-print "x - 2.0 =", x - 2.0
-print "2.0 - x =", 2.0 - x
-print "3.0*y =", 3.0*y
-print "y*3.0 =", y*3.0
-print "x + 2.0*t =", x + "2*t"
-print "2.0*t + x =", "2*t" + x
-print "x - 2.0*t =", x - "2.0*t"
-print "2.0*t - x =", "2.0*t" - x
-print "3.0*t*y =", "3.0*t"*y
-print "y*3.0*t =", y*"3.0*t"
-print "x + y =", x + y
-print "x - y =", x - y
-print "(x + y)*(x - y) =", (x + y)*(x - y)
+# (n_up * a + n_dn * a^+)^3
+expr = n("up",0) * a(0,0) + n("dn",0) * a_dag(0,0);
+check_str("1*C^+(dn,0)C(dn,0)A^+(0,0) + 1*C^+(up,0)C(up,0)A(0,0)", expr)
+expr = expr*expr*expr;
+check_str("3*C^+(dn,0)C^+(up,0)C(up,0)C(dn,0)A^+(0,0) + 3*C^+(dn,0)C^+(up,0)C(up,0)C(dn,0)A(0,0) + "
+          "1*C^+(dn,0)C(dn,0)[A^+(0,0)]^3 + 1*C^+(up,0)C(up,0)[A(0,0)]^3 + "
+          "3*C^+(dn,0)C^+(up,0)C(up,0)C(dn,0)[A^+(0,0)]^2A(0,0) + 3*C^+(dn,0)C^+(up,0)C(up,0)C(dn,0)A^+(0,0)[A(0,0)]^2",
+          expr)
 
-print
-print "N^3:"
-N = n("up") + n("dn")
-N3 = N*N*N
-print "N =", N
-print "N^3 =", N3
-
-X = c_dag(1) * c_dag(2) * c(3) * c(4)
-print
-print "X =", X
-print "dagger(X) =", dagger(X)
-
-print "Complex-expression-valued operators"
-print "====================================="
-
-use_complex_operators(True)
-
-# Commutation relations
-C = [c(1), c(2), c(3)]
-Cd = [c_dag(1), c_dag(2), c_dag(3)]
-
-test_anticommutators(Cd,C)
-test_commutators(Cd,C)
-
-x = "t^2"*c(0)
-y = c_dag(1)
-
-print
-print "Algebra:"
-print "x =", x
-print "y =", y
-
-print "-x=", -x
-print
-print "x + 2.0*I =", x + 2.0*1j
-print "2.0*I + x =", 2.0*1j + x
-print "x - 2.0*I =", x - 2.0*1j
-print "2.0*I - x =", 2.0*1j - x
-print "3.0*I*y =", (3.0*1j)*y
-print "y*3.0*I =", y*(3.0*1j)
-print "x + 2.0*t*I =", x + texpr("2*t",0)*1j
-print "2.0*t*I + x =", texpr("2*t",0)*1j + x
-print "x - 2.0*t*I =", x - texpr("2*t",0)*1j
-print "2.0*t*I - x =", texpr("2.0*t",0)*1j - x
-print "3.0*t*I*y =", texpr("3.0*t",0)*1j*y
-print "y*3.0*I*t =", y*texpr("3.0*t",0)*1j
-print "x + y =", x + y
-print "x - y =", x - y
-print "(x + y)*(x - y) =", (x + y)*(x - y)
-
-print
-print "N^3:"
-N = n("up") + n("dn")
-N3 = N*N*N
-print "N =", N
-print "N^3 =", N3
-
-X = 1j*c_dag(1) * c_dag(2) * c(3) * c(4)
-print
-print "X =", X
-print "dagger(X) =", dagger(X)
+# Dagger
+X = te("t^2","sin(t)")*c_dag("",1) * c_dag("",2) * c("",3) * c("",4) * a_dag("",5) * a("",6);
+check_str("(-(t^2),-(sin(t)))*C^+(,1)C^+(,2)C(,4)C(,3)A^+(,5)A(,6)", X);
+check_str("(-(t^2),-(-(sin(t))))*C^+(,3)C^+(,4)C(,2)C(,1)A^+(,6)A(,5)", dagger(X));

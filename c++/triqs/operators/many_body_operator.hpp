@@ -23,6 +23,7 @@
 
 #include <ostream>
 #include <cmath>
+#include <algorithm>
 #include <boost/operators.hpp>
 #include <triqs/utility/real_or_complex.hpp>
 #include <triqs/utility/numeric_ops.hpp>
