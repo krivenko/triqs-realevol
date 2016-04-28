@@ -29,8 +29,8 @@ TEST(operator, real_or_complex) {
  EXPECT_PRINT("1*C^+() + 1*C() + -1*C^+()C()", op_with_no_indices);
 
  // Operators with many indices
- auto op_with_many_indices = c(1,0.2,"a",true,-2) + c_dag(3,0.15,"b",false,-5);
- EXPECT_PRINT("1*C^+(3,0,b,0,-5) + 1*C(1,0,a,1,-2)", op_with_many_indices);
+ auto op_with_many_indices = c(1,20,"a",true,-2) + c_dag(3,15,"b",false,-5);
+ EXPECT_PRINT("1*C^+(3,15,b,0,-5) + 1*C(1,20,a,1,-2)", op_with_many_indices);
 
  // Commutation relations
  std::string ref;
@@ -149,8 +149,8 @@ TEST(operator, time_expr) {
  EXPECT_PRINT("1*C^+() + 1*C() + -1*C^+()C()", op_with_no_indices);
 
  // Operators with many indices
- auto op_with_many_indices = c<te>(1,0.2,"a",true,-2) + c_dag<te>(3,0.15,"b",false,-5);
- EXPECT_PRINT("1*C^+(3,0,b,0,-5) + 1*C(1,0,a,1,-2)", op_with_many_indices);
+ auto op_with_many_indices = c<te>(1,20,"a",true,-2) + c_dag<te>(3,15,"b",false,-5);
+ EXPECT_PRINT("1*C^+(3,15,b,0,-5) + 1*C(1,20,a,1,-2)", op_with_many_indices);
 
  // Commutation relations
  std::string ref;
@@ -278,14 +278,23 @@ TEST(operator, time_expr) {
  EXPECT_PRINT("(0,2*t)*A(0)",              A * "2*t"_te*I);
  EXPECT_PRINT("(0,(sin(t))*(2*t))*A^+(1)", Ad * "2*t"_te*I);
 
- EXPECT_PRINT("(t^2)*(3)*C(0)",       3.0 * C);
- EXPECT_PRINT("3*C^+(1)",     3.0 * Cd);
- EXPECT_PRINT("3*A(0)",       3.0 * A);
+ EXPECT_PRINT("(t^2)*(3)*C(0)",          3.0 * C);
+ EXPECT_PRINT("3*C^+(1)",                3.0 * Cd);
+ EXPECT_PRINT("3*A(0)",                  3.0 * A);
  EXPECT_PRINT("(sin(t))*(3)*A^+(1)",     3.0 * Ad);
- EXPECT_PRINT("(0,(t^2)*(3))*C(0)",   3.0*I * C);
- EXPECT_PRINT("(0,3)*C^+(1)", 3.0*I * Cd);
- EXPECT_PRINT("(0,3)*A(0)",   3.0*I * A);
+ EXPECT_PRINT("(0,(t^2)*(3))*C(0)",      3.0*I * C);
+ EXPECT_PRINT("(0,3)*C^+(1)",            3.0*I * Cd);
+ EXPECT_PRINT("(0,3)*A(0)",              3.0*I * A);
  EXPECT_PRINT("(0,(sin(t))*(3))*A^+(1)", 3.0*I * Ad);
+
+ EXPECT_PRINT("(t^2)*(2*t)*C(0)",          "2*t"_te * C);
+ EXPECT_PRINT("2*t*C^+(1)",                "2*t"_te * Cd);
+ EXPECT_PRINT("2*t*A(0)",                  "2*t"_te * A);
+ EXPECT_PRINT("(sin(t))*(2*t)*A^+(1)",     "2*t"_te * Ad);
+ EXPECT_PRINT("(0,(t^2)*(2*t))*C(0)",      "2*t"_te*I * C);
+ EXPECT_PRINT("(0,2*t)*C^+(1)",            "2*t"_te*I * Cd);
+ EXPECT_PRINT("(0,2*t)*A(0)",              "2*t"_te*I * A);
+ EXPECT_PRINT("(0,(sin(t))*(2*t))*A^+(1)", "2*t"_te*I * Ad);
 
  EXPECT_PRINT("-2 + 2*C^+(2)C(2) + -2*C^+(2)A^+(2) + 2*C(2)A(2) + -1*[A^+(2)]^2 + 1*[A(2)]^2",
               (c<te>(2) + c_dag<te>(2) + a<te>(2) + a_dag<te>(2))*

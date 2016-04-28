@@ -2,7 +2,7 @@
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
 #
-# Copyright (C) 2015 by I. Krivenko
+# Copyright (C) 2016 by I. Krivenko
 #
 # TRIQS is free software: you can redistribute it and/or modify it under the
 # terms of the GNU General Public License as published by the Free Software
@@ -19,6 +19,8 @@
 #
 ################################################################################
 
-from texpr import texpr, is_constant, is_zero, conj
+from texpr import TExpr, is_constant, is_zero, conj
+from operators import Operator, c, c_dag, n, a, a_dag
 
-__all__ = ['texpr','is_constant','is_zero','conj']
+__all__ = ['TExpr','is_constant','is_zero','conj',
+           'Operator','c','c_dag','n','a','a_dag']

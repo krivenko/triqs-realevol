@@ -1,14 +1,14 @@
-from realevol.texpr import texpr, is_constant, is_zero, conj
+from realevol.texpr import TExpr, is_constant, is_zero, conj
 from math import sin, sqrt, pi
 from numpy import array
 
-TE = [texpr("t^2"),
-      texpr("t + sin(pi/2)"),
-      texpr("sqrt(9.0) + 1.5"),
-      texpr("t^2",1.0),
-      texpr("t + sin(pi/2)","t^3"),
-      texpr("sqrt(9.0) + 1.5","2.9"),
-      texpr(1.9+2.8j)]
+TE = [TExpr("t^2"),
+      TExpr("t + sin(pi/2)"),
+      TExpr("sqrt(9.0) + 1.5"),
+      TExpr("t^2",1.0),
+      TExpr("t + sin(pi/2)","t^3"),
+      TExpr("sqrt(9.0) + 1.5","2.9"),
+      TExpr(1.9+2.8j)]
 
 TE_ref = [lambda t: t**2,
           lambda t: t+sin(pi/2),
