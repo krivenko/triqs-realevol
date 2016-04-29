@@ -39,6 +39,9 @@ inline std::ostream & operator<<(std::ostream & os, std::vector<triqs::utility::
 namespace triqs {
 namespace hilbert_space {
 
+ /// The statistics: Boson or Fermion
+ enum statistic_enum {Boson, Fermion};
+
 /// This class represents an ordered set of **indices** of the canonical operators (see [[many_body_operator]]) used to build the Fock states.
 /**
  Every element of the set is an arbitrarily long sequence of integers/strings (types can be mixed within one sequence).
@@ -47,9 +50,6 @@ namespace hilbert_space {
  */
 class fundamental_operator_set {
  public:
-
- /// The statistics: Boson or Fermion
- enum statistic_enum {Boson, Fermion};
 
  /// Sequence of indices (`std::vector` of int/string variant objects)
  using indices_t = std::vector<utility::variant_int_string>;
@@ -145,7 +145,7 @@ class fundamental_operator_set {
    @param stat Choose between bosonic/fermionic operators
    @return Size of the set
   */
- int size(statistic_enum stat = Fermion) const {
+ int size(statistic_enum stat) const {
   return (stat == Fermion ? fermion_map_index_n : boson_map_index_n).size();
  }
 

@@ -40,9 +40,6 @@ namespace operators {
  /// The indices of the C, C^+, A, A^+ operators are a vector of int/string
  using indices_t = hilbert_space::fundamental_operator_set::indices_t;
 
- /// The statistics: Boson or Fermion
- using statistic_enum = hilbert_space::fundamental_operator_set::statistic_enum;
-
  /// The user class
  using many_body_operator = many_body_operator_generic<real_or_complex>;
  using many_body_operator_real = many_body_operator_generic<double>;
@@ -53,7 +50,7 @@ namespace operators {
 
  /// The canonical operator: statistics, a dagger and some indices
  struct canonical_ops_t {
-  statistic_enum stat;
+  hilbert_space::statistic_enum stat;
   bool dagger;
   indices_t indices;
   // Order: fermion < boson, dagger < non dagger, and then indices
@@ -75,7 +72,7 @@ namespace operators {
  };
 
  std::ostream& operator<<(std::ostream& os, canonical_ops_t const& op) {
-  os << (op.stat == statistic_enum::Fermion ? "C" : "A");
+  os << (op.stat == hilbert_space::statistic_enum::Fermion ? "C" : "A");
   if (op.dagger) os << "^+";
   os << "(";
   int u = 0;
@@ -171,7 +168,7 @@ namespace operators {
   }
 
   // factory for c, cdag
-  static many_body_operator_generic make_canonical(statistic_enum stat, bool is_dag, indices_t indices) {
+  static many_body_operator_generic make_canonical(hilbert_space::statistic_enum stat, bool is_dag, indices_t indices) {
    many_body_operator_generic res;
    auto m = monomial_t{canonical_ops_t{stat, is_dag, indices}};
    res.monomials.insert({m, scalar_t(1.0)});
@@ -314,12 +311,13 @@ namespace operators {
    if (m.size() >= 2) {
     bool is_swapped;
     do {
+     using hilbert_space::statistic_enum::Fermion;
      is_swapped = false;
      for (std::size_t n = 1; n < m.size(); ++n) {
       canonical_ops_t& prev_index = m[n - 1];
       canonical_ops_t& cur_index = m[n];
       // The monomial is effectively zero
-      if (cur_index.stat == statistic_enum::Fermion && cur_index == prev_index) return;
+      if (cur_index.stat == Fermion && cur_index == prev_index) return;
       if (prev_index > cur_index) { // Reordering is needed
        // Are we swapping C and C^+ with the same indices?
        // A bit ugly ...
@@ -332,8 +330,8 @@ namespace operators {
         std::copy(m.begin() + n + 1, m.end(), std::back_inserter(new_m));
         normalize_and_insert(new_m, coeff, target);
        }
-       if(prev_index.stat == statistic_enum::Fermion &&
-          cur_index.stat == statistic_enum::Fermion) coeff = -coeff;
+       if(prev_index.stat == Fermion &&
+          cur_index.stat == Fermion) coeff = -coeff;
        std::swap(prev_index, cur_index);
        is_swapped = true;
       }
@@ -377,12 +375,12 @@ namespace operators {
 
  // Free functions to make creation/annihilation operators
  template <typename scalar_t = real_or_complex, typename... IndexTypes> many_body_operator_generic<scalar_t> c(IndexTypes... indices) {
-  return many_body_operator_generic<scalar_t>::make_canonical(statistic_enum::Fermion, false, indices_t{indices...});
+  return many_body_operator_generic<scalar_t>::make_canonical(hilbert_space::statistic_enum::Fermion, false, indices_t{indices...});
   // need to put many_body_operator_generic<double>::indices_t because {} constructor is explicit !?
  }
 
  template <typename scalar_t = real_or_complex, typename... IndexTypes> many_body_operator_generic<scalar_t> c_dag(IndexTypes... indices) {
-  return many_body_operator_generic<scalar_t>::make_canonical(statistic_enum::Fermion, true, indices_t{indices...});
+  return many_body_operator_generic<scalar_t>::make_canonical(hilbert_space::statistic_enum::Fermion, true, indices_t{indices...});
  }
 
  template <typename scalar_t = real_or_complex, typename... IndexTypes> many_body_operator_generic<scalar_t> n(IndexTypes... indices) {
@@ -390,12 +388,12 @@ namespace operators {
  }
 
  template <typename scalar_t = real_or_complex, typename... IndexTypes> many_body_operator_generic<scalar_t> a(IndexTypes... indices) {
-  return many_body_operator_generic<scalar_t>::make_canonical(statistic_enum::Boson, false, indices_t{indices...});
+  return many_body_operator_generic<scalar_t>::make_canonical(hilbert_space::statistic_enum::Boson, false, indices_t{indices...});
   // need to put many_body_operator_generic<double>::indices_t because {} constructor is explicit !?
  }
 
  template <typename scalar_t = real_or_complex, typename... IndexTypes> many_body_operator_generic<scalar_t> a_dag(IndexTypes... indices) {
-  return many_body_operator_generic<scalar_t>::make_canonical(statistic_enum::Boson, true, indices_t{indices...});
+  return many_body_operator_generic<scalar_t>::make_canonical(hilbert_space::statistic_enum::Boson, true, indices_t{indices...});
  }
 
 }
