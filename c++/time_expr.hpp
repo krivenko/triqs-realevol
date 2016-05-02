@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2015 I. Krivenko
+ * Copyright (C) 2016 I. Krivenko
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -120,7 +120,7 @@ private:
 
 };
 
-inline time_expr operator ""_te (long double r){ return time_expr(r); }
+inline time_expr operator ""_te(long double r){ return time_expr(r); }
 inline time_expr operator ""_te(const char* expr, std::size_t) { return time_expr(expr); };
 
 // Replace the expression with a constant if it takes equal values at all mesh points
