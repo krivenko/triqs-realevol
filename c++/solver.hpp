@@ -1,55 +1,62 @@
+/*******************************************************************************
+ *
+ * TRIQS: a Toolbox for Research in Interacting Quantum Systems
+ *
+ * Copyright (C) 2016 I. Krivenko
+ *
+ * TRIQS is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * TRIQS is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * TRIQS. If not, see <http://www.gnu.org/licenses/>.
+ *
+ ******************************************************************************/
 #pragma once
 
-#include <set>
 #include <string>
+#include <vector>
+#include <map>
 #include <utility>
-#include <memory>
-#include <boost/mpi/environment.hpp>
-#include <boost/mpi/communicator.hpp>
 
-#include <triqs/h5/map.hpp>
+#include <triqs/mpi/base.hpp>
+#include <triqs/gfs.hpp>
 
-#include "common.hpp"
-#include "any_mesh.hpp"
-#include "mesh_container.hpp"
+#include "time_expr.hpp"
+#include <triqs/operators/many_body_operator.hpp>
 #include "solve_parameters.hpp"
-#include "simulation.hpp"
 
 namespace realevol {
 
-using dcomplex = std::complex<double>;
+using namespace triqs::gfs;
+
+using indices_type = triqs::operators::indices_t;
+using g_2t_t = gf<cartesian_product<retime, retime>, matrix_valued>;
 
 class solver {
 
-    fundamental_operator_set fops;
-    hilbert_space hs;
-    state<hilbert_space,dcomplex,false> init_state;
-
-    var_results_t results;
-
-    boost::mpi::environment env;
-    boost::mpi::communicator comm;      // define the communicator, here MPI_COMM_WORLD
+ std::map<std::string, indices_type> gf_struct;           // Block structure of the Green function
+ block_gf<cartesian_product<retime,retime>> g_ret, g_adv; // Advanced and retarded GF's to be calculated
+ triqs::mpi::communicator comm;                           // MPI communicator
+ solve_parameters_t params;                               // Parameters of the last call to solve
 
 public:
 
-    using indices_t = typename operator_t::indices_t;
+ solver(std::map<std::string,indices_type> const& gf_struct, std::pair<double,double> time_window, int n_t = 1000);
 
-    solver(std::set<indices_t> const& operator_indices);
+ TRIQS_WRAP_ARG_AS_DICT
+ /// Solve the many-bosy problem for the given Hamiltonian h
+ void solve(solve_parameters_t const& p);
 
-    TRIQS_WRAP_ARG_AS_DICT
-    void solve(solve_parameters_t const& p);
+ /// Set of parameters used in the last call to solve
+ solve_parameters_t get_last_run_parameters() const { return params; }
 
-    /// Set of parameters used in the last call to solve
-    solve_parameters_t get_last_solve_parameters() const {return *_last_solve_parameters;}
-
-    state<hilbert_space,dcomplex,false> & psi0() { return init_state; }
-    dcomplex & psi0(std::set<indices_t> const& indices) { return init_state(hs.get_fock_state(fops,indices)); }
-
-    var_results_t const& get_results() const { return results; }
-
-private:
-
-    std::unique_ptr<solve_parameters_t> _last_solve_parameters; // parameters of the last call to solve
 };
 
 }
