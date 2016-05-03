@@ -1,3 +1,6 @@
+
+
+/*
 struct write_obs : public boost::static_visitor<> {
 
     h5::group & gr;
@@ -93,4 +96,4 @@ int main()
     }
 
     return EXIT_SUCCESS;
-}
+}*/

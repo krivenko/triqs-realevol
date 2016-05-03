@@ -2,7 +2,8 @@
 
 namespace realevol {
 
-enum ode_solve_method {method_runge_kutta, method_lanczos};
+enum ode_solve_method {RungeKutta, Lanczos};
+using operator_t = triqs::operators::many_body_operator_generic<time_expr>;
 
 // All the arguments of the solve function
 struct solve_parameters_t {
@@ -11,26 +12,17 @@ struct solve_parameters_t {
  operator_t h;
 
  /// Verbosity level
- int verbosity = ((boost::mpi::communicator().rank() == 0) ? 3 : 0); // silence the slave nodes
-
- /// Observables to be measured
- std::map<std::string,operator_t> observables = {};
+ /// default: 3 on MPI rank 0, 0 otherwise.
+ int verbosity = ((triqs::mpi::communicator().rank() == 0) ? 3 : 0); // silence the slave nodes
 
  /// Planck constant
  double hbar = 1.0;
 
- /// Time mesh to solve the Schroedinger equation
- any_mesh_t mesh;
-
  /// Method to solve the Schroedinger equation
- ode_solve_method method = method_lanczos;
+ ode_solve_method method = Lanczos;
 
- /// Keep in memory the state vector on this number of time points
- long stored_psi_values = 10;
-
- /// Mesh downsampling factors for the observables
- //std::map<std::string,int> mesh_downsampling = (std::map<std::string,int>{});
-
- solve_parameters_t(operator_t const& h, any_mesh_t const& mesh) : h(h), mesh(mesh) {}
+ solve_parameters_t() {}
+ solve_parameters_t(operator_t const& h) : h(h) {}
 };
+
 }

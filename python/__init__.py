@@ -21,6 +21,8 @@
 
 from texpr import TExpr, is_constant, is_zero, conj
 from operators import Operator, c, c_dag, n, a, a_dag
+from realevol import Solver
 
 __all__ = ['TExpr','is_constant','is_zero','conj',
-           'Operator','c','c_dag','n','a','a_dag']
+           'Operator','c','c_dag','n','a','a_dag',
+           'Solver']
