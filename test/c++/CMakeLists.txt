@@ -6,8 +6,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../c++ ${TRIQS_INCLUDE_ALL})
 
 # Simple tests
 set(SIMPLE_TESTS time_expr many_body_operator hilbert_space space_partition lpt_scheduler
-                 lanczos_worker)
-#set(SIMPLE_TESTS mesh_container mesh_container_cyclic runge_kutta lanczos_worker lanczos)
+                 mesh_container lanczos_worker )
+#set(SIMPLE_TESTS mesh_container mesh_container_cyclic runge_kutta lanczos)
 foreach(t ${SIMPLE_TESTS})
     add_executable(${t} ${CMAKE_CURRENT_SOURCE_DIR}/${t}.cpp)
     triqs_set_rpath_for_target(${t})
