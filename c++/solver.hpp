@@ -37,7 +37,7 @@ namespace realevol {
 using namespace triqs::gfs;
 
 using indices_type = triqs::operators::indices_t;
-using g_2t_t = gf<cartesian_product<retime, retime>, matrix_valued>;
+using g_2t_t = gf<cartesian_product<retime, retime>>;
 
 class solver {
 
@@ -57,6 +57,11 @@ public:
  /// Set of parameters used in the last call to solve
  solve_parameters_t get_last_run_parameters() const { return params; }
 
+ /// Retarded GF in real time
+ block_gf_view<cartesian_product<retime,retime>> get_g_ret() { return g_ret; }
+
+ /// Advanced GF in real time
+ block_gf_view<cartesian_product<retime,retime>> get_g_adv() { return g_adv; }
 };
 
 }

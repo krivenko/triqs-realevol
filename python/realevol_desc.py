@@ -8,6 +8,7 @@ module = module_(full_name = "realevol", doc = "The Real-time evolution solver",
 # All the triqs C++/Python modules
 module.use_module('texpr', 'realevol')
 module.use_module('operators', 'realevol')
+module.use_module('gf_retime', 'realevol')
 
 # Add here all includes beyond what is automatically included by the triqs modules
 module.add_include("solver.hpp")
@@ -19,6 +20,7 @@ module.add_preamble("""
 #include <triqs/python_tools/converters/vector.hpp>
 #include <triqs/python_tools/converters/variant.hpp>
 using triqs::operators::many_body_operator;
+using namespace triqs::gfs;
 using namespace realevol;
 #include "./converters.hxx"
 """)
@@ -50,7 +52,15 @@ c.add_method("""void solve (**realevol::solve_parameters_t)""",
 
 c.add_property(name = "last_run_parameters",
                getter = cfunction("realevol::solve_parameters_t get_last_run_parameters ()"),
-               doc = """Set of parameters used in the last call to solve """)
+               doc = """Set of parameters used in the last call to solve""")
+
+c.add_property(name = "g_ret",
+               getter = cfunction("block_gf_view<cartesian_product<retime, retime>> get_g_ret ()"),
+               doc = """Retarded GF in real time""")
+
+c.add_property(name = "g_adv",
+               getter = cfunction("block_gf_view<cartesian_product<retime, retime>> get_g_adv ()"),
+               doc = """Advanced GF in real time""")
 
 module.add_class(c)
 
