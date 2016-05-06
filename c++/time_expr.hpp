@@ -125,16 +125,15 @@ inline time_expr operator ""_te(const char* expr, std::size_t) { return time_exp
 
 // Replace the expression with a constant if it takes equal values at all mesh points
 template<class Mesh>
-bool try_reduce_to_constant(time_expr & te, Mesh const& m) {
+time_expr try_reduce_to_constant(time_expr const& te, Mesh const& m) {
   auto it = m.begin();
   auto value = te(*it);
 
   using triqs::utility::is_zero;
   for(it++; it != m.end(); it++)
-    if(!is_zero(te(*it) - value)) return false;
+    if(!is_zero(te(*it) - value)) return te;
 
-  te = time_expr(value);
-  return true;
+  return is_zero(value.imag()) ? time_expr(value.real()) : time_expr(value);
 }
 
 }

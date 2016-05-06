@@ -18,9 +18,10 @@ triqs_python_extension_and_install(realevol)
 target_link_libraries(realevol realevol_c ${TRIQS_LIBRARY_ALL})
 triqs_set_rpath_for_target(realevol)
 
-include_directories(realevol ${TRIQS_INCLUDE_ALL} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_BINARY_DIR}/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_BINARY_DIR}/include ${TRIQS_INCLUDE_ALL})
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/_gf_retime.py DESTINATION ${TRIQS_PYTHON_LIB_DEST_ROOT}/${CMAKE_PROJECT_NAME})
+file(COPY _gf_retime.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+install(FILES _gf_retime.py DESTINATION ${TRIQS_PYTHON_LIB_DEST_ROOT}/${CMAKE_PROJECT_NAME})
 
 # add version file
 configure_file(version.py.in version.py)

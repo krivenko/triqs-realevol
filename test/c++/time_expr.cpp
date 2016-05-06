@@ -196,10 +196,10 @@ TEST(time_expr,try_reduce_to_constant) {
   EXPECT_FALSE(is_constant(te0t2));
   EXPECT_FALSE(is_constant(te1tt3));
 
-  try_reduce_to_constant(te0t, m);
-  try_reduce_to_constant(te1t, m);
-  try_reduce_to_constant(te0t2, m);
-  try_reduce_to_constant(te1tt3, m);
+  te0t = try_reduce_to_constant(te0t, m);
+  te1t = try_reduce_to_constant(te1t, m);
+  te0t2 = try_reduce_to_constant(te0t2, m);
+  te1tt3 = try_reduce_to_constant(te1tt3, m);
 
   EXPECT_TRUE(is_constant(te0t));
   EXPECT_FALSE(is_constant(te1t));

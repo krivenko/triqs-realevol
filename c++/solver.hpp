@@ -29,14 +29,14 @@
 #include <triqs/gfs.hpp>
 
 #include "time_expr.hpp"
-#include <triqs/operators/many_body_operator.hpp>
+#include "triqs/operators/many_body_operator.hpp"
 #include "solve_parameters.hpp"
 
 namespace realevol {
 
 using namespace triqs::gfs;
 
-using indices_type = triqs::operators::indices_t;
+using indices_type = realevol::operators::indices_t;
 using g_2t_t = gf<cartesian_product<retime, retime>>;
 
 class solver {
@@ -45,6 +45,7 @@ class solver {
  block_gf<cartesian_product<retime,retime>> g_ret, g_adv; // Advanced and retarded GF's to be calculated
  triqs::mpi::communicator comm;                           // MPI communicator
  solve_parameters_t params;                               // Parameters of the last call to solve
+ gf_mesh<retime> t_mesh;                                  // 1D time mesh to use in calculations
 
 public:
 
