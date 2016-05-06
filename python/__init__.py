@@ -19,6 +19,7 @@
 #
 ################################################################################
 
+import pytriqs.utility.mpi as mpi
 from texpr import TExpr, is_constant, is_zero, conj
 from operators import Operator, c, c_dag, n, a, a_dag
 from gf_retime import MeshReTime2, GfReTime2

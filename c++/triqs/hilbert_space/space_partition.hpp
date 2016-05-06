@@ -27,8 +27,14 @@
 #include <triqs/utility/numeric_ops.hpp>
 #include <boost/pending/disjoint_sets.hpp>
 
-namespace triqs {
+namespace realevol { // FIXME
 namespace hilbert_space {
+
+ template<typename T> struct triqs_is_zero {
+   bool operator()(T x) const {
+    using triqs::utility::is_zero; return is_zero(x);
+  }
+ };
 
 /// Implementation of the automatic partitioning algorithm
 /**
@@ -40,7 +46,8 @@ namespace hilbert_space {
   @tparam StateType Many-body state type, must model [[statevector_concept]]
   @tparam OperatorType Imperative operator type, must provide `StateType operator()(StateType const&)`
  */
-template <typename StateType, typename OperatorType> class space_partition {
+template <typename StateType, typename OperatorType, typename IsZeroPredicate = triqs_is_zero<typename StateType::value_type>>
+class space_partition {
 
  public:
  /// Index of a basis Fock state/subspace
@@ -65,8 +72,9 @@ template <typename StateType, typename OperatorType> class space_partition {
    @param H Hamiltonian as an imperative operator
    @param store_matrix_elements Should we store the non-vanishing matrix elements of the Hamiltonian?
   */
- space_partition(state_t const& st, operator_t const& H, bool store_matrix_elements = true)
-    : tmp_state(make_zero_state(st)), subspaces(st.size()){
+ space_partition(state_t const& st, operator_t const& H,
+                 bool store_matrix_elements = true, IsZeroPredicate is_zero_pred = IsZeroPredicate())
+    : is_zero_pred(is_zero_pred), tmp_state(make_zero_state(st)), subspaces(st.size()){
   auto size = tmp_state.size();
 
   // Iteration over all initial basis states
@@ -76,8 +84,7 @@ template <typename StateType, typename OperatorType> class space_partition {
 
    // Iterate over non-zero final amplitudes
    foreach(final_state, [&](index_t f, amplitude_t amplitude) {
-    using triqs::utility::is_zero;
-    if (is_zero(amplitude)) return;
+    if (is_zero_pred(amplitude)) return;
     auto i_subspace = subspaces.find_set(i);
     auto f_subspace = subspaces.find_set(f);
     if (i_subspace != f_subspace) subspaces.link(i_subspace, f_subspace);
@@ -121,8 +128,7 @@ template <typename StateType, typename OperatorType> class space_partition {
     state_t final_state = op(tmp_state);
     // Iterate over non-zero final amplitudes
     foreach(final_state, [&](index_t f, amplitude_t amplitude) {
-     using triqs::utility::is_zero;
-     if (is_zero(amplitude)) return;
+     if (is_zero_pred(amplitude)) return;
      auto f_subspace = subspaces.find_set(f);
      conn.insert({i_subspace,f_subspace});
      if (store_matrix_elements) elem[{i, f}] = amplitude;
@@ -229,8 +235,7 @@ template <typename StateType, typename OperatorType> class space_partition {
 
    // Iterate over non-zero final amplitudes
    foreach(final_state, [&](index_t f, amplitude_t amplitude) {
-    using triqs::utility::is_zero;
-    if (is_zero(amplitude)) return;
+    if (is_zero_pred(amplitude)) return;
     auto f_subspace = subspaces.find_set(f);
     if((!diagonal_only) || i_subspace==f_subspace)
       mapping.insert(std::make_pair(representative_to_index[i_subspace],
@@ -254,6 +259,8 @@ template <typename StateType, typename OperatorType> class space_partition {
   }
  }
 
+ // is_zero functio object
+ IsZeroPredicate is_zero_pred;
  // Temporary zero state
  mutable state_t tmp_state;
  // Subspaces

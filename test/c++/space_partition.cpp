@@ -14,13 +14,15 @@
 #include <triqs/hilbert_space/state.hpp>
 #include <triqs/utility/numeric_ops.hpp>
 
-using namespace triqs::hilbert_space;
-using triqs::operators::many_body_operator_generic;
-using triqs::operators::c;
-using triqs::operators::c_dag;
-using triqs::operators::n;
-using triqs::utility::is_zero;
+using namespace realevol;
+using operators::many_body_operator_generic;
+using operators::c;
+using operators::c_dag;
+using operators::n;
 using realevol::time_expr;
+using triqs::utility::is_zero;
+
+namespace hsns = realevol::hilbert_space; // FIXME
 
 // 3 bands Kanamori
 
@@ -30,7 +32,7 @@ time_expr U = 3.0;
 time_expr J = "2*cos(t)";
 
 // basis of operators to use
-fundamental_operator_set fops;
+hsns::fundamental_operator_set fops;
 
 // Hamiltonian
 many_body_operator_generic<time_expr> H;
@@ -74,14 +76,14 @@ int main(int argc, char **argv) {
  return RUN_ALL_TESTS();
 }
 
-using state_t = state<hilbert_space, time_expr, true>;
-using imp_op_t = imperative_operator<hilbert_space, time_expr, false>;
+using state_t = hsns::state<hsns::hilbert_space, time_expr, true>;
+using imp_op_t = hsns::imperative_operator<hsns::hilbert_space, time_expr, false>;
 
 // Check subspaces
 TEST(space_partition, Phase1) {
 
  // Hilbert space
- hilbert_space hs(fops);
+ hsns::hilbert_space hs(fops);
 
  // Sample state
  state_t st(hs);
@@ -90,7 +92,7 @@ TEST(space_partition, Phase1) {
  imp_op_t Hop(H, fops);
 
  // Space partition
- space_partition<state_t,imp_op_t> SP(st, Hop);
+ hsns::space_partition<state_t,imp_op_t> SP(st, Hop);
 
  // Calculated classification of states
  // sets are used to neglect order of subspaces and of states within a subspace
@@ -170,7 +172,7 @@ TEST(space_partition, Phase1) {
 TEST(space_partition, MatrixElements) {
 
  // Hilbert space
- hilbert_space hs(fops);
+ hsns::hilbert_space hs(fops);
 
  // Sample state
  state_t st(hs);
@@ -179,9 +181,9 @@ TEST(space_partition, MatrixElements) {
  imp_op_t Hop(H, fops);
 
  // Space partition
- space_partition<state_t,imp_op_t> SP(st, Hop);
+ hsns::space_partition<state_t,imp_op_t> SP(st, Hop);
 
- using index_t = typename space_partition<state_t,imp_op_t>::index_t;
+ using index_t = typename hsns::space_partition<state_t,imp_op_t>::index_t;
  struct melem_t {
   index_t from;
   index_t to;
@@ -301,7 +303,7 @@ TEST(space_partition, MatrixElements) {
 TEST(space_partition, Phase2) {
 
  // Hilbert space
- hilbert_space hs(fops);
+ hsns::hilbert_space hs(fops);
 
  // Sample state
  state_t st(hs);
@@ -310,7 +312,7 @@ TEST(space_partition, Phase2) {
  imp_op_t Hop(H, fops);
 
  // Space partition
- space_partition<state_t,imp_op_t> SP(st, Hop);
+ hsns::space_partition<state_t,imp_op_t> SP(st, Hop);
 
  std::vector<decltype(Hop)> Cd, C;
  for (int o = 0; o < 3; ++o)

@@ -27,6 +27,7 @@
 #include <set>
 #include <map>
 #include <utility>
+#include <boost/range/join.hpp>
 
 namespace std {
 inline std::ostream & operator<<(std::ostream & os, std::vector<triqs::utility::variant_int_string> const& fs) {
@@ -36,8 +37,11 @@ inline std::ostream & operator<<(std::ostream & os, std::vector<triqs::utility::
 }
 }
 
-namespace triqs {
+namespace realevol { // FIXME
 namespace hilbert_space {
+
+ namespace utility = triqs::utility;
+ namespace h5 = triqs::h5;
 
  /// The statistics: Boson or Fermion
  enum statistic_enum {Boson, Fermion};
@@ -208,7 +212,7 @@ class fundamental_operator_set {
    @param stat Choose between bosonic/fermionic operators
    @return Iterator to the first index sequence
   */
- const_iterator begin(statistic_enum stat = Fermion) const noexcept {
+ const_iterator begin(statistic_enum stat) const noexcept {
   return (stat == Fermion ? fermion_map_index_n : boson_map_index_n).begin();
  }
  /// Return `const_iterator` to the past-the-end element of this set
@@ -216,24 +220,22 @@ class fundamental_operator_set {
    @param stat Choose between bosonic/fermionic operators
    @return Iterator to the past-the-end element
   */
- const_iterator end(statistic_enum stat = Fermion) const noexcept {
+ const_iterator end(statistic_enum stat) const noexcept {
   return (stat == Fermion ? fermion_map_index_n : boson_map_index_n).end();
  }
- /// Equivalent to [[fundamental_operator_set_begin]]
+
+ /// Compute a union of two sets
  /**
-   @param stat Choose between bosonic/fermionic operators
-   @return Iterator to the first index sequence
+   @param fops1 First fundamental operator set
+   @param fops2 Second fundamental operator set
+   @return Union of the sets
   */
- const_iterator cbegin(statistic_enum stat = Fermion) const noexcept {
-  return (stat == Fermion ? fermion_map_index_n : boson_map_index_n).cbegin();
- }
- /// Equivalent to [[fundamental_operator_set_end]]
- /**
-   @param stat Choose between bosonic/fermionic operators
-   @return Iterator to the past-the-end element
-  */
- const_iterator cend(statistic_enum stat = Fermion) const noexcept {
-  return (stat == Fermion ? fermion_map_index_n : boson_map_index_n).cend();
+ friend fundamental_operator_set merge(fundamental_operator_set const& fops1,
+                                       fundamental_operator_set const& fops2) {
+  fundamental_operator_set fops(fops1);
+  for(auto it = fops2.begin(Fermion); it != fops2.end(Fermion); ++it) fops.insert_fermion(it->index);
+  for(auto it = fops2.begin(Boson); it != fops2.end(Boson); ++it) fops.insert_boson(it->index);
+  return fops;
  }
 
  /// Write this set as an HDF5 attribute

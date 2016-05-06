@@ -26,7 +26,7 @@
 #include <triqs/h5/vector.hpp>
 #include "fundamental_operator_set.hpp"
 
-namespace triqs {
+namespace realevol { // FIXME
 namespace hilbert_space {
 
 /// The coding of the fermionic Fock state: 64 bits word in binary.

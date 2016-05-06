@@ -7,14 +7,14 @@
 #include <time_expr.hpp>
 #include <triqs/operators/many_body_operator.hpp>
 
-using triqs::operators::many_body_operator;
-using triqs::operators::c_dag;
-using triqs::operators::c;
-using triqs::operators::n;
-using triqs::operators::a_dag;
-using triqs::operators::a;
-
 using namespace realevol;
+using operators::many_body_operator;
+using operators::c_dag;
+using operators::c;
+using operators::n;
+using operators::a_dag;
+using operators::a;
+
 using std::to_string;
 
 #define EXPECT_PRINT(X, Y) {std::stringstream ss; ss << Y; EXPECT_EQ(X,ss.str()); }
