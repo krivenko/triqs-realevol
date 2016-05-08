@@ -290,7 +290,7 @@ template <typename HilbertType, typename ScalarType = double, bool UseMap = fals
      auto const& b_update = M.b_updates[b];
      int64_t n_part = (f3 >> b_update.shift) & b_update.mask;
      int64_t new_n_part = n_part + b_update.n_change;
-     if(new_n_part < 0 && new_n_part > boson_n_max[b]) return;
+     if(new_n_part < 0 || new_n_part > boson_n_max[b]) return;
 
      if(b_update.n_change > 0) {
       for(int i = 1; i <= b_update.n_change; ++i) coeff *= sqr_roots[n_part + i];
