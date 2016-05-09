@@ -30,11 +30,11 @@
 namespace realevol { // FIXME
 namespace hilbert_space {
 
- template<typename T> struct triqs_is_zero {
-   bool operator()(T x) const {
-    using triqs::utility::is_zero; return is_zero(x);
-  }
- };
+template<typename T> struct triqs_is_zero {
+ bool operator()(T x) const {
+  using triqs::utility::is_zero; return is_zero(x);
+ }
+};
 
 /// Implementation of the automatic partitioning algorithm
 /**
@@ -46,7 +46,7 @@ namespace hilbert_space {
   @tparam StateType Many-body state type, must model [[statevector_concept]]
   @tparam OperatorType Imperative operator type, must provide `StateType operator()(StateType const&)`
  */
-template <typename StateType, typename OperatorType, typename IsZeroPredicate = triqs_is_zero<typename StateType::value_type>>
+template <typename StateType, typename OperatorType>
 class space_partition {
 
  public:
@@ -72,9 +72,10 @@ class space_partition {
    @param H Hamiltonian as an imperative operator
    @param store_matrix_elements Should we store the non-vanishing matrix elements of the Hamiltonian?
   */
+ template<typename IsZeroPredicate = triqs_is_zero<amplitude_t>>
  space_partition(state_t const& st, operator_t const& H,
-                 bool store_matrix_elements = true, IsZeroPredicate is_zero_pred = IsZeroPredicate())
-    : is_zero_pred(is_zero_pred), tmp_state(make_zero_state(st)), subspaces(st.size()){
+                 bool store_matrix_elements = true, IsZeroPredicate is_zero_pred = {})
+    : tmp_state(make_zero_state(st)), subspaces(st.size()){
   auto size = tmp_state.size();
 
   // Iteration over all initial basis states
@@ -110,8 +111,10 @@ class space_partition {
    @param store_matrix_elements Should we store the non-vanishing matrix elements of `Cd`?
    @return Non-vanishing matrix elements of `Cd` and `C`, if `store_matrix_elements = true`
   */
+ template<typename IsZeroPredicate = triqs_is_zero<amplitude_t>>
  std::pair<matrix_element_map_t, matrix_element_map_t> merge_subspaces(operator_t const& Cd, operator_t const& C,
-                                                                       bool store_matrix_elements = true) {
+                                                                       bool store_matrix_elements = true,
+                                                                       IsZeroPredicate is_zero_pred = {}) {
 
   matrix_element_map_t Cd_elements, C_elements;
   std::multimap<index_t,index_t> Cd_connections, C_connections;
@@ -123,7 +126,7 @@ class space_partition {
    tmp_state(i) = amplitude_t(1.0);
    auto i_subspace = subspaces.find_set(i);
 
-   auto fill_conn = [this,i,i_subspace,store_matrix_elements]
+   auto fill_conn = [this,i,i_subspace,store_matrix_elements,&is_zero_pred]
                     (operator_t const& op, std::multimap<index_t,index_t> & conn, matrix_element_map_t & elem) {
     state_t final_state = op(tmp_state);
     // Iterate over non-zero final amplitudes
@@ -221,7 +224,8 @@ class space_partition {
    @param diagonal_only Find only the 'diagonal' connections (each subspace connected to itself)
    @return Connections between subspaces
   */
- block_mapping_t find_mappings(operator_t const& op, bool diagonal_only = false) {
+ template<typename IsZeroPredicate = triqs_is_zero<amplitude_t>>
+ block_mapping_t find_mappings(operator_t const& op, bool diagonal_only = false, IsZeroPredicate is_zero_pred = {}) {
 
   block_mapping_t mapping;
 
@@ -259,8 +263,6 @@ class space_partition {
   }
  }
 
- // is_zero functio object
- IsZeroPredicate is_zero_pred;
  // Temporary zero state
  mutable state_t tmp_state;
  // Subspaces
