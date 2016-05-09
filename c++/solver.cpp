@@ -4,6 +4,7 @@
 
 #include "solver.hpp"
 #include "hs_structure.hpp"
+#include "init_state.hpp"
 
 namespace realevol {
 
@@ -50,12 +51,6 @@ operator_t try_reduce_to_constant(operator_t const& op, gf_mesh<retime> const& m
  return res;
 }
 
-bool check_operator_static(operator_t const& op) {
- for(auto const& m : op)
-  if(!is_constant(m.coef)) return false;
- return true;
-}
-
 void solver::solve(solve_parameters_t const& p) {
 
  // Save parameters
@@ -64,10 +59,6 @@ void solver::solve(solve_parameters_t const& p) {
  // Scan for the coefficients constant at all points of t_mesh,
  // and replace them with the corresponding constants
  auto h = try_reduce_to_constant(p.h, t_mesh);
-
- // Check if the generating operator is static
- if(!check_operator_static(p.h0))
-  TRIQS_RUNTIME_ERROR << "Generating operator h0 must be time-independent!";
 
  // Determine fundamental operator set to use
  auto fops = merge(h.make_fundamental_operator_set(), p.h0.make_fundamental_operator_set());
@@ -84,7 +75,9 @@ void solver::solve(solve_parameters_t const& p) {
                       << ") has no associated record in bits_per_boson";
 
  // Analyse structure of the Hilbert space
- hilbert_space_structure hs_struct(fops, h, bits_per_boson, true, is_zero_on_mesh(t_mesh));
+ hilbert_space_structure hs_struct(fops, h, bits_per_boson, true, t_mesh);
+
+
 }
 
 }
