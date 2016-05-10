@@ -20,51 +20,24 @@
  ******************************************************************************/
 #pragma once
 
-#include <vector>
-#include <utility>
-#include <algorithm>
-#include <triqs/hilbert_space/state.hpp>
+#include <map>
+#include <limits>
 
 #include "hs_structure.hpp"
 
 namespace realevol {
 
-using state_on_subspace_t = state<sub_hilbert_space,dcomplex,false>;
-using init_states_t = std::vector<std::pair<state_on_subspace_t,double>>;
+// Initial state
+struct init_state_t {
+ // subspace index -> projection of this state onto the subspace
+ std::map<int, state_on_subspace_t> parts;
+ // Statistical weight of this initial state
+ double weight;
+};
 
-bool check_operator_static(operator_t const& op) {
- for(auto const& m : op)
-  if(!is_constant(m.coef)) return false;
- return true;
-}
-
-init_states_t init_states_pure(operator_t const& generator, hilbert_space_structure & hss) {
-
- // Check if the generating operator is static
- if(!check_operator_static(generator))
-  TRIQS_RUNTIME_ERROR << "Generating operator must be time-independent!";
-
- init_states_t states;
- std::vector<state_on_subspace_t*> state_part_ptrs(hss.sub_hilbert_spaces.size(), nullptr);
-
- state_on_space_t vacuum(hss.full_hs);
- vacuum(fock_state_t(0)) = 1;
-
- op_on_space_t imp_gen(generator, hss.fops, hss.full_hs);
- auto init_state = imp_gen(vacuum, 0);
-
- foreach(init_state, [&states,&state_part_ptrs,&hss](fock_state_t f, dcomplex a){
-  auto spn = hss.partition.lookup_basis_state(f);
-  auto & ptr = state_part_ptrs[spn];
-  auto const& sp = hss.sub_hilbert_spaces[spn];
-  if(ptr == nullptr) {
-   states.emplace_back(sp, 1.0);
-   ptr = &states.back().first;
-  }
-  (*ptr)(sp.get_state_index(f)) = a;
- });
-
- return states;
-}
+std::vector<init_state_t> init_state_pure(operator_t const& generator, hilbert_space_structure & hss);
+std::vector<init_state_t> init_state_thermal(operator_t const& h0, hilbert_space_structure & hss,
+                                             double beta,
+                                             double temperature_cutoff = std::numeric_limits<double>::epsilon());
 
 }

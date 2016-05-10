@@ -176,7 +176,7 @@ class fundamental_operator_set {
    @param stat Choose between bosonic/fermionic operators
    @return Position of the requested index sequence
   */
- int pos(indices_t const& t, statistic_enum stat = Fermion) const {
+ int pos(indices_t const& t, statistic_enum stat) const {
   try {
    return (stat == Fermion ? fermion_map_index_n : boson_map_index_n).at(t);
   } catch(std::out_of_range &) {

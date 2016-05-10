@@ -74,39 +74,15 @@ namespace operators {
   friend bool operator!=(canonical_ops_t const& a, canonical_ops_t const& b) { return !operator==(a, b); }
  };
 
- std::ostream& operator<<(std::ostream& os, canonical_ops_t const& op) {
-  os << (op.stat == hilbert_space::statistic_enum::Fermion ? "C" : "A");
-  if (op.dagger) os << "^+";
-  os << "(";
-  int u = 0;
-  for (auto const& i : op.indices) {
-   if (u++) os << ",";
-   os << i;
-  }
-  return os << ")";
- }
+ std::ostream& operator<<(std::ostream& os, canonical_ops_t const& op);
 
 //-----------------------------------------------------------------------------------------
  // Monomial: an ordered set of creation/annihilation operators and comparison
  using monomial_t = std::vector<canonical_ops_t>;
 
- bool operator<(monomial_t const& m1, monomial_t const& m2) {
-  return m1.size() != m2.size() ? m1.size() < m2.size()
-                                : std::lexicographical_compare(m1.begin(), m1.end(), m2.begin(), m2.end());
- }
- std::ostream& operator<<(std::ostream& os, monomial_t const& m) {
-  monomial_t::const_iterator it = std::begin(m), end_it = std::end(m);
-  auto next_it = it; ++next_it;
-  int power = 1;
-  for(;it != end_it; ++it, ++next_it) {
-   if(next_it == end_it || *next_it != *it) {
-    os << (power > 1 ? "[" : "") << *it << (power > 1 ? "]^" + std::to_string(power) : "");
-    power = 1;
-   } else
-    ++power;
-  }
-  return os;
- }
+ bool operator<(monomial_t const& m1, monomial_t const& m2);
+
+ std::ostream& operator<<(std::ostream& os, monomial_t const& m);
 
  //-----------------------------------------------------------------------------------------
  /**
