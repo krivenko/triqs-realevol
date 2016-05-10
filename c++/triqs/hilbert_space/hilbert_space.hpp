@@ -161,8 +161,8 @@ class hilbert_space {
                              std::multiset<fundamental_operator_set::indices_t> const& boson_indices = {}
                             ) const {
   fock_state_t f = 0;
-  for(auto const& index : fermion_indices) f += fock_state_t(1) << fops[index];
-  for(auto const& index : boson_indices) f += fock_state_t(1) << boson_offsets_[fops[index]];
+  for(auto const& index : fermion_indices) f += fock_state_t(1) << fops.pos(index, Fermion);
+  for(auto const& index : boson_indices) f += fock_state_t(1) << boson_offsets_[fops.pos(index, Boson)];
   return f;
  }
 
