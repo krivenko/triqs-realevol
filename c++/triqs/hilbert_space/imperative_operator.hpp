@@ -86,9 +86,10 @@ template <typename HilbertType, typename ScalarType = double, bool UseMap = fals
    uint64_t mask;
    // Change the number of particles by this number
    int64_t n_change;
+   // n_change * (int64_t(1) << shift)
+   int64_t state_change;
   };
   std::vector<single_boson_update_t> b_updates;
-  uint64_t b_full_update; // f = f + b_full_update to apply all bosonic operators
  };
  std::vector<one_term_t> all_terms;
 
@@ -165,7 +166,6 @@ template <typename HilbertType, typename ScalarType = double, bool UseMap = fals
 
    // Bosons
    std::vector<typename one_term_t::single_boson_update_t> b_updates;
-   uint64_t b_full_update = 0;
 
    auto next_it = it; ++next_it;
    int power = 1;
@@ -177,8 +177,8 @@ template <typename HilbertType, typename ScalarType = double, bool UseMap = fals
      if(power > boson_n_max[p]) return;
 
      int64_t n_change = it->dagger ? power : -power;
-     b_updates.push_back({boson_offsets[p], (uint64_t(1) << bits_per_boson[p]) - 1, n_change});
-     b_full_update += n_change * (uint64_t(1) << boson_offsets[p]);
+     int64_t state_change = n_change * (int64_t(1) << boson_offsets[p]);
+     b_updates.push_back({boson_offsets[p], (uint64_t(1) << bits_per_boson[p]) - 1, n_change, state_change});
 
      power = 1;
     } else
@@ -186,9 +186,8 @@ template <typename HilbertType, typename ScalarType = double, bool UseMap = fals
    }
 
    all_terms.push_back(
-    one_term_t{scalar_t(term.coef),
-               f_c_mask, f_c_dag_mask, f_c_count_mask, f_c_dag_count_mask,
-               b_updates, b_full_update});
+    one_term_t{scalar_t(term.coef),f_c_mask,f_c_dag_mask,f_c_count_mask,f_c_dag_count_mask,b_updates}
+   );
   }
  }
 
@@ -299,8 +298,8 @@ template <typename HilbertType, typename ScalarType = double, bool UseMap = fals
      } else {
       for(int i = 0; i <= -b_update.n_change-1; ++i) coeff *= sqr_roots[n_part - i];
      }
+     f3 += b_update.state_change;
     }
-    f3 += M.b_full_update;
 
     // update state vector in target Hilbert space
     auto ind = target_st.get_hilbert().get_state_index(f3);
