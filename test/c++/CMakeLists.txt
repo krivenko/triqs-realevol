@@ -1,7 +1,7 @@
 # load triqs helper to set up tests
 find_package(TriqsTest)
 
-link_libraries(realevol_c ${TRIQS_LIBRARY_ALL} gtest)
+link_libraries(realevol_c time_expr_c ${TRIQS_LIBRARY_ALL} gtest)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../c++ ${TRIQS_INCLUDE_ALL})
 
 # Simple tests
