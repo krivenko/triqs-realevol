@@ -93,7 +93,7 @@ template <> struct py_converter<solve_parameters_t> {
   _check_optional <bool                                         >(dic, fs, err, "thermal_init_state", "bool");
   _check_mandatory<operator_t                                   >(dic, fs, err, "h0"                , "operator_t");
   _check_optional <double                                       >(dic, fs, err, "beta"              , "double");
-  _check_optional <std::map<realevol::operators::indices_t, int>>(dic, fs, err, "bits_per_boson"    , "std::map<realevol::operators::indices_t, int>");
+  _check_optional <std::map<realevol::operators::indices_t, int>         >(dic, fs, err, "bits_per_boson"    , "std::map<realevol::operators::indices_t, int>");
   _check_optional <realevol::ode_solve_method                   >(dic, fs, err, "method"            , "realevol::ode_solve_method");
   if (err) goto _error;
   return true;

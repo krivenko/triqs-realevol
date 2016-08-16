@@ -15,14 +15,12 @@
 #include <triqs/utility/numeric_ops.hpp>
 
 using namespace realevol;
-using operators::many_body_operator_generic;
-using operators::c;
-using operators::c_dag;
-using operators::n;
-using realevol::time_expr;
+using namespace triqs;
+using namespace operators;
 using triqs::utility::is_zero;
 
-namespace hsns = realevol::hilbert_space; // FIXME
+//namespace hsns = triqs::hilbert_space;
+namespace hsns = realevol::hilbert_space;      // FIXME
 
 // 3 bands Kanamori
 

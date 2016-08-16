@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include "../../triqs/hilbert_space/fundamental_operator_set.hpp"
+#include <triqs/hilbert_space/fundamental_operator_set.hpp>
 
 #include <ostream>
 #include <cmath>
@@ -29,11 +29,8 @@
 #include <triqs/utility/numeric_ops.hpp>
 #include <triqs/h5.hpp>
 
-namespace realevol { // FIXME
+namespace realevol {
 namespace operators {
-
- namespace utility = triqs::utility; // FIXME
- namespace h5 = triqs::h5;           // FIXME
 
  using utility::real_or_complex;
 

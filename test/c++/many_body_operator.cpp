@@ -8,12 +8,8 @@
 #include <triqs/operators/many_body_operator.hpp>
 
 using namespace realevol;
-using operators::many_body_operator;
-using operators::c_dag;
-using operators::c;
-using operators::n;
-using operators::a_dag;
-using operators::a;
+//using namespace triqs::operators;
+using namespace realevol::operators;    // FIXME
 
 using std::to_string;
 

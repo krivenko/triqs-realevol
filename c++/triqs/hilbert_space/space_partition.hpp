@@ -27,7 +27,7 @@
 #include <triqs/utility/numeric_ops.hpp>
 #include <boost/pending/disjoint_sets.hpp>
 
-namespace realevol { // FIXME
+namespace realevol {
 namespace hilbert_space {
 
 template<typename T> struct triqs_is_zero {

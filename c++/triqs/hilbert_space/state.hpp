@@ -28,7 +28,7 @@
 #include <triqs/arrays/blas_lapack/dot.hpp>
 #include "hilbert_space.hpp"
 
-namespace realevol { // FIXME
+namespace realevol {
 namespace hilbert_space {
 
 /// Many-body state as a list of amplitudes in a *basis of Fock states*

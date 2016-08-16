@@ -27,7 +27,6 @@
 #include <set>
 #include <map>
 #include <utility>
-#include <boost/range/join.hpp>
 
 namespace std {
 inline std::ostream & operator<<(std::ostream & os, std::vector<triqs::utility::variant_int_string> const& fs) {
@@ -37,11 +36,11 @@ inline std::ostream & operator<<(std::ostream & os, std::vector<triqs::utility::
 }
 }
 
-namespace realevol { // FIXME
-namespace hilbert_space {
+namespace utility = triqs::utility; // FIXME
+namespace h5 = triqs::h5;           // FIXME
 
- namespace utility = triqs::utility;
- namespace h5 = triqs::h5;
+namespace realevol {
+namespace hilbert_space {
 
  /// The statistics: Boson or Fermion
  enum statistic_enum {Boson, Fermion};

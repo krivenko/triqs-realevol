@@ -37,10 +37,8 @@
 #include <triqs/utility/tuple_tools.hpp>
 #endif
 
-namespace realevol { // FIXME
+namespace realevol {
 namespace hilbert_space {
-
-namespace h5 = triqs::h5; // FIXME
 
 /*
    If UseMap is false, the constructor takes two arguments:

@@ -5,12 +5,10 @@
 #include "hs_structure.hpp"
 
 using namespace realevol;
-using operators::c;
-using operators::c_dag;
-using operators::n;
-using operators::a;
-using operators::a_dag;
-using namespace hilbert_space;
+//using namespace triqs::operators;
+//using namespace triqs::hilbert_space;
+using namespace realevol::operators;        // FIXME
+using namespace realevol::hilbert_space;    // FIXME
 
 using state_set_t = std::set<fock_state_t>;
 
@@ -29,8 +27,8 @@ TEST(hs_structure, BosonFermion) {
  fops.insert_fermion("up",0);
  fops.insert_boson("B",0);
 
-
- hilbert_space_structure hss(fops, h, {3}, true);
+ class hilbert_space full_hs(fops, {3});
+ hilbert_space_structure hss(h, fops, full_hs, true);
 
  EXPECT_EQ(32, hss.sub_hilbert_spaces.size());
 
@@ -62,7 +60,8 @@ TEST(hs_structure, BosonFermionCoupled) {
  fops.insert_boson("B",0);
 
  triqs::gfs::segment_mesh mesh(0,1.0,101);
- hilbert_space_structure hss(fops, h, {3}, true, mesh);
+ class hilbert_space full_hs(fops, {3});
+ hilbert_space_structure hss(h, fops, full_hs, true, mesh);
 
  EXPECT_EQ(4, hss.sub_hilbert_spaces.size());
 

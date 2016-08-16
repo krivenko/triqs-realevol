@@ -30,7 +30,6 @@ namespace realevol {
 
 using triqs::arrays::matrix;
 using triqs::utility::is_zero;
-using realevol::hilbert_space::triqs_is_zero;
 
 struct is_zero_on_mesh {
  triqs::gfs::segment_mesh const& mesh;
@@ -38,7 +37,7 @@ struct is_zero_on_mesh {
  bool operator()(time_expr const& te) {
   if(te.is_zero()) return true;
   for(auto t : mesh)
-   if(!triqs::utility::is_zero(te(t))) return false;
+   if(!is_zero(te(t))) return false;
   return true;
  }
 };
@@ -48,7 +47,7 @@ struct hilbert_space_structure {
  // Fundamental operator set
  fundamental_operator_set fops;
  // Full hilbert space
- hilbert_space_t full_hs;
+ class hilbert_space full_hs;
  // Invariant subspaces
  std::vector<sub_hilbert_space> sub_hilbert_spaces;
  // Connections between subspaces: *_connection[stat][operator_linear_index][B] -> B'
@@ -57,21 +56,23 @@ struct hilbert_space_structure {
  space_partition<dyn_state_on_space_t, op_on_space_t> partition;
 
  // Partition a space using a dynamical operator
- hilbert_space_structure(fundamental_operator_set const& fops,
-                         operator_t const& h, std::vector<int> bits_per_boson,
+ hilbert_space_structure(operator_t const& h,
+                         fundamental_operator_set const& fops,
+                         class hilbert_space const& full_hs,
                          bool merge_subspaces,
                          triqs::gfs::segment_mesh const& mesh) :
-  fops(fops), full_hs(fops, bits_per_boson),
+  fops(fops), full_hs(full_hs),
   partition(dyn_state_on_space_t(full_hs), op_on_space_t(h, fops, full_hs), false, is_zero_on_mesh(mesh)) {
 
   if(merge_subspaces) merge(is_zero_on_mesh(mesh));
   fill_subspaces();
  }
 
- hilbert_space_structure(fundamental_operator_set const& fops,
-                         operator_t const& h, std::vector<int> bits_per_boson,
+ hilbert_space_structure(operator_t const& h,
+                         fundamental_operator_set const& fops,
+                         class hilbert_space const& full_hs,
                          bool merge_subspaces) :
-  fops(fops), full_hs(fops, bits_per_boson),
+  fops(fops), full_hs(full_hs),
   partition(dyn_state_on_space_t(full_hs), op_on_space_t(h, fops, full_hs), false, triqs_is_zero<time_expr>()) {
 
   if(merge_subspaces) merge(triqs_is_zero<time_expr>());

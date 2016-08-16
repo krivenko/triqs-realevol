@@ -3,7 +3,7 @@
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
  * Copyright (C) 2015 by O. Parcollet
- *
+ *3t
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
@@ -22,7 +22,7 @@
 #include <triqs/h5.hpp>
 #include <triqs/h5/base.hpp>
 
-namespace realevol { // FIXME
+namespace realevol {
 namespace operators {
 
 std::ostream& operator<<(std::ostream& os, canonical_ops_t const& op) {
