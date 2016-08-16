@@ -53,7 +53,7 @@ struct solve_parameters_t {
 
  /// Number of binary digits per bosonic degree of freedom
  /// type: dict(Operator index : int)
- std::map<realevol::operators::indices_t, int> bits_per_boson = {};
+ std::map<operators::indices_t, int> bits_per_boson = {};
 
  /// Method to solve the Schroedinger equation
  ode_solve_method method = Lanczos;

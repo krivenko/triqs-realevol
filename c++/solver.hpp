@@ -36,7 +36,7 @@ namespace realevol {
 
 using namespace triqs::gfs;
 
-using indices_type = realevol::operators::indices_t;
+using indices_type = operators::indices_t;
 using g_2t_t = gf<cartesian_product<retime, retime>>;
 
 class solver {

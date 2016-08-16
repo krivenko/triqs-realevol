@@ -2,7 +2,8 @@ from realevol.texpr import TExpr as te
 from realevol.operators import *
 from itertools import product
 
-def check_str(ref_string, op): assert(str(op) == ref_string)
+def check_str(ref_string, op):
+    assert str(op) == ref_string, str(op) + " != " + str(ref_string)
 
 # Operators without indices
 check_str("1*C^+() + 1*C() + -1*C^+()C()", c() + c_dag() - n())

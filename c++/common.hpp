@@ -35,23 +35,22 @@
 
 namespace realevol {
 
-using realevol::operators::many_body_operator_generic;
-using realevol::hilbert_space::imperative_operator;
-using realevol::hilbert_space::fock_state_t;
-using realevol::hilbert_space::state;
-using realevol::hilbert_space::fundamental_operator_set;
-using realevol::hilbert_space::hilbert_space;
-using realevol::hilbert_space::sub_hilbert_space;
-using realevol::hilbert_space::space_partition;
-using realevol::hilbert_space::project;
+//using namespace triqs::operators;
+//using namespace triqs::hilbert_space;
+using namespace realevol::operators;        // FIXME
+using namespace realevol::hilbert_space;    // FIXME
 
 using operator_t = many_body_operator_generic<time_expr>;
-using hilbert_space_t = hilbert_space::hilbert_space;
+using static_operator_t = many_body_operator;
 
-using op_on_space_t = imperative_operator<hilbert_space_t,time_expr,false>;
+using op_on_space_t = imperative_operator<class hilbert_space,time_expr,false>;
 using op_on_subspace_t = imperative_operator<sub_hilbert_space,time_expr,false>;
-using state_on_space_t = state<hilbert_space_t,dcomplex,true>;
+
+using static_op_on_space_t = imperative_operator<class hilbert_space,dcomplex,false>;
+using static_op_on_subspace_t = imperative_operator<sub_hilbert_space,dcomplex,false>;
+
+using state_on_space_t = state<class hilbert_space,dcomplex,true>;
 using state_on_subspace_t = state<sub_hilbert_space,dcomplex,false>;
-using dyn_state_on_space_t = state<hilbert_space_t,time_expr,true>;
+using dyn_state_on_space_t = state<class hilbert_space,time_expr,true>;
 
 }

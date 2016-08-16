@@ -5,12 +5,10 @@
 #include "init_state.hpp"
 
 using namespace realevol;
-using operators::c;
-using operators::c_dag;
-using operators::n;
-using operators::a;
-using operators::a_dag;
-using namespace hilbert_space;
+//using namespace triqs::operators;
+//using namespace triqs::hilbert_space;
+using namespace realevol::operators;       // FIXME
+using namespace realevol::hilbert_space;   // FIXME
 
 TEST(init_state, pure) {
 
@@ -31,7 +29,8 @@ TEST(init_state, pure) {
  fops.insert_boson("B");
 
  triqs::gfs::segment_mesh mesh(0,1.0,101);
- hilbert_space_structure hss(fops, h, {3}, true, mesh);
+ class hilbert_space full_hs(fops, {3});
+ hilbert_space_structure hss(h, fops, full_hs, true, mesh);
 
  auto generator = 0.25*(1.0 + c_dag<time_expr>("up") + c_dag<time_expr>("dn")
                             + c_dag<time_expr>("dn")*c_dag<time_expr>("up"))
@@ -66,6 +65,34 @@ TEST(init_state, pure) {
 }
 
 TEST(init_state, thermal) {
+
+ double beta = 10;
+ double U = 3.0;
+ double mu = U/2;
+ double Omega = 0.5;
+ double lambda = 0.2;
+
+ auto h = -mu*(n<time_expr>("up") + n<time_expr>("dn"));
+ h += U*n<time_expr>("up")*n<time_expr>("dn");
+
+ fundamental_operator_set fops;
+ fops.insert_fermion("dn");
+ fops.insert_fermion("up");
+ fops.insert_boson("B");
+
+ triqs::gfs::segment_mesh mesh(0,1.0,101);
+ class hilbert_space full_hs(fops, {5});
+ hilbert_space_structure hss(h, fops, full_hs, true, mesh);
+
+ auto h0 = -mu*(n<time_expr>("up") + n<time_expr>("dn"));
+ h0 += U*n<time_expr>("up")*n<time_expr>("dn");
+ h0 += Omega*a_dag<time_expr>("B")*a<time_expr>("B");
+ h0 += lambda*(n<time_expr>("up") + n<time_expr>("dn"))
+             *(a_dag<time_expr>("B") + a<time_expr>("B"));
+
+ auto st = init_state_thermal(h0, hss, beta);
+ // TODO
+
 }
 
 MAKE_MAIN;

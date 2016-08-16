@@ -9,7 +9,7 @@ module.add_include("<triqs/python_tools/converters/pair.hpp>")
 module.add_include("<triqs/python_tools/converters/vector.hpp>")
 module.add_include("<triqs/python_tools/converters/variant_int_string.hpp>")
 module.add_include("<triqs/python_tools/converters/h5.hpp>")
-#module.add_using("namespace triqs::operators")
+#module.add_using("namespace triqs::operators") # FIXME
 module.add_using("namespace realevol::operators") # FIXME
 module.add_using("namespace realevol")
 
@@ -18,7 +18,7 @@ op = class_(
         py_type = "Operator",
         c_type = "many_body_operator_generic<time_expr>",
         #c_type_absolute = "triqs::operators::many_body_operator_generic<realevol::time_expr>",
-        c_type_absolute = "realevol::operators::many_body_operator_generic<realevol::time_expr>", # FIXME
+        c_type_absolute = "realevol::operators::many_body_operator_generic<realevol::time_expr>",
         is_printable= True,
         arithmetic = ("algebra","with_unit","with_unary_minus","realevol::time_expr","double","dcomplex")
         )

@@ -84,8 +84,8 @@ void solver::solve(solve_parameters_t const& p) {
  auto fops = merge(h.make_fundamental_operator_set(), p.h0.make_fundamental_operator_set());
 
  // Translate bits_per_boson from a dictionary to a list
- using realevol::hilbert_space::Fermion;
- using realevol::hilbert_space::Boson;
+ using realevol::hilbert_space::Fermion;    // FIXME
+ using realevol::hilbert_space::Boson;      // FIXME
  std::vector<int> bits_per_boson(fops.size(Boson), 0);
  for(auto const& b : p.bits_per_boson) bits_per_boson[fops.pos(b.first, Boson)] = b.second;
 
@@ -94,8 +94,11 @@ void solver::solve(solve_parameters_t const& p) {
   TRIQS_RUNTIME_ERROR << "Bosonic index (" << fops.reverse_map(Boson)[*zero_it]
                       << ") has no associated record in bits_per_boson";
 
+ // Full Hilbert space
+ class hilbert_space full_hs(fops, bits_per_boson);
+
  // Analyse structure of the Hilbert space
- hilbert_space_structure hs_struct(fops, h, bits_per_boson, true, t_mesh);
+ hilbert_space_structure hs_struct(h, fops, full_hs, true, t_mesh);
 
 
 }
