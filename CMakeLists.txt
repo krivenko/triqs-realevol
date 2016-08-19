@@ -27,6 +27,10 @@ endif()
 find_package(Boost 1.53 REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
+# Detect ARPACK-NG
+find_package(PkgConfig)
+pkg_check_modules(ARPACK REQUIRED arpack)
+
 # Get hash
 triqs_get_git_hash(${CMAKE_SOURCE_DIR} "REALEVOL")
 if(${GIT_RESULT} EQUAL 0)
@@ -43,7 +47,7 @@ option(Tests "Enable Tests" ON)
 
 # Compile C++ code
 add_subdirectory(c++)
-include_directories(c++)
+include_directories(${CMAKE_SOURCE_DIR}/c++ ${TRIQS_INCLUDE_ALL})
 
 # Python interface
 if (${TRIQS_WITH_PYTHON_SUPPORT})
