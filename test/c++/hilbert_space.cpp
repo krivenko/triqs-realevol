@@ -1,4 +1,5 @@
-#include <triqs/test_tools/gfs.hpp>
+#include <triqs/test_tools/arrays.hpp>
+#include <map>
 #include <sstream>
 
 #include <time_expr.hpp>
@@ -6,14 +7,24 @@
 #include <triqs/hilbert_space/hilbert_space.hpp>
 #include <triqs/hilbert_space/imperative_operator.hpp>
 #include <triqs/hilbert_space/state.hpp>
+#include <triqs/hilbert_space/state_view.hpp>
 
 using namespace realevol;
 namespace hs = realevol::hilbert_space; // FIXME
 
-#define EXPECT_PRINT(X, Y) {std::stringstream ss; ss << Y; EXPECT_EQ(X,ss.str()); }
-#define ASSERT_PRINT(X, Y) {std::stringstream ss; ss << Y; ASSERT_EQ(X,ss.str()); }
+template<typename T> std::string as_string(T x) {
+ std::stringstream ss; ss << x;
+ return ss.str();
+}
 
-auto I = dcomplex(0,1.0);
+template<typename StateType>
+void check_state(StateType const& st, std::map<int,typename StateType::value_type> const& ref) {
+ foreach(st, [&st,&ref](int i, typename StateType::value_type a){
+  auto it = ref.find(st.get_hilbert().get_fock_state(i));
+  if(it != ref.end()) { EXPECT_CLOSE(it->second, a); }
+  else                { EXPECT_EQ(.0, a); }
+ });
+}
 
 TEST(hilbert_space, fundamental_operator_set) {
  using hs::statistic_enum::Fermion;
@@ -109,7 +120,25 @@ TEST(hilbert_space, state) {
  st(0) = 3.0;
  st(3) = 5.0;
  st(77) = 1.0;
- EXPECT_PRINT(" +(1)|77> +(5)|3> +(3)|0>", st);
+ check_state(st, {{3,5.0},{0,3.0},{77,1}});
+}
+
+TEST(hilbert_space, state_view) {
+ hs::fundamental_operator_set fop;
+ for (int i=0; i<5; ++i) fop.insert_fermion("up",i);
+ for (int i=0; i<3; ++i) fop.insert_boson("B",i);
+
+ hs::hilbert_space h_full(fop, {1,1,1});
+ triqs::arrays::vector<double> amplitudes(h_full.size());
+ amplitudes() = 0;
+
+ hs::state_view<hs::hilbert_space,double> sv(amplitudes, h_full);
+ sv(0) = 3.0;
+ sv(3) = 5.0;
+ sv(77) = 1.0;
+ check_state(sv, {{0,3.0},{3,5.0},{77,1}});
+ amplitudes[2] = 4.0;
+ check_state(sv, {{0,3.0},{2,4.0},{3,5.0},{77,1}});
 }
 
 TEST(hilbert_space, imperative_operator) {
@@ -126,38 +155,38 @@ TEST(hilbert_space, imperative_operator) {
  using operators::a_dag;
 
  auto H = 3 * c_dag("up",1) * c("up",1) + 2 * c_dag("up",2) * c("up",2) + c("up",1) * c("up",2);
- EXPECT_PRINT("3*C^+(up,1)C(up,1) + 2*C^+(up,2)C(up,2) + -1*C(up,2)C(up,1)", H);
+ EXPECT_EQ("3*C^+(up,1)C(up,1) + 2*C^+(up,2)C(up,2) + -1*C(up,2)C(up,1)", as_string(H));
 
  auto opH = hs::imperative_operator<hs::hilbert_space>(H, fop, h_full);
 
  hs::state<hs::hilbert_space, double, true> old_state(h_full);
  old_state(7) = 1.0;
- EXPECT_PRINT(" +(1)|7>", old_state);
+ check_state(old_state, {{7,1.0}});
 
  auto new_state = opH(old_state);
- EXPECT_PRINT(" +(-1)|1> +(5)|7>",new_state);
+ check_state(new_state, {{1,-1.0}, {7,5.0}});
 
  auto Hb = 3.0 * c_dag("up",0) * c("up",1) * a_dag("B",0) * a_dag("B",0) * a("B",1) +
            3.0 * c_dag("up",1) * c("up",3) * a_dag("B",0) * a("B",1) * a("B",1);
 
- EXPECT_PRINT("3*C^+(up,0)C(up,1)[A^+(B,0)]^2A(B,1) + 3*C^+(up,1)C(up,3)A^+(B,0)[A(B,1)]^2", Hb);
+ EXPECT_EQ("3*C^+(up,0)C(up,1)[A^+(B,0)]^2A(B,1) + 3*C^+(up,1)C(up,3)A^+(B,0)[A(B,1)]^2", as_string(Hb));
 
  old_state(7) = 0;
  old_state(157) = 0.5; // |\up0>|\up2>|\up3>|1>_B0|2>_B1
  old_state(206) = 0.5; // |\up1>|\up2>|\up3>|0>_B0|3>_B1
- EXPECT_PRINT(" +(0.5)|206> +(0.5)|157>", old_state);
+ check_state(old_state, {{157,0.5}, {206,0.5}});
 
  auto opHb = hs::imperative_operator<hs::hilbert_space>(Hb, fop, h_full);
 
  new_state = opHb(old_state);
- EXPECT_PRINT(" +(-3)|39> +(3.67423)|173>", new_state);
+ check_state(new_state, {{39,-3.0}, {173,1.5*std::sqrt(6.0)}});
 }
 
 TEST(hilbert_space, sub_hilbert_space) {
  using operators::c_dag;
  using operators::a;
  auto CdagA = c_dag("up",0) * a("B",1);
- EXPECT_PRINT("1*C^+(up,0)A(B,1)", CdagA);
+ EXPECT_EQ("1*C^+(up,0)A(B,1)", as_string(CdagA));
 
  hs::fundamental_operator_set fop;
  for (int i=0; i<2; ++i) fop.insert_fermion("down",i);
@@ -195,8 +224,8 @@ TEST(hilbert_space, sub_hilbert_space) {
  start(2) = 3.0;
  start(3) = 4.0;
 
- EXPECT_PRINT(" +(1)|64> +(2)|65> +(3)|66> +(4)|67>", start);
- EXPECT_PRINT(" +(1)|4> +(-2)|5> +(-3)|6> +(4)|7>", opCdagA(start));
+ check_state(start, {{64,1.0}, {65,2.0}, {66,3.0}, {67,4.0}});
+ check_state(opCdagA(start), {{4,1.0}, {5,-2.0}, {6,-3.0}, {7,4.0}});
 
  // HDF5
  auto hs_h5 = rw_h5(phs1, "sub_hilbert_space");
@@ -224,18 +253,18 @@ TEST(hilbert_space, QuarticOperators) {
 
  hs::state<hs::hilbert_space,double, false> st1(hs);
  st1(9) = 1.0; // 00 00 1001
- EXPECT_PRINT(" +(1)|9>", st1); // old state
- EXPECT_PRINT("1*C^+(down,1)C^+(up,0)C(up,1)C(down,0)", quartic_op1); // quartic operator 1
- EXPECT_PRINT(" +(1)|6>"/* 00 00 0110 */,
-              hs::imperative_operator<hs::hilbert_space>(quartic_op1,fops,hs)(st1)); // new state
+ check_state(st1, {{9,1.0}}); // old state
+ EXPECT_EQ("1*C^+(down,1)C^+(up,0)C(up,1)C(down,0)", as_string(quartic_op1)); // quartic operator 1
+ check_state(hs::imperative_operator<hs::hilbert_space>(quartic_op1,fops,hs)(st1),
+             {{6,1.0}}/* 00 00 0110 */); // new state
 
  auto quartic_op2 = 1.0*c_dag("up",0)*c("down",1)*a_dag("B",0)*a("B",1);
  hs::state<hs::hilbert_space,double, false> st2(hs);
  st2(218) = 1.0; // 11 01 1010
- EXPECT_PRINT(" +(1)|218>", st2); // old state
- EXPECT_PRINT("1*C^+(up,0)C(down,1)A^+(B,0)A(B,1)", quartic_op2); // quartic operator 2
- EXPECT_PRINT(" +(2.44949)|172>"/* 10 10 1100 */,
-              hs::imperative_operator<hs::hilbert_space>(quartic_op2,fops,hs)(st2)); // new state
+ check_state(st2, {{218,1.0}}); // old state
+ EXPECT_EQ("1*C^+(up,0)C(down,1)A^+(B,0)A(B,1)", as_string(quartic_op2)); // quartic operator 2
+ check_state(hs::imperative_operator<hs::hilbert_space>(quartic_op2,fops,hs)(st2),
+             {{172,std::sqrt(6.0)}}/* 10 10 1100 */); // new state
 }
 
 TEST(hilbert_space, StateProjection) {
@@ -251,7 +280,7 @@ TEST(hilbert_space, StateProjection) {
  st(4) = 0.3;
  st(6) = 0.4;
  st(12) = 0.5;
- EXPECT_PRINT(" +(0.5)|12> +(0.1)|0> +(0.2)|2> +(0.3)|4> +(0.4)|6>", st); // original state
+ check_state(st, {{12,0.5},{0,0.1},{2,0.2},{4,0.3},{6,0.4}}); // original state
 
  hs::sub_hilbert_space hs(0);
  hs.add_fock_state(hs_full.get_fock_state(4));
@@ -261,7 +290,7 @@ TEST(hilbert_space, StateProjection) {
  hs.add_fock_state(hs_full.get_fock_state(14));
 
  auto proj_st = hs::project<hs::state<hs::sub_hilbert_space,double,false>>(st,hs);
- EXPECT_PRINT(" +(0.3)|4> +(0.4)|6>", proj_st); // projected state
+ check_state (proj_st, {{4,0.3},{6,0.4}}); // projected state
 }
 
 TEST(hilbert_space, time_expr_real) {
@@ -294,16 +323,17 @@ TEST(hilbert_space, time_expr_real) {
 
  hs::state<hs::hilbert_space,dcomplex,false> st1(hs);
  st1(218) = 1.0; // 11 01 1010
- EXPECT_PRINT(" +((1,0))|218>", st1);
- EXPECT_PRINT("2*t^2*C^+(down,0)C(up,1) + 2*t^2*C^+(up,0)C(down,1) + 1*C^+(up,0)C(down,1)A^+(B,0)A(B,1)", op);
+ check_state(st1, {{218,1.0}});
+ EXPECT_EQ("2*t^2*C^+(down,0)C(up,1) + 2*t^2*C^+(up,0)C(down,1) + 1*C^+(up,0)C(down,1)A^+(B,0)A(B,1)",
+           as_string(op));
  auto imp_op = hs::imperative_operator<hs::hilbert_space,time_expr>(op,fops,hs);
 
- EXPECT_PRINT(" +((2.44949,0))|172> +((-0.08,0))|211> +((0.08,0))|220>", imp_op(st1,t));
+ check_state(imp_op(st1,t), {{172,std::sqrt(6.0)},{211,-0.08},{220,0.08}});
 
  // precompute imp_op at t=0.3
  t = 0.3;
  imp_op.update_coeffs([t](time_expr & M){ M = M(t);});
- EXPECT_PRINT(" +((2.44949,0))|172> +((-0.18,0))|211> +((0.18,0))|220>", imp_op(st1,t));
+ check_state(imp_op(st1,t), {{172,std::sqrt(6.0)},{211,-0.18},{220,0.18}});
 }
 
 TEST(hilbert_space, time_expr_complex) {
@@ -329,23 +359,24 @@ TEST(hilbert_space, time_expr_complex) {
          *a_dag<time_expr>("B",0)*a<time_expr>("B",1);
 
  // Spin-flips
- op += I*("2*t^2"*c_dag<time_expr>("down",0)*c<time_expr>("up",1));
- op += I*("2*t^2"*c_dag<time_expr>("up",0)*c<time_expr>("down",1));
+ op += 1_j*("2*t^2"*c_dag<time_expr>("down",0)*c<time_expr>("up",1));
+ op += 1_j*("2*t^2"*c_dag<time_expr>("up",0)*c<time_expr>("down",1));
 
  double t = 0.2;
 
  hs::state<hs::hilbert_space,dcomplex,false> st1(hs);
  st1(218) = 1.0; // 11 01 1010
- EXPECT_PRINT(" +((1,0))|218>", st1);
- EXPECT_PRINT("(0,2*t^2)*C^+(down,0)C(up,1) + (0,2*t^2)*C^+(up,0)C(down,1) + 1*C^+(up,0)C(down,1)A^+(B,0)A(B,1)", op);
+ check_state(st1, {{218, 1.0}});
+ EXPECT_EQ("(0,2*t^2)*C^+(down,0)C(up,1) + (0,2*t^2)*C^+(up,0)C(down,1) + 1*C^+(up,0)C(down,1)A^+(B,0)A(B,1)",
+           as_string(op));
  auto imp_op = hs::imperative_operator<hs::hilbert_space,time_expr>(op,fops,hs);
 
- EXPECT_PRINT(" +((2.44949,0))|172> +((0,-0.08))|211> +((0,0.08))|220>", imp_op(st1,t));
+ check_state(imp_op(st1,t), {{172, std::sqrt(6.0)},{211,-0.08_j},{220,0.08_j}});
 
  // precompute imp_op at t=0.3
  t = 0.3;
  imp_op.update_coeffs([t](time_expr & M){ M = M(t);});
- EXPECT_PRINT(" +((2.44949,0))|172> +((0,-0.18))|211> +((0,0.18))|220>", imp_op(st1,t));
+ check_state(imp_op(st1,t), {{172, std::sqrt(6.0)},{211,-0.18_j},{220,0.18_j}});
 }
 
 MAKE_MAIN;
