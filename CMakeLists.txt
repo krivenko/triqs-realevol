@@ -23,6 +23,9 @@ if(NOT TRIQS_VERSION EQUAL 1.4)
     message(FATAL_ERROR "The application requires the TRIQS library version 1.4 (got ${TRIQS_VERSION})")
 endif()
 
+# Detect MPI
+find_package(MPI)
+
 # Detect Boost
 find_package(Boost 1.53 REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
