@@ -100,13 +100,14 @@ namespace operators {
 
   monomials_map_t monomials;
 
-  friend void h5_write(h5::group g, std::string const& name, many_body_operator const& op);
-  friend void h5_write(h5::group g, std::string const& name, many_body_operator const& op,
-                       hilbert_space::fundamental_operator_set const& fops);
-
-  friend void h5_read(h5::group g, std::string const& name, many_body_operator& op);
-  friend void h5_read(h5::group g, std::string const& name, many_body_operator& op,
-                      hilbert_space::fundamental_operator_set& fops);
+  // FIXME
+//   friend void h5_write(h5::group g, std::string const& name, many_body_operator const& op);
+//   friend void h5_write(h5::group g, std::string const& name, many_body_operator const& op,
+//                        hilbert_space::fundamental_operator_set const& fops);
+//
+//   friend void h5_read(h5::group g, std::string const& name, many_body_operator& op);
+//   friend void h5_read(h5::group g, std::string const& name, many_body_operator& op,
+//                       hilbert_space::fundamental_operator_set& fops);
 
   public:
   using scalar_t = ScalarType;

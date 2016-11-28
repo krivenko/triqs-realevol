@@ -24,4 +24,6 @@ set(TEST_MPI_NUMPROC 4)
 triqs_add_cpp_test(mpi_dispatcher)
 unset(TEST_MPI_NUMPROC)
 
+include_directories(${CMAKE_SOURCE_DIR}/c++ ${TRIQS_INCLUDE_ALL})
+
 add_subdirectory(arpack)

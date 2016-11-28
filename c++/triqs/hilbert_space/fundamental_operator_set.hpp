@@ -184,6 +184,13 @@ class fundamental_operator_set {
   }
  }
 
+
+ /// Comparison with another fundamental operator set
+ bool operator==(fundamental_operator_set const& fops) const {
+  return fermion_map_index_n == fops.fermion_map_index_n &&
+         boson_map_index_n == fops.boson_map_index_n;
+ }
+
  /// Build and return the reverse map: `int` -> `indices_t`
  /**
    @param stat Choose between bosonic/fermionic operators

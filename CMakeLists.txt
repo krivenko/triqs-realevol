@@ -1,5 +1,5 @@
-# start configuration
-cmake_minimum_required(VERSION 2.8)
+# Start configuration
+cmake_minimum_required(VERSION 2.8.7)
 
 # Version number of the application
 project(realevol CXX)
@@ -50,7 +50,6 @@ option(Tests "Enable Tests" ON)
 
 # Compile C++ code
 add_subdirectory(c++)
-include_directories(${CMAKE_SOURCE_DIR}/c++ ${TRIQS_INCLUDE_ALL})
 
 # Python interface
 if (${TRIQS_WITH_PYTHON_SUPPORT})
