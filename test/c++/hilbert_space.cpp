@@ -62,6 +62,12 @@ TEST(hilbert_space, fundamental_operator_set) {
  EXPECT_EQ(4, fop4.size(Fermion));
  EXPECT_EQ(2, fop4.size(Boson));
  EXPECT_EQ(6, fop4.size());
+
+ h5::file fops_file("fops.h5", H5F_ACC_TRUNC);
+ h5_write_attribute(fops_file, "fop", fop4);
+ hs::fundamental_operator_set fop5;
+ h5_read_attribute(fops_file, "fop", fop5);
+ EXPECT_EQ(fop4, fop5);
 }
 
 TEST(hilbert_space, hilbert_space) {
