@@ -55,7 +55,7 @@ class state_view : boost::additive<state_view<HilbertSpace, ScalarType>>,
    @param hs Hilbert space the new state_view belongs to
   */
  state_view(amplitude_t ampli, HilbertSpace const& hs) : hs_p(&hs), ampli(ampli) {
-  assert(hs.size() == ampli.size());
+  TRIQS_ASSERT(hs.size() == ampli.size());
  }
 
  /// Copy-constructor
