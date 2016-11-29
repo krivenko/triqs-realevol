@@ -55,8 +55,7 @@ class hilbert_space {
   bits_per_boson_(bits_per_boson) {
   using statistic_enum::Fermion;
   using statistic_enum::Boson;
-  if(fops.size(Boson) != bits_per_boson.size())
-   TRIQS_RUNTIME_ERROR << "Wrong size of bits_per_boson, must be " << fops.size(Boson);
+  TRIQS_ASSERT(fops.size(Boson) == bits_per_boson.size());
   int bit = fops.size(Fermion);
   boson_offsets_.reserve(bits_per_boson_.size());
   for(int l : bits_per_boson_) {
@@ -72,21 +71,24 @@ class hilbert_space {
  */
  inline int size() const { return dim; }
 
- /// Return the total dimension of the bosonic/fermionic subspace
+ /// Return the total dimension of the bosonic/fermionic space
  /**
    @param stat Choose between bosons/fermions
    @return Size of the Hilbert space
  */
  inline int size(statistic_enum stat) const {
-  int fermion_dim;
-  if(boson_offsets_.empty()) fermion_dim = dim;
+  int fermion_dim, boson_dim;
+  if(boson_offsets_.empty()) {
+   fermion_dim = dim;
+   boson_dim = 0;
+  }
   else {
    int first_boson_bit = boson_offsets_[0];
-   fermion_dim = (first_boson_bit == 0 ? 0 : 1 << (first_boson_bit-1));
+   if(first_boson_bit == 0) { fermion_dim = 0; boson_dim = dim; }
+   else { fermion_dim = 1 << first_boson_bit; boson_dim = dim / fermion_dim; }
   }
 
-  if(stat == Fermion) return fermion_dim;
-  else return dim - fermion_dim;
+  return stat == Fermion ? fermion_dim : boson_dim;
  }
 
  /// Access bit offsets of the bosonic states
