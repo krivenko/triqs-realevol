@@ -3,7 +3,8 @@ find_package(TriqsTest)
 
 # Simple tests
 set(SIMPLE_TESTS time_expr many_body_operator hilbert_space space_partition
-                 mesh_container lanczos_worker hs_structure init_state trimer) #mesh_container_cyclic runge_kutta lanczos)
+                 mesh_container lanczos_worker hs_structure init_state_pure
+                 trimer) #mesh_container_cyclic runge_kutta lanczos)
 foreach(t ${SIMPLE_TESTS})
     add_executable(${t} ${CMAKE_CURRENT_SOURCE_DIR}/${t}.cpp)
     target_link_libraries(${t} realevol_c time_expr_c ${TRIQS_LIBRARY_ALL} ${TRIQS_LIBRARY_GTEST})

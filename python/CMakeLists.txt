@@ -14,6 +14,10 @@ triqs_python_extension_and_install(gf_retime)
 target_link_libraries(gf_retime realevol_c ${TRIQS_LIBRARY_ALL})
 triqs_set_rpath_for_target(gf_retime)
 
+triqs_python_extension_and_install(init_state)
+target_link_libraries(init_state realevol_c ${TRIQS_LIBRARY_ALL})
+triqs_set_rpath_for_target(init_state)
+
 triqs_python_extension_and_install(realevol)
 target_link_libraries(realevol realevol_c ${TRIQS_LIBRARY_ALL})
 triqs_set_rpath_for_target(realevol)
