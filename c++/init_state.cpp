@@ -28,7 +28,7 @@
 
 namespace realevol {
 
-std::ostream & operator<<(std::ostream & os, init_state_t const& st) {
+std::ostream & operator<<(std::ostream & os, init_state const& st) {
  os << "Fundamental operator set" << std::endl;
  os << "------------------------" << std::endl;
  os << "Fermions: ";
@@ -47,9 +47,8 @@ std::ostream & operator<<(std::ostream & os, init_state_t const& st) {
 
  for(int i = 0; i < st.weighted_states.size(); ++i) {
   auto const& s = st.weighted_states[i];
-  os << "State " << i << " (weight = " << s.weight << ") with parts in ";
-  for(auto const& p : s.parts) os << p.get_hilbert().get_index() << " ";
-  os << std::endl;
+  os << "State " << i << " within subspace " << s.state.get_hilbert().get_index()
+     << ", weight = " << s.weight << ":" << std::endl << s.state;
  }
 
  return os;
@@ -57,7 +56,7 @@ std::ostream & operator<<(std::ostream & os, init_state_t const& st) {
 
 // -----------------------------------------------------------------
 
-void h5_write(h5::group fg, std::string const &name, init_state_t const& st) {
+void h5_write(h5::group fg, std::string const &name, init_state const& st) {
  auto gr = fg.create_group(name);
  gr.write_triqs_hdf5_data_scheme(st);
 
@@ -71,19 +70,14 @@ void h5_write(h5::group fg, std::string const &name, init_state_t const& st) {
   auto const& wst = st.weighted_states[i];
 
   h5_write(wst_gr, "weight", wst.weight);
-
-  std::vector<unsigned long> sp_indices;
-  for(int p = 0; p < wst.parts.size(); ++p) {
-   sp_indices.push_back(wst.parts[p].get_hilbert().get_index());
-   h5_write(wst_gr, std::to_string(p), wst.parts[p].amplitudes());
-  }
-  h5_write(wst_gr, "sp_indices", sp_indices);
+  h5_write(wst_gr, "sp_index", wst.state.get_hilbert().get_index());
+  h5_write(wst_gr, "amplitudes", wst.state.amplitudes());
  }
 }
 
 // -----------------------------------------------------------------
 
-void h5_read(h5::group fg, std::string const &name, init_state_t & st) {
+void h5_read(h5::group fg, std::string const &name, init_state & st) {
  auto gr = fg.open_group(name);
 
  h5_read_attribute(gr, "fops", st.fops);
@@ -93,18 +87,14 @@ void h5_read(h5::group fg, std::string const &name, init_state_t & st) {
  auto states_gr = gr.open_group("weighted_states");
  int n_wst = states_gr.get_all_subgroup_names().size();
  for(int i = 0; i < n_wst; ++i) {
-  st.weighted_states.emplace_back();
-  auto & wst = st.weighted_states[i];
   auto wst_gr = states_gr.open_group(std::to_string(i));
 
-  h5_read(wst_gr, "weight", wst.weight);
-
-  std::vector<unsigned long> sp_indices;
-  h5_read(wst_gr, "sp_indices", sp_indices);
-  for(int p = 0; p < sp_indices.size(); ++p) {
-   wst.parts.push_back(st.sub_hilbert_spaces[sp_indices[p]]);
-   h5_read(wst_gr, std::to_string(p), wst.parts[p].amplitudes());
-  }
+  double weight;
+  h5_read(wst_gr, "weight", weight);
+  unsigned long sp_index;
+  h5_read(wst_gr, "sp_index", sp_index);
+  st.weighted_states.emplace_back(state_on_subspace_t(st.sub_hilbert_spaces[sp_index]), weight);
+  h5_read(wst_gr, "amplitudes", st.weighted_states.back().state.amplitudes());
  }
 }
 
@@ -123,14 +113,14 @@ static_operator_t make_static_op(operator_t const& op, std::string const& error_
  return static_op;
 }
 
-init_state_t make_pure_init_state(operator_t const& generator,
-                                  fundamental_operator_set const& fops,
-                                  std::map<operators::indices_t, int> const& bits_per_boson) {
+init_state make_pure_init_state(operator_t const& generator,
+                                fundamental_operator_set const& fops,
+                                std::map<operators::indices_t, int> const& bits_per_boson) {
 
  // Static version of generator
  auto gen = make_static_op(generator, "Generating operator must be time-independent!");
 
- init_state_t st(fops, bits_per_boson);
+ init_state st(fops, bits_per_boson);
 
  // Add one subspace with index 0
  st.sub_hilbert_spaces.emplace_back(0);
@@ -148,16 +138,16 @@ init_state_t make_pure_init_state(operator_t const& generator,
  // Fill st.sub_hilbert_spaces[0]
  foreach(psi, [&sp](fock_state_t f, dcomplex){ sp.add_fock_state(f); });
 
- // Add a weighted state made of one part
- state_on_subspace_t part(sp);
- foreach(psi, [&part,&sp](fock_state_t f, dcomplex a){ part(sp.get_state_index(f)) = a; });
- st.weighted_states.emplace_back(std::vector<state_on_subspace_t>{part}, 1.0);
+ // Add a weighted state
+ state_on_subspace_t st_on_sp(sp);
+ foreach(psi, [&st_on_sp,&sp](fock_state_t f, dcomplex a){ st_on_sp(sp.get_state_index(f)) = a; });
+ st.weighted_states.emplace_back(std::move(st_on_sp), 1.0);
 
  return st;
 }
 
 /*
-std::vector<init_state_t> init_state_thermal(operator_t const& h0, hilbert_space_structure & hss,
+std::vector<init_state> init_statehermal(operator_t const& h0, hilbert_space_structure & hss,
                                              double beta, double temperature_cutoff) {
 
  // Static version the equilibrium Hamiltonian is static
@@ -183,7 +173,7 @@ std::vector<init_state_t> init_state_thermal(operator_t const& h0, hilbert_space
 //   std::cout << lw.values() << std::endl;
 //  }
 
- std::vector<init_state_t> states;
+ std::vector<init_state> states;
  // TODO
 
  return states;
