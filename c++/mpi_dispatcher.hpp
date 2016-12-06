@@ -25,6 +25,7 @@
 #include <algorithm>
 
 #include <triqs/mpi/base.hpp>
+#include <triqs/utility/exceptions.hpp>
 
 namespace realevol {
 
@@ -73,7 +74,7 @@ public:
 
  mpi_dispatcher(triqs::mpi::communicator const& comm, long n_jobs) :
   next_job_index(0), comm(comm) {
-  assert(n_jobs > 0);
+  TRIQS_ASSERT(n_jobs > 0);
   if(comm.rank() == 0) {
    int n_workers = comm.size()-1;
    jobs.resize(n_jobs+n_workers);
@@ -84,7 +85,7 @@ public:
 
  mpi_dispatcher(triqs::mpi::communicator const& comm, std::vector<long> const& jobs_) :
   next_job_index(0), comm(comm) {
-  assert(n_jobs > 0);
+  TRIQS_ASSERT(jobs_.size() > 0);
   if(comm.rank() == 0) {
    int n_workers = comm.size()-1;
    jobs.resize(jobs_.size()+n_workers);
