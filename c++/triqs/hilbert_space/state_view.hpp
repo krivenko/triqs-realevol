@@ -26,6 +26,7 @@
 #include <triqs/arrays.hpp>
 #include <triqs/arrays/blas_lapack/dot.hpp>
 #include "hilbert_space.hpp"
+#include "state.hpp"
 
 namespace realevol {
 namespace hilbert_space {
