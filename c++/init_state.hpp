@@ -31,25 +31,25 @@
 
 namespace realevol {
 
-class init_state_t;
+class init_state;
 
 /// Apply a generating operator to the vacuum state to make a pure initial state
-init_state_t make_pure_init_state(operator_t const& generator,
-                                  fundamental_operator_set const& fops,
-                                  std::map<operators::indices_t, int> const& bits_per_boson = {});
+init_state make_pure_init_state(operator_t const& generator,
+                                fundamental_operator_set const& fops,
+                                std::map<operators::indices_t, int> const& bits_per_boson = {});
 
 /// FIXME
-init_state_t make_zerotemp_init_state();
+init_state make_zerotemp_init_state();
 
 /// FIXME
-init_state_t make_thermal_init_state();
+init_state make_thermal_init_state();
 
-// std::vector<init_state_t> init_state_thermal(operator_t const& h0, hilbert_space_structure & hss,
+// std::vector<init_state> init_statehermal(operator_t const& h0, hilbert_space_structure & hss,
 //                                              double beta,
 //                                              double temperature_cutoff = std::numeric_limits<double>::epsilon());
 
 /// Initial state, including information about the Hilbert space structure
-class init_state_t {
+class init_state {
 
  /// Fundamental operator set used to construct this state
  fundamental_operator_set fops;
@@ -59,7 +59,7 @@ class init_state_t {
  std::vector<sub_hilbert_space> sub_hilbert_spaces;
 
  // Constructor to be used only by the factory functions
- init_state_t(fundamental_operator_set const& fops, std::map<operators::indices_t, int> const& bits_per_boson = {}) :
+ init_state(fundamental_operator_set const& fops, std::map<operators::indices_t, int> const& bits_per_boson = {}) :
   fops(fops) {
   TRIQS_ASSERT(fops.size(Boson) == bits_per_boson.size());
   std::vector<int> v(bits_per_boson.size());
@@ -70,19 +70,19 @@ class init_state_t {
 public:
 
  /// Constructor
- init_state_t() = default;
+ init_state() = default;
 
  struct weighted_state_t {
-  /// Projections of this state onto subspaces
-  std::vector<state_on_subspace_t> parts;
+  /// State, in one of the subspaces
+  state_on_subspace_t state;
   /// Statistical weight
   double weight;
 
   weighted_state_t() = default;
 
   /// Constructor
-  weighted_state_t(std::vector<state_on_subspace_t> && parts, double weight) :
-   parts(std::move(parts)), weight(weight) {}
+  weighted_state_t(state_on_subspace_t && state, double weight) :
+   state(std::move(state)), weight(weight) {}
  };
 
  /// Constant iterator over weighted pure states
@@ -111,21 +111,21 @@ public:
  std::vector<weighted_state_t> const& get_weighted_states() const { return weighted_states; }
 
  /// Stream output
- friend std::ostream & operator<<(std::ostream & os, init_state_t const& st);
+ friend std::ostream & operator<<(std::ostream & os, init_state const& st);
 
  /// HDF5 read/write
- friend std::string get_triqs_hdf5_data_scheme(init_state_t const&) { return "InitState"; }
- friend void h5_write(h5::group gr, std::string const &name, init_state_t const& st);
- friend void h5_read(h5::group gr, std::string const &name, init_state_t & st);
+ friend std::string get_triqs_hdf5_data_scheme(init_state const&) { return "InitState"; }
+ friend void h5_write(h5::group gr, std::string const &name, init_state const& st);
+ friend void h5_read(h5::group gr, std::string const &name, init_state & st);
 
 private:
 
  /// List of pure states
  std::vector<weighted_state_t> weighted_states;
 
- friend init_state_t make_pure_init_state(operator_t const&,
-                                          fundamental_operator_set const&,
-                                          std::map<operators::indices_t, int> const&);
+ friend init_state make_pure_init_state(operator_t const&,
+                                        fundamental_operator_set const&,
+                                        std::map<operators::indices_t, int> const&);
 
 };
 
