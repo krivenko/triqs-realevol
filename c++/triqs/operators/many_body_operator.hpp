@@ -275,11 +275,36 @@ namespace operators {
   }
 
   public:
+
   // dagger
   friend many_body_operator_generic dagger(many_body_operator_generic const& op) {
    many_body_operator_generic res;
    using triqs::utility::conj;
    for (auto const& x : op) res.monomials.insert({_dagger(x.monomial), conj(x.coef)});
+   return res;
+  }
+
+  // real
+  friend many_body_operator_generic real(many_body_operator_generic const& op) {
+   many_body_operator_generic res;
+   using triqs::utility::real;
+   using triqs::utility::is_zero;
+   for (auto const& x : op) {
+    auto c = real(x.coef);
+    if(!is_zero(c)) res.monomials.insert({x.monomial, c});
+   }
+   return res;
+  }
+
+  // imag
+  friend many_body_operator_generic imag(many_body_operator_generic const& op) {
+   many_body_operator_generic res;
+   using triqs::utility::imag;
+   using triqs::utility::is_zero;
+   for (auto const& x : op) {
+    auto c = imag(x.coef);
+    if(!is_zero(c)) res.monomials.insert({x.monomial, c});
+   }
    return res;
   }
 
