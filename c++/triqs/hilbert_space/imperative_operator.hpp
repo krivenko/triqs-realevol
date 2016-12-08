@@ -70,6 +70,8 @@ template <typename HilbertType, typename ScalarType = double, bool UseMap = fals
 
   // Bosons
   struct single_boson_update_t {
+   // Position of the bosonic mode being updated in the fundamental operator set
+   int pos;
    // One bosonic subspace is selected as (f >> shift) & mask
    int shift;
    uint64_t mask;
@@ -120,7 +122,7 @@ template <typename HilbertType, typename ScalarType = double, bool UseMap = fals
 
   if(!op.is_zero() && !bits_per_boson.empty()) {
    // Precompute square roots
-   int n_sqr_roots = uint64_t(1) << *std::max_element(bits_per_boson.begin(), bits_per_boson.cend());
+   int n_sqr_roots = uint64_t(1) << *std::max_element(bits_per_boson.begin(), bits_per_boson.end());
    for(int i = 0; i < n_sqr_roots; ++i) sqr_roots.push_back(std::sqrt(double(i)));
 
    // Precompute maximal filling numbers for bosons
@@ -167,7 +169,7 @@ template <typename HilbertType, typename ScalarType = double, bool UseMap = fals
 
      int64_t n_change = it->dagger ? power : -power;
      int64_t state_change = n_change * (int64_t(1) << boson_offsets[p]);
-     b_updates.push_back({boson_offsets[p], (uint64_t(1) << bits_per_boson[p]) - 1, n_change, state_change});
+     b_updates.push_back({p, boson_offsets[p], (uint64_t(1) << bits_per_boson[p]) - 1, n_change, state_change});
 
      power = 1;
     } else
@@ -192,12 +194,21 @@ template <typename HilbertType, typename ScalarType = double, bool UseMap = fals
  }
 
  private:
+
+ template <typename StateType>
+ inline int get_target_hilbert(StateType const &st, std::true_type use_map) const {
+  return hilbert_map[st.get_hilbert().get_index()];
+ }
+ template <typename StateType>
+ inline int get_target_hilbert(StateType const &st, std::false_type use_map) const {
+  return st.get_hilbert().get_index();
+ }
+
  template <typename StateType> StateType get_target_st(StateType const &st, std::true_type use_map) const {
   auto n = hilbert_map[st.get_hilbert().get_index()];
   if (n == -1) return StateType{};
   return StateType{(*sub_spaces)[n]};
  }
-
  template <typename StateType> StateType get_target_st(StateType const &st, std::false_type use_map) const {
   return StateType(st.get_hilbert());
  }
@@ -214,33 +225,11 @@ template <typename HilbertType, typename ScalarType = double, bool UseMap = fals
 
  // Forward the call to the coefficient
  template<typename... Args>
- static auto apply_if_possible(scalar_t const& x, Args&&... args) -> typename std::result_of<scalar_t(Args...)>::type {
-  return x(std::forward<Args>(args)...);
- }
- static auto apply_if_possible(scalar_t const& x) -> scalar_t {
-  return x;
- }
+ static auto apply_if_possible(scalar_t const& x, Args&&... args) { return x(std::forward<Args>(args)...); }
+ static auto apply_if_possible(scalar_t const& x) { return x; }
 
- public:
-
- /// Act on a state and return a new state
- /**
-   The optional extra arguments `args...` are forwarded to the coefficients of the operator.
-
-   `auto psi = op(phi,args...);`
-
-   We apply an operator obtained from `op` by replacing its monomial coefficients with values
-   returned by `coeff(args...)`. This feature makes sense only for ScalarType being a callable object.
-
-   @tparam StateType Type of the initial state
-   @tparam Args Types of the optional arguments
-   @param st Initial state
-   @param args Optional argument pack passed to each coefficient of the operator
-  */
  template <typename StateType, typename... Args>
- StateType operator()(StateType const &st, Args&&... args) const {
-
-  StateType target_st = get_target_st(st, std::integral_constant<bool, UseMap>());
+ inline void apply_impl(StateType const &st, StateType & target_st, Args&&... args) const {
   auto const& hs = st.get_hilbert();
 
   for (int i = 0; i < all_terms.size(); ++i) { // loop over monomials
@@ -262,12 +251,12 @@ template <typename HilbertType, typename ScalarType = double, bool UseMap = fals
      auto const& b_update = M.b_updates[b];
      int64_t n_part = (f3 >> b_update.shift) & b_update.mask;
      int64_t new_n_part = n_part + b_update.n_change;
-     if(new_n_part < 0 || new_n_part > boson_n_max[b]) return;
+     if(new_n_part < 0 || new_n_part > boson_n_max[b_update.pos]) return;
 
      if(b_update.n_change > 0) {
-      for(int i = 1; i <= b_update.n_change; ++i) coeff *= sqr_roots[n_part + i];
+      for(int d = 1; d <= b_update.n_change; ++d) coeff *= sqr_roots[n_part + d];
      } else {
-      for(int i = 0; i <= -b_update.n_change-1; ++i) coeff *= sqr_roots[n_part - i];
+      for(int d = 0; d <= -b_update.n_change-1; ++d) coeff *= sqr_roots[n_part - d];
      }
      f3 += b_update.state_change;
     }
@@ -277,6 +266,51 @@ template <typename HilbertType, typename ScalarType = double, bool UseMap = fals
     target_st(ind) += coeff * amplitude * apply_if_possible(M.coeff,args...);
    }); // foreach
   }
+ }
+
+ public:
+
+ /// Act on a state and overwrite another state with the result
+ /**
+   The optional extra arguments `args...` are forwarded to the coefficients of the operator.
+
+   `op(phi,psi,args...);`
+
+   We apply an operator obtained from `op` by replacing its monomial coefficients with values
+   returned by `coeff(args...)`. This feature makes sense only for ScalarType being a callable object.
+
+   @tparam StateType Type of the initial and final states
+   @tparam Args Types of the optional arguments
+   @param st Initial state
+   @param target_st Target state
+   @param args Optional argument pack passed to each coefficient of the operator
+  */
+ template <typename StateType, typename... Args>
+ void apply(StateType const &st, StateType & target_st, Args&&... args) const {
+  assert(target_st.get_hilbert().get_index() ==
+         get_target_hilbert(st, std::integral_constant<bool, UseMap>()));
+  target_st.amplitudes()() = ScalarType{};
+  apply_impl(st, target_st, args...);
+ }
+
+ /// Act on a state and return a new state
+ /**
+   The optional extra arguments `args...` are forwarded to the coefficients of the operator.
+
+   `auto psi = op(phi,args...);`
+
+   We apply an operator obtained from `op` by replacing its monomial coefficients with values
+   returned by `coeff(args...)`. This feature makes sense only for ScalarType being a callable object.
+
+   @tparam StateType Type of the initial state
+   @tparam Args Types of the optional arguments
+   @param st Initial state
+   @param args Optional argument pack passed to each coefficient of the operator
+  */
+ template <typename StateType, typename... Args>
+ StateType operator()(StateType const &st, Args&&... args) const {
+  StateType target_st = get_target_st(st, std::integral_constant<bool, UseMap>());
+  apply_impl(st, target_st, args...);
   return target_st;
  }
 };
