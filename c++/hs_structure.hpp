@@ -23,6 +23,7 @@
 #include "common.hpp"
 
 #include <vector>
+#include <triqs/hilbert_space/space_partition.hpp>
 #include <triqs/arrays/matrix.hpp>
 #include <triqs/gfs.hpp>
 

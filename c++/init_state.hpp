@@ -24,8 +24,10 @@
 #include <vector>
 #include <map>
 #include <iostream>
+#include <limits>
 #include <utility>
 #include <triqs/h5.hpp>
+#include <triqs/mpi/base.hpp>
 
 #include "common.hpp"
 
@@ -38,15 +40,34 @@ init_state make_pure_init_state(operator_t const& generator,
                                 fundamental_operator_set const& fops,
                                 std::map<operators::indices_t, int> const& bits_per_boson = {});
 
-/// FIXME
-init_state make_zerotemp_init_state();
+struct eq_solver_parameters {
 
-/// FIXME
-init_state make_thermal_init_state();
+ /// Verbosity level for the equilibrium solver
+ int verbosity = 0;
 
-// std::vector<init_state> init_statehermal(operator_t const& h0, hilbert_space_structure & hss,
-//                                              double beta,
-//                                              double temperature_cutoff = std::numeric_limits<double>::epsilon());
+ /// Discard states with relative statistical weight below this threshold
+ double min_rel_weight = std::numeric_limits<double>::epsilon();
+
+ /// Call ARPACK to diagonalize matrices of this size or bigger (cannot be < 4)
+ int arpack_min_matrix_size = 101;
+
+ /// Eigenvalue convergence tolerance for ARPACK
+ double arpack_tolerance = 0;
+
+ /// ARPACK parameter NCV (number of Lanczos vectors) for each invariant subspace
+ std::map<long,int> arpack_ncv = std::map<long,int>({});
+};
+
+/// Make an equilibrium initial state at a given temperature (zero temperature is valid)
+init_state make_equilibrium_init_state(operator_t const& h,
+                                       fundamental_operator_set const& fops,
+                                       double temperature,
+                                       eq_solver_parameters const& params,
+                                       std::map<operators::indices_t, int> const& bits_per_boson = {},
+                                       triqs::mpi::communicator const& comm = {});
+
+//TRIQS_WRAP_ARG_AS_DICT
+//void wrap_eq_solver_parameters(eq_solver_parameters const& params);
 
 /// Initial state, including information about the Hilbert space structure
 class init_state {
@@ -72,13 +93,23 @@ public:
  /// Constructor
  init_state() = default;
 
+ /// Copy-constructor
+ init_state(init_state const& ist) : fops(ist.fops), full_hs(ist.full_hs),
+  sub_hilbert_spaces(ist.sub_hilbert_spaces), weighted_states(ist.weighted_states) {
+  for(long i = 0; i < weighted_states.size(); ++i) {
+   int sp_index = ist.weighted_states[i].state.get_hilbert().get_index();
+   weighted_states[i].state.set_hilbert(sub_hilbert_spaces[sp_index]);
+  }
+ }
+
+ /// Move-constructor
+ init_state(init_state && ist) noexcept = default;
+
  struct weighted_state_t {
   /// State, in one of the subspaces
   state_on_subspace_t state;
   /// Statistical weight
   double weight;
-
-  weighted_state_t() = default;
 
   /// Constructor
   weighted_state_t(state_on_subspace_t && state, double weight) :
@@ -126,6 +157,12 @@ private:
  friend init_state make_pure_init_state(operator_t const&,
                                         fundamental_operator_set const&,
                                         std::map<operators::indices_t, int> const&);
+ friend init_state make_equilibrium_init_state(operator_t const&,
+                                               fundamental_operator_set const&,
+                                               double,
+                                               eq_solver_parameters const&,
+                                               std::map<operators::indices_t, int> const&,
+                                               triqs::mpi::communicator const&);
 
 };
 

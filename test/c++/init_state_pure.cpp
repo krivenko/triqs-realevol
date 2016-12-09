@@ -22,8 +22,8 @@ TEST(init_state, pure) {
 
  auto st = make_pure_init_state(generator, fops, {{{"B"},3}});
 
- auto wst = st.get_weighted_states()[0];
- auto hs = wst.state.get_hilbert();
+ auto const& wst = st.get_weighted_states()[0];
+ auto const& hs = wst.state.get_hilbert();
 
  EXPECT_EQ(1, st.size());
  EXPECT_EQ(1.0, wst.weight);
@@ -58,7 +58,7 @@ TEST(init_state, pure) {
   EXPECT_EQ(st.get_fops(), st_new.get_fops());
   EXPECT_EQ(st.get_full_hs(), st_new.get_full_hs());
   EXPECT_EQ(st.get_sub_hilbert_spaces(), st_new.get_sub_hilbert_spaces());
-  auto wst_new = st.get_weighted_states()[0];
+  auto const& wst_new = st.get_weighted_states()[0];
   EXPECT_EQ(wst.weight, wst_new.weight);
   EXPECT_EQ(wst.state.get_hilbert(), wst_new.state.get_hilbert());
   EXPECT_ARRAY_EQ(wst.state.amplitudes(), wst_new.state.amplitudes());
