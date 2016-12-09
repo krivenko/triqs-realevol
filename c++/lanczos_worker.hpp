@@ -26,6 +26,7 @@
 #include <triqs/arrays/blas_lapack/stev.hpp>
 #include <triqs/utility/is_complex.hpp>
 #include <triqs/utility/numeric_ops.hpp>
+#include <triqs/utility/exceptions.hpp>
 
 using namespace triqs::arrays;
 using triqs::arrays::blas::tridiag_worker;
@@ -69,7 +70,7 @@ template <typename OperatorType, typename StateType> struct lanczos_worker {
  // For real numbers: returns the argument
  template<bool IsComplex = is_complex<scalar_t>::value>
  inline real_scalar_t checked_real(scalar_t const& x, typename std::enable_if<IsComplex,void*>::type = 0) {
-  assert(is_zero(std::imag(x)));
+  TRIQS_ASSERT(is_zero(std::imag(x)));
   return std::real(x);
  }
  template<bool IsComplex = is_complex<scalar_t>::value>

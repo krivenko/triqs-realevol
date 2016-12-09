@@ -30,7 +30,6 @@
 #include <triqs/hilbert_space/hilbert_space.hpp>
 #include <triqs/hilbert_space/imperative_operator.hpp>
 #include <triqs/hilbert_space/state.hpp>
-#include <triqs/hilbert_space/space_partition.hpp>
 #include <triqs/utility/numeric_ops.hpp>
 
 namespace realevol {
@@ -40,7 +39,7 @@ namespace realevol {
 using namespace realevol::operators;        // FIXME
 using namespace realevol::hilbert_space;    // FIXME
 
-using operator_t = many_body_operator_generic<time_expr>;
+using operator_t = realevol::operators::many_body_operator_generic<time_expr>;
 using static_operator_t = many_body_operator;
 
 using op_on_space_t = imperative_operator<class hilbert_space,time_expr,false>;

@@ -43,7 +43,7 @@ endif(${GIT_RESULT} EQUAL 0)
 # We want to be installed in the TRIQS tree
 set(CMAKE_INSTALL_PREFIX ${TRIQS_PATH})
 
-message(STATUS "TRIQS : Adding compilation flags detected by the library (C++11/14, libc++, etc...) ")
+message(STATUS "TRIQS : Adding compilation flags detected by the library")
 add_definitions(${TRIQS_CXX_DEFINITIONS})
 
 option(Tests "Enable Tests" ON)
