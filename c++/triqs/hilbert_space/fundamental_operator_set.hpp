@@ -42,6 +42,9 @@ namespace h5 = triqs::h5;           // FIXME
 namespace realevol {
 namespace hilbert_space {
 
+ /// Structure of the Green's function
+ using gf_struct_t = std::map<std::string,std::vector<utility::variant_int_string>>;
+
  /// The statistics: Boson or Fermion
  enum statistic_enum {Boson, Fermion};
 
@@ -103,6 +106,20 @@ class fundamental_operator_set {
  explicit fundamental_operator_set(reduction_t const& v) {
   for (auto const& i : v.first) insert_from_indices_t(i, Fermion);
   for (auto const& i : v.second) insert_from_indices_t(i, Boson);
+ }
+
+ /// Construct fundamental_operator_set on a pair of GF structure objects
+ /**
+  @param gf_struct_fermion GF structure object (Fermions)
+  @param gf_struct_boson GF structure object (Bosons)
+  */
+ fundamental_operator_set (gf_struct_t const& gf_struct_fermion, gf_struct_t const& gf_struct_boson) {
+  for(auto const& block : gf_struct_fermion)
+   for(auto const& inner : block.second)
+    insert_fermion(block.first, inner);
+  for(auto const& block : gf_struct_boson)
+   for(auto const& inner : block.second)
+    insert_boson(block.first, inner);
  }
 
  /// Reduce to a `std::pair<std::vector<indices_t>,std::vector<indices_t>>`
