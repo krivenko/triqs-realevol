@@ -1,6 +1,6 @@
 from wrap_generator import *
 
-module = module_(full_name = "operators", app_name="realevol", doc = "Many-body operator as a function of time")
+module = module_(full_name = "operators", app_name = "realevol", doc = "Many-body operator as a function of time")
 
 module.use_module("texpr")
 

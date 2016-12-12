@@ -17,7 +17,7 @@ install(TARGETS realevol_c time_expr_c DESTINATION lib)
 
 # Install headers
 set(HEADERS include/realevol)
-install(FILES common.hpp time_expr.hpp solver.hpp solve_parameters.hpp init_state.hpp
+install(FILES common.hpp time_expr.hpp solver.hpp compute_gf_parameters.hpp init_state.hpp
         DESTINATION ${HEADERS})
 install(DIRECTORY exprtk DESTINATION ${HEADERS}/exprtk FILES_MATCHING PATTERN *.hpp)
 install(DIRECTORY triqs/operators DESTINATION ${HEADERS}/triqs FILES_MATCHING PATTERN *.hpp)

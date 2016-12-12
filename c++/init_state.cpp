@@ -439,7 +439,7 @@ void compute_eigenvectors(sub_hilbert_space const& sp,
 init_state make_equilibrium_init_state(operator_t const& h,
                                        fundamental_operator_set const& fops,
                                        double temperature,
-                                       eq_solver_parameters const& params,
+                                       eq_solver_parameters_t const& params,
                                        std::map<operators::indices_t, int> const& bits_per_boson,
                                        triqs::mpi::communicator const& comm) {
 

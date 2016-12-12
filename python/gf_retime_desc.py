@@ -17,7 +17,7 @@ def ns(s): return s % (("triqs::gfs::",) * s.count("%s"))
 
 # Wrapper for gf_mesh<cartesian_product<retime,retime>>
 mesh_c_type = "%sgf_mesh<%scartesian_product<%sretime,%sretime>>"
-m = class_(py_type = "MeshReTime2",
+m = class_(py_type = "MeshReTimeReTime",
            c_type = no_ns(mesh_c_type),
            c_type_absolute = ns(mesh_c_type),
            is_printable = True,
@@ -35,7 +35,7 @@ module.add_class(m)
 
 # Wrapper for g_2t_t
 gf_c_type = "%sgf_view<%scartesian_product<%sretime,%sretime>>"
-g = class_(py_type = "GfReTime2",
+g = class_(py_type = "GfReTime_x_ReTime",
     c_type = no_ns(gf_c_type),
     c_type_absolute = ns(gf_c_type),
     is_printable= True,

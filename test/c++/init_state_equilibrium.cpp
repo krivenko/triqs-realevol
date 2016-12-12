@@ -30,7 +30,7 @@ TEST(init_state_equilibrium, real) {
  h0 += lambda*(n<time_expr>("up") + n<time_expr>("dn"))
              *(a_dag<time_expr>("B") + a<time_expr>("B"));
 
- eq_solver_parameters params;
+ eq_solver_parameters_t params;
  params.verbosity = 2;
  params.arpack_min_matrix_size = 257;
  params.arpack_ncv = {{1,512}};
@@ -83,7 +83,7 @@ TEST(init_state_equilibrium, complex) {
  h0 += lambda*1_j*(n<time_expr>("up") + n<time_expr>("dn"))
              *(a_dag<time_expr>("B") - a<time_expr>("B"));
 
- eq_solver_parameters params;
+ eq_solver_parameters_t params;
  params.verbosity = 2;
  params.arpack_min_matrix_size = 129;
  params.arpack_ncv = {{1,256}};
