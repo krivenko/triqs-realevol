@@ -38,8 +38,8 @@ solver::solver(std::map<std::string,indices_type> const& gf_struct, std::pair<do
   gf_struct(gf_struct) {
 
  std::vector<std::string> block_names;
- std::vector<g_2t_t> g_ret_blocks;
- std::vector<g_2t_t> g_adv_blocks;
+ std::vector<g_2t_t> g_l_blocks, g_g_blocks;
+ std::vector<g_2t_t> g_ret_blocks, g_adv_blocks;
 
  for (auto const& bl : gf_struct) {
   block_names.push_back(bl.first);
@@ -51,10 +51,14 @@ solver::solver(std::map<std::string,indices_type> const& gf_struct, std::pair<do
 
   t_mesh = gf_mesh<retime>{time_window.first, time_window.second, n_t};
 
+  g_l_blocks.push_back(g_2t_t{{t_mesh, t_mesh}, {n, n}, indices});
+  g_g_blocks.push_back(g_2t_t{{t_mesh, t_mesh}, {n, n}, indices});
   g_ret_blocks.push_back(g_2t_t{{t_mesh, t_mesh}, {n, n}, indices});
   g_adv_blocks.push_back(g_2t_t{{t_mesh, t_mesh}, {n, n}, indices});
  }
 
+ g_l   = make_block_gf(block_names, g_l_blocks);
+ g_g   = make_block_gf(block_names, g_g_blocks);
  g_ret = make_block_gf(block_names, g_ret_blocks);
  g_adv = make_block_gf(block_names, g_adv_blocks);
 }
@@ -71,10 +75,32 @@ operator_t try_reduce_to_constant(operator_t const& op, gf_mesh<retime> const& m
  return res;
 }
 
-void solver::solve(solve_parameters_t const& p) {
+void solver::make_gf_ret_adv() {
+ gf_mesh<retime>::mesh_point_t t, tp;
+ for(auto bl : g_l.mesh()) {
+  auto const& g_l_block = g_l[bl];
+  auto const& g_g_block = g_g[bl];
+  auto & g_ret_block = g_ret[bl];
+  auto & g_adv_block = g_adv[bl];
 
+  for(auto ttp : g_l_block.mesh()) {
+   std::tie(t, tp) = ttp.components_tuple();
+   if(t >= tp) g_ret_block[ttp] = g_g_block[ttp] - g_l_block[ttp];
+   if(t <= tp) g_adv_block[ttp] = g_l_block[ttp] - g_g_block[ttp];
+  }
+ }
+}
+
+void solver::compute_gf(compute_gf_parameters_t const& p) {
+
+ // TODO
+ // 1. Check that gf_struct is a subset of init_state.fops
+ // 2. Check that p.h generates a fops, which is a subset of init_state.fops
+ // 3. Generate all contributing world lines
+
+/*
  // Save parameters
- params = p;
+ compute_gf_params = p;
 
  // Scan for the coefficients constant at all points of t_mesh,
  // and replace them with the corresponding constants
@@ -99,8 +125,8 @@ void solver::solve(solve_parameters_t const& p) {
 
  // Analyse structure of the Hilbert space
  hilbert_space_structure hs_struct(h, fops, full_hs, true, t_mesh);
-
-
+*/
+ make_gf_ret_adv();
 }
 
 }

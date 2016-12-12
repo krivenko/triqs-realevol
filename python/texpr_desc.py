@@ -1,6 +1,6 @@
 from wrap_generator import *
 
-module = module_(full_name = "texpr", app_name="realevol", doc = "Time-dependent expression")
+module = module_(full_name = "texpr", app_name = "realevol", doc = "Time-dependent expression")
 
 module.add_include("time_expr.hpp")
 module.add_using("namespace realevol")

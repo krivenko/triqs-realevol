@@ -40,7 +40,7 @@ init_state make_pure_init_state(operator_t const& generator,
                                 fundamental_operator_set const& fops,
                                 std::map<operators::indices_t, int> const& bits_per_boson = {});
 
-struct eq_solver_parameters {
+struct eq_solver_parameters_t {
 
  /// Verbosity level for the equilibrium solver
  int verbosity = 0;
@@ -62,12 +62,12 @@ struct eq_solver_parameters {
 init_state make_equilibrium_init_state(operator_t const& h,
                                        fundamental_operator_set const& fops,
                                        double temperature,
-                                       eq_solver_parameters const& params,
+                                       eq_solver_parameters_t const& params,
                                        std::map<operators::indices_t, int> const& bits_per_boson = {},
                                        triqs::mpi::communicator const& comm = {});
 
 //TRIQS_WRAP_ARG_AS_DICT
-//void wrap_eq_solver_parameters(eq_solver_parameters const& params);
+//void wrap_eq_solver_parameters(eq_solver_parameters_t const& params);
 
 /// Initial state, including information about the Hilbert space structure
 class init_state {
@@ -93,17 +93,22 @@ public:
  /// Constructor
  init_state() = default;
 
- /// Copy-constructor
- init_state(init_state const& ist) : fops(ist.fops), full_hs(ist.full_hs),
-  sub_hilbert_spaces(ist.sub_hilbert_spaces), weighted_states(ist.weighted_states) {
-  for(long i = 0; i < weighted_states.size(); ++i) {
-   int sp_index = ist.weighted_states[i].state.get_hilbert().get_index();
-   weighted_states[i].state.set_hilbert(sub_hilbert_spaces[sp_index]);
-  }
- }
+ // Do not allow copying
+ init_state(init_state const&) = delete;
+ init_state & operator=(init_state const&) = delete;
 
  /// Move-constructor
- init_state(init_state && ist) noexcept = default;
+ init_state(init_state &&) noexcept = default;
+
+ /// Move-assignment operator
+ init_state & operator=(init_state && ist) noexcept {
+  using std::swap;
+  swap(fops,               ist.fops);
+  swap(full_hs,            ist.full_hs);
+  swap(sub_hilbert_spaces, ist.sub_hilbert_spaces);
+  swap(weighted_states,    ist.weighted_states);
+  return *this;
+ }
 
  struct weighted_state_t {
   /// State, in one of the subspaces
@@ -125,7 +130,7 @@ public:
  inline const_iterator cend() const noexcept { return weighted_states.cend(); }
 
  /// Get fundamental operator set
- fundamental_operator_set const& get_fops() const {return fops; }
+ fundamental_operator_set const& get_fops() const { return fops; }
 
  /// Get full Hilbert space
  class hilbert_space const& get_full_hs() const { return full_hs; }
@@ -160,7 +165,7 @@ private:
  friend init_state make_equilibrium_init_state(operator_t const&,
                                                fundamental_operator_set const&,
                                                double,
-                                               eq_solver_parameters const&,
+                                               eq_solver_parameters_t const&,
                                                std::map<operators::indices_t, int> const&,
                                                triqs::mpi::communicator const&);
 

@@ -30,7 +30,7 @@
 
 #include "time_expr.hpp"
 #include "triqs/operators/many_body_operator.hpp"
-#include "solve_parameters.hpp"
+#include "compute_gf_parameters.hpp"
 
 namespace realevol {
 
@@ -42,21 +42,41 @@ using g_2t_t = gf<cartesian_product<retime, retime>>;
 class solver {
 
  std::map<std::string, indices_type> gf_struct;           // Block structure of the Green function
- block_gf<cartesian_product<retime,retime>> g_ret, g_adv; // Advanced and retarded GF's to be calculated
+ block_gf<cartesian_product<retime,retime>> g_l, g_g;     // Lesser and greater GF's to be calculated
+ block_gf<cartesian_product<retime,retime>> g_ret, g_adv; // Retarded and advanced GF's to be calculated
+ init_state const * initial_state = nullptr;              // Initial state at t=0
  triqs::mpi::communicator comm;                           // MPI communicator
- solve_parameters_t params;                               // Parameters of the last call to solve
+ compute_gf_parameters_t compute_gf_params;               // Parameters of the last call to solve
  gf_mesh<retime> t_mesh;                                  // 1D time mesh to use in calculations
+
+ // Make g_ret and g_adv out of g_l and g_g
+ void make_gf_ret_adv();
 
 public:
 
  solver(std::map<std::string,indices_type> const& gf_struct, std::pair<double,double> time_window, int n_t = 1000);
 
+ /// Compute the Green's functions for given initial state and Hamiltonian
  TRIQS_WRAP_ARG_AS_DICT
- /// Solve the many-bosy problem for the given Hamiltonian h
- void solve(solve_parameters_t const& p);
+ void compute_gf(compute_gf_parameters_t const& p);
 
- /// Set of parameters used in the last call to solve
- solve_parameters_t get_last_run_parameters() const { return params; }
+ /// Get the initial state at t=0
+ init_state const& get_initial_state() const {
+  if(initial_state == nullptr) TRIQS_RUNTIME_ERROR << "Initial state is not set!";
+  return *initial_state;
+ }
+
+ /// Set the initial state
+ void set_initial_state(init_state const& initial_state) { this->initial_state = &initial_state; }
+
+ /// Set of parameters used in the last call to compute_gf()
+ compute_gf_parameters_t get_last_compute_gf_parameters() const { return compute_gf_params; }
+
+ /// Lesser GF in real time
+ block_gf_view<cartesian_product<retime,retime>> get_g_l() { return g_l; }
+
+ /// Greater GF in real time
+ block_gf_view<cartesian_product<retime,retime>> get_g_g() { return g_g; }
 
  /// Retarded GF in real time
  block_gf_view<cartesian_product<retime,retime>> get_g_ret() { return g_ret; }
