@@ -505,7 +505,7 @@ init_state make_equilibrium_init_state(operator_t const& h,
   auto const& sp = subspaces[jobid];
   if(params.verbosity >= 2)
    std::cout << "[Node " << comm.rank() << "] Searching the lowest eigenvalues on subspace "
-             << sp.get_index() << std::endl;
+             << sp.get_index() << " (dimension " << sp.size() << ")" << std::endl;
 
   double new_gs_energy;
 
@@ -568,6 +568,11 @@ init_state make_equilibrium_init_state(operator_t const& h,
                                     [max_energy](double e){ return e <= max_energy; });
   if(n_relevant_ev == 0) continue;
 
+  auto const& sp = subspaces[l.first];
+  if(params.verbosity >= 2)
+   std::cout << "[Node " << comm.rank() << "] Computing eigenvectors on subspace "
+             << sp.get_index() << " (dimension " << sp.size() << ")" << std::endl;
+
   rel_sp_i.emplace_back(l.first, comm.rank(), rel_sp_i.size());
 
   auto ncv_it = params.arpack_ncv.find(l.first);
@@ -575,7 +580,7 @@ init_state make_equilibrium_init_state(operator_t const& h,
 
   if(h_is_real) {
    real_static_op_on_subspace_t op(h_, fops, ist.get_full_hs());
-   compute_eigenvectors(subspaces[l.first], op,
+   compute_eigenvectors(sp, op,
                         n_relevant_ev,
                         eigensystems,
                         params.verbosity,
@@ -584,7 +589,7 @@ init_state make_equilibrium_init_state(operator_t const& h,
                         comm.rank());
   } else {
    static_op_on_subspace_t op(h_, fops, ist.get_full_hs());
-   compute_eigenvectors(subspaces[l.first], op,
+   compute_eigenvectors(sp, op,
                         n_relevant_ev,
                         eigensystems,
                         params.verbosity,

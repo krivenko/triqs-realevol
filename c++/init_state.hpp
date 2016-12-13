@@ -82,9 +82,14 @@ class init_state {
  // Constructor to be used only by the factory functions
  init_state(fundamental_operator_set const& fops, std::map<operators::indices_t, int> const& bits_per_boson = {}) :
   fops(fops) {
-  TRIQS_ASSERT(fops.size(Boson) == bits_per_boson.size());
+  if(fops.size(Boson) != bits_per_boson.size()) TRIQS_RUNTIME_ERROR
+   << "bits_per_boson has a wrong number of elements, must be " << fops.size(Boson);
   std::vector<int> v(bits_per_boson.size());
-  for(auto const& b : bits_per_boson) v[fops.pos(b.first,Boson)] = b.second;
+  for(auto const& b : bits_per_boson) {
+   if(!fops.has_indices(b.first, Boson)) TRIQS_RUNTIME_ERROR
+    << "Wrong indices " << b.first << " in bits_per_boson";
+   v[fops.pos(b.first, Boson)] = b.second;
+  }
   full_hs = {fops, v};
  }
 
