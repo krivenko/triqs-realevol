@@ -29,13 +29,13 @@ module.add_class(c)
 
 module.add_function(name = "make_pure_init_state",
                     signature = "init_state(operator_t generator, std::set<indices_t> fermion_indices,"
-                                "std::set<indices_t> boson_indices = {},"
-                                "std::map<operators::indices_t, int> bits_per_boson = {})",
+                                "std::set<indices_t> boson_indices,"
+                                "std::map<operators::indices_t, int> bits_per_boson)",
                     calling_pattern = "auto result = make_pure_init_state(generator, fundamental_operator_set(fermion_indices,boson_indices), bits_per_boson)")
 
 module.add_function(name = "make_equilibrium_init_state",
                     signature = "init_state(operator_t h, std::set<indices_t> fermion_indices,"
-                                "std::set<indices_t> boson_indices = {},"
+                                "std::set<indices_t> boson_indices,"
                                 "double temperature, realevol::eq_solver_parameters_t params,"
                                 "std::map<operators::indices_t, int> bits_per_boson = {})",
                     calling_pattern = "auto result = make_equilibrium_init_state(h, fundamental_operator_set(fermion_indices,boson_indices),"
