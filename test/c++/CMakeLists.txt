@@ -6,7 +6,7 @@ include_directories(${CMAKE_SOURCE_DIR}/c++ ${TRIQS_INCLUDE_ALL})
 
 # Simple tests
 set(SIMPLE_TESTS time_expr many_body_operator hilbert_space space_partition
-                 mesh_container lanczos_worker hs_structure
+                 mesh_container lanczos_worker hs_structure sort2
                  init_state_pure
                  trimer) #mesh_container_cyclic runge_kutta lanczos)
 foreach(t ${SIMPLE_TESTS})
