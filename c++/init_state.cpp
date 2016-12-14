@@ -42,6 +42,7 @@
 #include "arpack/arpack_worker.hpp"
 #include "init_state.hpp"
 #include "mpi_dispatcher.hpp"
+#include "sort2.hpp"
 
 namespace realevol {
 
@@ -354,6 +355,29 @@ double find_lowest_levels_on_subspace(sub_hilbert_space const& sp,
 // -----------------------------------------------------------------
 
 template<typename T>
+void permute_matrix_cols(matrix<T> & M, std::vector<std::size_t> const& p) {
+ int N = second_dim(M);
+ assert(N == p.size());
+ std::vector<bool> done(N);
+ for (std::size_t i = 0; i < N; ++i) {
+  if (done[i]) continue;
+  done[i] = true;
+  std::size_t prev_j = i;
+  std::size_t j = p[i];
+  while (i != j) {
+   using std::swap;
+   for(int r : range(first_dim(M)))
+    swap(M(r,prev_j), M(r,j));
+   done[j] = true;
+   prev_j = j;
+   j = p[j];
+  }
+ }
+}
+
+// -----------------------------------------------------------------
+
+template<typename T>
 void compute_eigenvectors(sub_hilbert_space const& sp,
                           imperative_operator<sub_hilbert_space,T,false> const& h,
                           int n_vectors_to_compute,
@@ -433,6 +457,14 @@ void compute_eigenvectors(sub_hilbert_space const& sp,
 
  eigensystems.emplace_back(real(arpw.eigenvalues()),
                            arpw.eigenvectors()(range(),range(n_vectors_to_compute)));
+
+ // Sort eigenvalues and eigenvectors as complex ARPACK is not trustworthy in this respect...
+ if(is_complex_t::value) {
+  auto & es = eigensystems.back();
+  auto p = sort_permutation(es.first);
+  apply_permutation_in_place(es.first, p);
+  permute_matrix_cols(es.second, p);
+ }
 }
 
 // -----------------------------------------------------------------

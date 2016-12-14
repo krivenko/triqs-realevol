@@ -13,7 +13,7 @@ U = 2.0
 mu = U*0.1
 t = 0.3
 tp = -0.1
-beta = 40.0
+beta = 20.0
 
 fops = set((sn,site) for sn, site in product(spin_names,range(4)))
 print "Fundamental operator set:", fops
@@ -21,7 +21,6 @@ print "Fundamental operator set:", fops
 eq_params = {}
 eq_params['verbosity'] = 2
 eq_params['arpack_min_matrix_size'] = 11
-eq_params['arpack_ncv'] = {6:16,7:24,8:16,11:24,12:36,13:24,16:16,17:24,18:16}
 
 # Initial Hamiltonian
 h0 = mu*sum(n(*i) for i in fops)
