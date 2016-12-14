@@ -33,7 +33,6 @@ TEST(init_state_equilibrium, real) {
  eq_solver_parameters_t params;
  params.verbosity = 2;
  params.arpack_min_matrix_size = 257;
- params.arpack_ncv = {{1,512}};
 
  auto ist = make_equilibrium_init_state(h0, fops, T, params, {{{"B"},8}});
 
@@ -53,14 +52,18 @@ TEST(init_state_equilibrium, real) {
 
  auto const& wst = ist.get_weighted_states();
  auto const& wst_ref = ist_ref.get_weighted_states();
+ double total_weight = 0;
  ASSERT_EQ(wst_ref.size(), wst.size());
  for(int i = 0; i < wst.size(); ++i) {
   EXPECT_CLOSE(wst_ref[i].weight, wst[i].weight);
+  total_weight += wst[i].weight;
   EXPECT_EQ(wst_ref[i].state.get_hilbert().get_index(),
             wst[i].state.get_hilbert().get_index());
-  EXPECT_ARRAY_NEAR(wst_ref[i].state.amplitudes(),
-                    wst[i].state.amplitudes());
+  auto const& a = wst[i].state.amplitudes();
+  EXPECT_CLOSE(1.0, dot(a,a));
+  EXPECT_CLOSE(1.0, abs(dot(wst_ref[i].state.amplitudes(),a)));
  }
+ EXPECT_CLOSE(1.0, total_weight);
 }
 
 TEST(init_state_equilibrium, complex) {
@@ -86,7 +89,6 @@ TEST(init_state_equilibrium, complex) {
  eq_solver_parameters_t params;
  params.verbosity = 2;
  params.arpack_min_matrix_size = 129;
- params.arpack_ncv = {{1,256}};
 
  auto ist = make_equilibrium_init_state(h0, fops, T, params, {{{"B"},7}});
 
@@ -106,14 +108,18 @@ TEST(init_state_equilibrium, complex) {
 
  auto const& wst = ist.get_weighted_states();
  auto const& wst_ref = ist_ref.get_weighted_states();
+ double total_weight = 0;
  ASSERT_EQ(wst_ref.size(), wst.size());
  for(int i = 0; i < wst.size(); ++i) {
   EXPECT_CLOSE(wst_ref[i].weight, wst[i].weight);
+  total_weight += wst[i].weight;
   EXPECT_EQ(wst_ref[i].state.get_hilbert().get_index(),
             wst[i].state.get_hilbert().get_index());
-  EXPECT_ARRAY_NEAR(wst_ref[i].state.amplitudes(),
-                    wst[i].state.amplitudes());
+  auto const& a = wst[i].state.amplitudes();
+  EXPECT_CLOSE(1.0, dotc(a,a));
+  EXPECT_CLOSE(1.0, abs(dotc(wst_ref[i].state.amplitudes(),a)));
  }
+ EXPECT_CLOSE(1.0, total_weight);
 }
 
 MAKE_MAIN;

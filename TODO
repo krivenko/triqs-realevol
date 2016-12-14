@@ -1,4 +1,3 @@
-* init_state: Do not set NCV in init_state_equilibrium test.
 * init_state: ARPACK: use an interpolation to predict the number of the lowest eigenvalues to be found.
 * mpi_dispatcher: allow job completion callback on master node.
 * mpi_dispatcher: provide an iterator interface with dereferencing into a custom job type.
