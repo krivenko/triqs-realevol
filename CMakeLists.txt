@@ -14,7 +14,7 @@ endif()
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
 # Append triqs installed files to the cmake load path
-list(APPEND CMAKE_MODULE_PATH ${TRIQS_PATH}/share/triqs/cmake)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${TRIQS_PATH}/share/triqs/cmake)
 
 # Load TRIQS, including all predefined variables from TRIQS installation
 find_package(TRIQS REQUIRED)
@@ -31,8 +31,7 @@ find_package(Boost 1.53 REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 # Detect ARPACK-NG
-find_package(PkgConfig)
-pkg_check_modules(ARPACK REQUIRED arpack)
+find_package(ARPACK REQUIRED)
 
 # Get hash
 triqs_get_git_hash(${CMAKE_SOURCE_DIR} "REALEVOL")
