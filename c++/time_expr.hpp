@@ -136,6 +136,20 @@ time_expr try_reduce_to_constant(time_expr const& te, Mesh const& m) {
   return is_zero(value.imag()) ? time_expr(value.real()) : time_expr(value);
 }
 
+// Predicate to check whether time_expr object is zero on a mesh
+template<class Mesh>
+struct is_zero_on_mesh {
+ Mesh const& mesh;
+ is_zero_on_mesh(Mesh const& mesh) : mesh(mesh) {}
+ bool operator()(time_expr const& te) {
+  using triqs::utility::is_zero;
+  if(te.is_zero()) return true;
+  for(auto t : mesh)
+   if(!is_zero(te(t))) return false;
+  return true;
+ }
+};
+
 }
 
 namespace triqs { namespace utility {

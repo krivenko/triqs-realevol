@@ -27,8 +27,10 @@ TEST(hs_structure, BosonFermion) {
  fops.insert_fermion("up",0);
  fops.insert_boson("B",0);
 
+ triqs::gfs::segment_mesh mesh(0,1.0,101);
  class hilbert_space full_hs(fops, {3});
- hilbert_space_structure hss(h, fops, full_hs, true);
+ hilbert_space_structure hss(h, fops, full_hs, fops,
+                             is_zero_on_mesh<triqs::gfs::segment_mesh>(mesh));
 
  EXPECT_EQ(32, hss.sub_hilbert_spaces.size());
 
@@ -61,7 +63,8 @@ TEST(hs_structure, BosonFermionCoupled) {
 
  triqs::gfs::segment_mesh mesh(0,1.0,101);
  class hilbert_space full_hs(fops, {3});
- hilbert_space_structure hss(h, fops, full_hs, true, mesh);
+ hilbert_space_structure hss(h, fops, full_hs, fops,
+                             is_zero_on_mesh<triqs::gfs::segment_mesh>(mesh));
 
  EXPECT_EQ(4, hss.sub_hilbert_spaces.size());
 
