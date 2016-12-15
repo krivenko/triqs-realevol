@@ -157,11 +157,18 @@ init_state make_pure_init_state(operator_t const& generator,
  auto psi = imp_gen(vacuum);
 
  // Fill st.sub_hilbert_spaces[0]
- foreach(psi, [&sp](fock_state_t f, dcomplex){ sp.add_fock_state(f); });
+ foreach(psi, [&sp](fock_state_t f, dcomplex) { sp.add_fock_state(f); });
 
  // Add a weighted state
  state_on_subspace_t st_on_sp(sp);
- foreach(psi, [&st_on_sp,&sp](fock_state_t f, dcomplex a){ st_on_sp(sp.get_state_index(f)) = a; });
+ double norm2 = 0;
+ foreach(psi, [&st_on_sp,&sp,&norm2](fock_state_t f, dcomplex a) {
+  st_on_sp(sp.get_state_index(f)) = a;
+  norm2 += abs(a*a);
+ });
+ if(norm2==0) TRIQS_RUNTIME_ERROR << "Generated state is trivial!";
+ st_on_sp /= std::sqrt(norm2);
+
  ist.weighted_states.emplace_back(std::move(st_on_sp), 1.0);
 
  return ist;
