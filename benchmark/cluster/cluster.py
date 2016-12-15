@@ -17,7 +17,8 @@ tp = -0.1
 #tp = -0.1*te("1-exp(-10*t)")
 beta = 40.0
 
-gf_struct = {sn : range(4) for sn in spin_names}
+gf_struct = {'dn' : range(3)}
+chi_struct = {sn : range(4) for sn, site in product(spin_names,range(4))}
 time_window = (.0,.10)
 n_t = 101
 
@@ -46,10 +47,10 @@ print init_state
 h = h0 + tp*sum(c_dag(sn,site1)*c(sn,site2)
                 for sn, (site1, site2) in product(spin_names,((0,2),(2,0),(1,3),(3,1))))
 
-print "h =", h
+print "h(t) =", h
 
 # Solver object
-S = Solver(gf_struct, {}, time_window = time_window, n_t = n_t)
+S = Solver(gf_struct, chi_struct, time_window = time_window, n_t = n_t)
 
 # Set initial state
 S.initial_state = init_state
@@ -57,4 +58,4 @@ S.initial_state = init_state
 gf_params = {}
 gf_params['verbosity'] = 2
 
-S.compute_gf(h = h, **gf_params)
+S.compute_2t_obs(h = h, **gf_params)

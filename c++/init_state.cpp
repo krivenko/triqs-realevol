@@ -239,7 +239,7 @@ template<typename T>
 double find_lowest_levels_on_subspace(sub_hilbert_space const& sp,
                                       imperative_operator<sub_hilbert_space,T,false> const& h,
                                       std::vector<sp_levels_t> & lowest_levels,
-                                      double exc_energy_threshold,
+                                      double energy_window,
                                       int verbosity,
                                       int arpack_min_matrix_size,
                                       int arpack_tol, int arpack_ncv,
@@ -281,7 +281,7 @@ double find_lowest_levels_on_subspace(sub_hilbert_space const& sp,
   auto eig = linalg::eigenvalues_in_place(&M);
   double e0 = eig(0);
   for(int i : range(1,N)) {
-   if(eig(i) - e0 > exc_energy_threshold) {
+   if(eig(i) - e0 > energy_window) {
     lowest_levels.emplace_back(sp_levels_t{sp_n, eig(range(i))});
     return e0;
    }
@@ -342,7 +342,7 @@ double find_lowest_levels_on_subspace(sub_hilbert_space const& sp,
   }
 
   // The most recently found eigenvalue was too high
-  if(real(eig(0) - eig(params.n_eigenvalues-1)) > exc_energy_threshold) {
+  if(real(eig(0) - eig(params.n_eigenvalues-1)) > energy_window) {
    first_ev_index = 1;
    break;
   }
@@ -492,12 +492,12 @@ init_state make_equilibrium_init_state(operator_t const& h,
  if(params.arpack_min_matrix_size < 4)
   TRIQS_RUNTIME_ERROR << "arpack_min_matrix_size must be >= 4!";
 
- double beta, exc_energy_threshold;
+ double beta, energy_window;
  if(temperature == 0)
-  exc_energy_threshold = 1e-14;
+  energy_window = (params.arpack_tolerance != 0 ? params.arpack_tolerance : 1e-14);
  else {
   beta = 1 / temperature;
-  exc_energy_threshold = -temperature * std::log(params.min_rel_weight);
+  energy_window = -temperature * std::log(params.min_rel_weight);
  }
 
  // Initial state object
@@ -554,7 +554,7 @@ init_state make_equilibrium_init_state(operator_t const& h,
   if(h_is_real) {
    real_static_op_on_subspace_t op(h_, fops, ist.get_full_hs());
    new_gs_energy = find_lowest_levels_on_subspace(sp, op, sp_lowest_levels,
-                                                  exc_energy_threshold,
+                                                  energy_window,
                                                   params.verbosity,
                                                   params.arpack_min_matrix_size,
                                                   params.arpack_tolerance, ncv,
@@ -562,7 +562,7 @@ init_state make_equilibrium_init_state(operator_t const& h,
   } else {
    static_op_on_subspace_t op(h_, fops, ist.get_full_hs());
    new_gs_energy = find_lowest_levels_on_subspace(sp, op, sp_lowest_levels,
-                                                  exc_energy_threshold,
+                                                  energy_window,
                                                   params.verbosity,
                                                   params.arpack_min_matrix_size,
                                                   params.arpack_tolerance, ncv,
@@ -587,7 +587,7 @@ init_state make_equilibrium_init_state(operator_t const& h,
  // Diagonalization phase 2
  // Now we know the exact ground state energy, and can properly select
  // the relevant subspaces. On those we compute the eigenvectors.
- double max_energy = gs_energy + exc_energy_threshold;
+ double max_energy = gs_energy + energy_window;
 
  // Rank-local quantities
  double Z = 0;                               // Partition function

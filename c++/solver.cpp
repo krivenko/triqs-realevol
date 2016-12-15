@@ -21,10 +21,12 @@
 #include <triqs/utility/first_include.hpp>
 
 #include <algorithm>
+#include <iterator>
 
 #include "solver.hpp"
 #include "hs_structure.hpp"
 #include "init_state.hpp"
+#include "worldlines.hpp"
 
 namespace realevol {
 
@@ -90,10 +92,10 @@ void solver::make_gf_ret_adv() {
  }
 }
 
-void solver::compute_gf(compute_gf_parameters_t const& params) {
+void solver::compute_2t_obs(compute_2t_obs_parameters_t const& params) {
 
  // Save parameters
- compute_gf_params = params;
+ compute_2t_obs_params = params;
 
  // Do we have a valid initial state to start computation?
  if(initial_state == nullptr)
@@ -142,24 +144,45 @@ void solver::compute_gf(compute_gf_parameters_t const& params) {
 
  // Compute subspace branching for the initial state
  auto const& subspaces = initial_state->get_sub_hilbert_spaces();
- std::vector<std::set<long>> subspace_branching;
- subspace_branching.reserve(subspaces.size());
- for(auto const& sp : subspaces)
-  subspace_branching.push_back(hs_struct.subspace_branching(sp));
+ auto subspace_branchings = hs_struct.compute_branchings(subspaces);
 
  if(params.verbosity >= 2 && comm.rank() == 0) {
   std::cout << "Subspace branching for the initial state:" << std::endl;
   for(long spn = 0; spn < subspaces.size(); ++spn) {
    std::cout << " " << subspaces[spn].get_index() << " -> ";
-   for(long spi : subspace_branching[spn]) std::cout << spi << " ";
+   for(long spi : subspace_branchings[spn]) std::cout << spi << " ";
    std::cout << std::endl;
   }
  }
 
- // TODO
- // 1. Generate all contributing world lines
- // 2. Write worldline_worker
+ // Generate all contributing world lines
+ worldlines_maker wlm(*initial_state, hs_struct, subspace_branchings);
 
+ auto g_g_wl = wlm.make_gf_worldlines(gf_struct, true);
+ auto g_l_wl = wlm.make_gf_worldlines(gf_struct, false);
+ auto chi_g_wl = wlm.make_chi_worldlines(chi_struct, true);
+ auto chi_l_wl = wlm.make_chi_worldlines(chi_struct, false);
+
+ if(params.verbosity >= 2 && comm.rank() == 0) {
+  auto print_worldlines = [](auto const& worldlines, std::string const& msg) {
+   std::cout << "World lines contributing to " << msg << " ("
+             << worldlines.size() << " in total)" << std::endl;
+   for(auto const& wl : worldlines) std::cout << " " << wl << std::endl;
+  };
+  print_worldlines(g_g_wl, "the greater GF component:");
+  print_worldlines(g_l_wl, "the lesser GF component:");
+  print_worldlines(chi_g_wl, "the greater susceptibility component:");
+  print_worldlines(chi_l_wl, "the lesser susceptibility component:");
+ }
+
+ std::vector<worldline_desc_t> all_worldlines;
+ all_worldlines.reserve(g_g_wl.size() + g_l_wl.size() +
+                        chi_g_wl.size() + chi_l_wl.size());
+ for(auto && wl : {g_g_wl, g_l_wl, chi_g_wl, chi_l_wl})
+  std::move(wl.begin(), wl.end(), std::back_inserter(all_worldlines));
+
+ // TODO
+ // Write worldline_worker
 
  if(params.compute_gf_ret_adv) make_gf_ret_adv();
 }
