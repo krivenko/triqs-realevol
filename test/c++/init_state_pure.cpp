@@ -16,8 +16,8 @@ TEST(init_state, pure) {
  fops.insert_fermion("up");
  fops.insert_boson("B");
 
- auto generator = 0.25*(1.0 + c_dag<time_expr>("up") + c_dag<time_expr>("dn")
-                            + c_dag<time_expr>("dn")*c_dag<time_expr>("up"))
+ auto generator = (1.0 + c_dag<time_expr>("up") + c_dag<time_expr>("dn")
+                       + c_dag<time_expr>("dn")*c_dag<time_expr>("up"))
                       *a_dag<time_expr>("B")*a_dag<time_expr>("B");
 
  auto st = make_pure_init_state(generator, fops, {{{"B"},3}});
@@ -30,19 +30,19 @@ TEST(init_state, pure) {
 
  {
   auto f = st.get_full_hs().get_fock_state(fops, {}, {{"B"},{"B"}});
-  EXPECT_CLOSE(0.25*std::sqrt(2.0), wst.state(hs.get_state_index(f)));
+  EXPECT_CLOSE(0.5, wst.state(hs.get_state_index(f)));
  }
  {
   auto f = st.get_full_hs().get_fock_state(fops, {{"dn"}}, {{"B"},{"B"}});
-  EXPECT_CLOSE(0.25*std::sqrt(2.0), wst.state(hs.get_state_index(f)));
+  EXPECT_CLOSE(0.5, wst.state(hs.get_state_index(f)));
  }
  {
   auto f = st.get_full_hs().get_fock_state(fops, {{"up"}}, {{"B"},{"B"}});
-  EXPECT_CLOSE(0.25*std::sqrt(2.0), wst.state(hs.get_state_index(f)));
+  EXPECT_CLOSE(0.5, wst.state(hs.get_state_index(f)));
  }
  {
   auto f = st.get_full_hs().get_fock_state(fops, {{"dn"},{"up"}}, {{"B"},{"B"}});
-  EXPECT_CLOSE(0.25*std::sqrt(2.0), wst.state(hs.get_state_index(f)));
+  EXPECT_CLOSE(0.5, wst.state(hs.get_state_index(f)));
  }
 
  {
