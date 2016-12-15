@@ -1,6 +1,7 @@
 from realevol.texpr import TExpr as te
 from realevol.operators import *
 from realevol.init_state import *
+from realevol.realevol import *
 from itertools import product
 
 # Cluster benchmark
@@ -13,7 +14,12 @@ U = 2.0
 mu = U*0.1
 t = 0.3
 tp = -0.1
-beta = 20.0
+#tp = -0.1*te("1-exp(-10*t)")
+beta = 40.0
+
+gf_struct = {sn : range(4) for sn in spin_names}
+time_window = (.0,.10)
+n_t = 101
 
 fops = set((sn,site) for sn, site in product(spin_names,range(4)))
 print "Fundamental operator set:", fops
@@ -35,3 +41,20 @@ init_state = make_equilibrium_init_state(h0, fermion_indices = fops, boson_indic
 
 print "Initial state:"
 print init_state
+
+# Time-dependent Hamiltonian
+h = h0 + tp*sum(c_dag(sn,site1)*c(sn,site2)
+                for sn, (site1, site2) in product(spin_names,((0,2),(2,0),(1,3),(3,1))))
+
+print "h =", h
+
+# Solver object
+S = Solver(gf_struct, {}, time_window = time_window, n_t = n_t)
+
+# Set initial state
+S.initial_state = init_state
+
+gf_params = {}
+gf_params['verbosity'] = 2
+
+S.compute_gf(h = h, **gf_params)
