@@ -13,9 +13,10 @@ namespace triqs { namespace py_tools {
 template <> struct py_converter<compute_gf_parameters_t> {
  static PyObject *c2py(compute_gf_parameters_t const & x) {
   PyObject * d = PyDict_New();
-  PyDict_SetItemString( d, "h"        , convert_to_python(x.h));
-  PyDict_SetItemString( d, "verbosity", convert_to_python(x.verbosity));
-  PyDict_SetItemString( d, "hbar"     , convert_to_python(x.hbar));
+  PyDict_SetItemString( d, "h"                 , convert_to_python(x.h));
+  PyDict_SetItemString( d, "verbosity"         , convert_to_python(x.verbosity));
+  PyDict_SetItemString( d, "hbar"              , convert_to_python(x.hbar));
+  PyDict_SetItemString( d, "compute_gf_ret_adv", convert_to_python(x.compute_gf_ret_adv));
   return d;
  }
 
@@ -36,8 +37,9 @@ template <> struct py_converter<compute_gf_parameters_t> {
  static compute_gf_parameters_t py2c(PyObject *dic) {
   compute_gf_parameters_t res;
   res.h = convert_from_python<operator_t>(PyDict_GetItemString(dic, "h"));
-  _get_optional(dic, "verbosity", res.verbosity   ,((triqs::mpi::communicator().rank()==0)?3:0));
-  _get_optional(dic, "hbar"     , res.hbar        ,1.0);
+  _get_optional(dic, "verbosity"         , res.verbosity            ,((triqs::mpi::communicator().rank()==0)?3:0));
+  _get_optional(dic, "hbar"              , res.hbar                 ,1.0);
+  _get_optional(dic, "compute_gf_ret_adv", res.compute_gf_ret_adv   ,true);
   return res;
  }
 
@@ -68,7 +70,7 @@ template <> struct py_converter<compute_gf_parameters_t> {
   std::stringstream fs, fs2; int err=0;
 
 #ifndef TRIQS_ALLOW_UNUSED_PARAMETERS
-  std::vector<std::string> ks, all_keys = {"h","verbosity","hbar"};
+  std::vector<std::string> ks, all_keys = {"h","verbosity","hbar","compute_gf_ret_adv"};
   pyref keys = PyDict_Keys(dic);
   if (!convertible_from_python<std::vector<std::string>>(keys, true)) {
    fs << "\nThe dict keys are not strings";
@@ -80,9 +82,10 @@ template <> struct py_converter<compute_gf_parameters_t> {
     fs << "\n"<< ++err << " The parameter '" << k << "' is not recognized.";
 #endif
 
-  _check_mandatory<operator_t>(dic, fs, err, "h"        , "operator_t");
-  _check_optional <int       >(dic, fs, err, "verbosity", "int");
-  _check_optional <double    >(dic, fs, err, "hbar"     , "double");
+  _check_mandatory<operator_t>(dic, fs, err, "h"                 , "operator_t");
+  _check_optional <int       >(dic, fs, err, "verbosity"         , "int");
+  _check_optional <double    >(dic, fs, err, "hbar"              , "double");
+  _check_optional <bool      >(dic, fs, err, "compute_gf_ret_adv", "bool");
   if (err) goto _error;
   return true;
 

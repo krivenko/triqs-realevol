@@ -38,6 +38,9 @@ struct compute_gf_parameters_t {
  /// Planck constant
  double hbar = 1.0;
 
+ /// Compute retarded and advanced Green's functions
+ bool compute_gf_ret_adv = true;
+
  compute_gf_parameters_t() = default;
  compute_gf_parameters_t(operator_t const& h) : h(h) {}
 };

@@ -34,26 +34,26 @@ c = class_(
         doc = "The Real-time evolution solver",   # doc of the C++ class
 )
 
-c.add_constructor("""(std::map<std::string,indices_type> gf_struct, std::pair<double,double> time_window, int n_t = 1000)""",
+c.add_constructor("""(gf_struct_t gf_struct, gf_struct_t chi_struct = {}, std::pair<double,double> time_window, int n_t = 1000)""",
                   doc = """ """)
 
 c.add_method("""void compute_gf (**compute_gf_parameters_t)""",
-             doc = """+----------------+----------------------+-------------------------------+-----------------------+
-| Parameter Name | Type                 | Default                       | Documentation         |
-+================+======================+===============================+=======================+
-| h              | operator_t           | --                            | Hamiltonian           |
-+----------------+----------------------+-------------------------------+-----------------------+
-| initial_state  | realevol::init_state | --                            | Initial state at t=0  |
-+----------------+----------------------+-------------------------------+-----------------------+
-| verbosity      | int                  | 3 on MPI rank 0, 0 otherwise. | Verbosity level       |
-+----------------+----------------------+-------------------------------+-----------------------+
-| hbar           | double               | 1.0                           | Planck constant       |
-+----------------+----------------------+-------------------------------+-----------------------+""")
+             doc = """+--------------------+------------+-------------------------------+--------------------------------------------------+
+| Parameter Name     | Type       | Default                       | Documentation                                    |
++====================+============+===============================+==================================================+
+| h                  | operator_t | --                            | Hamiltonian                                      |
++--------------------+------------+-------------------------------+--------------------------------------------------+
+| verbosity          | int        | 3 on MPI rank 0, 0 otherwise. | Verbosity level                                  |
++--------------------+------------+-------------------------------+--------------------------------------------------+
+| hbar               | double     | 1.0                           | Planck constant                                  |
++--------------------+------------+-------------------------------+--------------------------------------------------+
+| compute_gf_ret_adv | bool       | true                          | Compute retarded and advanced Green's functions  |
++--------------------+------------+-------------------------------+--------------------------------------------------+""")
 
 c.add_property(name = "initial_state",
                getter = cfunction("init_state const& get_initial_state()"),
                setter = cfunction("void set_initial_state(init_state initial_state)"),
-               doc = """Initial state at t=0""")
+               doc = """Initial state at t=t_min""")
 
 c.add_property(name = "last_compute_gf_parameters",
                getter = cfunction("compute_gf_parameters_t get_last_compute_gf_parameters ()"),
