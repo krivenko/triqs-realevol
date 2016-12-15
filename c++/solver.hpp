@@ -30,7 +30,7 @@
 
 #include "time_expr.hpp"
 #include "triqs/operators/many_body_operator.hpp"
-#include "compute_gf_parameters.hpp"
+#include "compute_2t_obs_parameters.hpp"
 
 namespace realevol {
 
@@ -42,13 +42,13 @@ using block_gf_2t_t = block_gf<cartesian_product<retime,retime>>;
 
 class solver {
 
- gf_struct_t gf_struct, chi_struct;          // Block structure of the Green functions and susceptibilities
- block_gf_2t_t g_l, g_g;                     // Lesser and greater GF's to be calculated
- block_gf_2t_t g_ret, g_adv;                 // Retarded and advanced GF's to be calculated
- init_state const * initial_state = nullptr; // Initial state at t=t_min
- triqs::mpi::communicator comm;              // MPI communicator
- compute_gf_parameters_t compute_gf_params;  // Parameters of the last call to solve
- gf_mesh<retime> t_mesh;                     // 1D time mesh to use in calculations
+ gf_struct_t gf_struct, chi_struct;                  // Block structure of the Green functions and susceptibilities
+ block_gf_2t_t g_l, g_g;                             // Lesser and greater GF's to be calculated
+ block_gf_2t_t g_ret, g_adv;                         // Retarded and advanced GF's to be calculated
+ init_state const * initial_state = nullptr;         // Initial state at t=t_min
+ triqs::mpi::communicator comm;                      // MPI communicator
+ compute_2t_obs_parameters_t compute_2t_obs_params;  // Parameters of the last call to solve
+ gf_mesh<retime> t_mesh;                             // 1D time mesh to use in calculations
 
  // Make g_ret and g_adv out of g_l and g_g
  void make_gf_ret_adv();
@@ -58,9 +58,9 @@ public:
  solver(gf_struct_t const& gf_struct, gf_struct_t const& chi_struct,
         std::pair<double,double> time_window, int n_t);
 
- /// Compute the Green's functions for given initial state and Hamiltonian
+ /// Compute observables that are functions of two times
  TRIQS_WRAP_ARG_AS_DICT
- void compute_gf(compute_gf_parameters_t const& p);
+ void compute_2t_obs(compute_2t_obs_parameters_t const& p);
 
  /// Get the initial state at t=t_min
  init_state const& get_initial_state() const {
@@ -71,8 +71,8 @@ public:
  /// Set the initial state
  void set_initial_state(init_state const& initial_state) { this->initial_state = &initial_state; }
 
- /// Set of parameters used in the last call to compute_gf()
- compute_gf_parameters_t get_last_compute_gf_parameters() const { return compute_gf_params; }
+ /// Set of parameters used in the last call to compute_2t_obs()
+ compute_2t_obs_parameters_t get_last_compute_2t_obs_parameters() const { return compute_2t_obs_params; }
 
  /// Lesser GF in real time
  block_gf_2t_t get_g_l() { return g_l; }

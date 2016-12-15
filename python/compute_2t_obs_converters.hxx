@@ -1,17 +1,17 @@
 // DO NOT EDIT
 // Generated automatically using libclang using the command :
-// c++2py.py ../c++/solver.hpp -I../c++ --only_converters -p -m realevol -o compute_gf --appname realevol --moduledoc "The Real-time evolution solver"
+// c++2py.py ../c++/solver.hpp -I../c++ --only_converters -p -m realevol -o compute_2t_obs --appname realevol --moduledoc "The Real-time evolution solver"
 
 
-// --- C++ Python converter for compute_gf_parameters_t
+// --- C++ Python converter for compute_2t_obs_parameters_t
 #include <triqs/python_tools/converters/vector.hpp>
 #include <triqs/python_tools/converters/string.hpp>
 #include <algorithm>
 
 namespace triqs { namespace py_tools {
 
-template <> struct py_converter<compute_gf_parameters_t> {
- static PyObject *c2py(compute_gf_parameters_t const & x) {
+template <> struct py_converter<compute_2t_obs_parameters_t> {
+ static PyObject *c2py(compute_2t_obs_parameters_t const & x) {
   PyObject * d = PyDict_New();
   PyDict_SetItemString( d, "h"                 , convert_to_python(x.h));
   PyDict_SetItemString( d, "verbosity"         , convert_to_python(x.verbosity));
@@ -34,8 +34,8 @@ template <> struct py_converter<compute_gf_parameters_t> {
    r = T{};
  }
 
- static compute_gf_parameters_t py2c(PyObject *dic) {
-  compute_gf_parameters_t res;
+ static compute_2t_obs_parameters_t py2c(PyObject *dic) {
+  compute_2t_obs_parameters_t res;
   res.h = convert_from_python<operator_t>(PyDict_GetItemString(dic, "h"));
   _get_optional(dic, "verbosity"         , res.verbosity            ,((triqs::mpi::communicator().rank()==0)?3:0));
   _get_optional(dic, "hbar"              , res.hbar                 ,1.0);

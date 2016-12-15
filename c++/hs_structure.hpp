@@ -32,6 +32,12 @@ namespace realevol {
 
 using triqs::arrays::matrix;
 
+/// List of subspace branchings
+///      /-> sp'_1              /-> sp'_1
+/// sp_1 --> sp'_2 , ... , sp_N --> sp'_2
+///      \-> sp'_3              \-> sp'_3
+using branchings_t = std::vector<std::set<long>>;
+
 struct hilbert_space_structure {
 
  // Fundamental operator set
@@ -43,7 +49,7 @@ struct hilbert_space_structure {
  // Connections between subspaces: *_connection[stat][operator_linear_index][B] -> B'
  matrix<long> creation_connection[2], annihilation_connection[2];
  // Hilbert space partition
- space_partition<dyn_state_on_space_t, op_on_space_t> partition;
+ mutable space_partition<dyn_state_on_space_t, op_on_space_t> partition;
 
  /// Partition a space
  template<typename IsZeroPredicate>
@@ -59,12 +65,20 @@ struct hilbert_space_structure {
  }
 
  /// For a given subspace sp, returns a set of indices of sub_hilbert_spaces, sp has basis states in.
- std::set<long> subspace_branching(sub_hilbert_space const& sp) {
+ std::set<long> compute_branching(sub_hilbert_space const& sp) const {
   std::set<long> branching;
   for(fock_state_t f : sp.get_all_fock_states()) {
    branching.insert(partition.lookup_basis_state(f));
   }
   return branching;
+ }
+
+ /// For a given subspace sp, returns a set of indices of sub_hilbert_spaces, sp has basis states in.
+ branchings_t compute_branchings(std::vector<sub_hilbert_space> const& subspaces) const {
+  branchings_t branchings;
+  branchings.reserve(subspaces.size());
+  for(auto const& sp : subspaces) branchings.emplace_back(compute_branching(sp));
+  return branchings;
  }
 
 private:
@@ -102,12 +116,12 @@ private:
    annihilation_connection[stat].as_array_view() = -1;
 
    for (auto it = merger_fops.begin(stat); it != merger_fops.end(stat); ++it) {
-    int n = it->linear_index;
+    int n = fops.pos(it->index, stat);
 
-    auto create_conns = partition.find_mappings(create_ops[stat][n], false, is_zero_pred);
+    auto create_conns = partition.find_mappings(create_ops[stat][it->linear_index], false, is_zero_pred);
     for(auto const& conn : create_conns) creation_connection[stat](n, conn.first) = conn.second;
 
-    auto destroy_conns = partition.find_mappings(destroy_ops[stat][n], false, is_zero_pred);
+    auto destroy_conns = partition.find_mappings(destroy_ops[stat][it->linear_index], false, is_zero_pred);
     for(auto const& conn : destroy_conns) annihilation_connection[stat](n, conn.first) = conn.second;
    }
   }

@@ -25,8 +25,8 @@
 
 namespace realevol {
 
-// All the arguments of the compute_gf function
-struct compute_gf_parameters_t {
+// All the arguments of the compute_2t_obs function
+struct compute_2t_obs_parameters_t {
 
  /// Hamiltonian
  operator_t h;
@@ -41,8 +41,8 @@ struct compute_gf_parameters_t {
  /// Compute retarded and advanced Green's functions
  bool compute_gf_ret_adv = true;
 
- compute_gf_parameters_t() = default;
- compute_gf_parameters_t(operator_t const& h) : h(h) {}
+ compute_2t_obs_parameters_t() = default;
+ compute_2t_obs_parameters_t(operator_t const& h) : h(h) {}
 };
 
 }
