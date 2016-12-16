@@ -3,7 +3,7 @@ add_library(time_expr_c time_expr.cpp)
 target_link_libraries(time_expr_c ${TRIQS_LIBRARY_ALL})
 
 # Build main solver library
-add_library(realevol_c solver.cpp init_state.cpp
+add_library(realevol_c solver.cpp init_state.cpp utility.cpp
             triqs/operators/many_body_operator.cpp
             triqs/hilbert_space/fundamental_operator_set.cpp)
 target_link_libraries(realevol_c time_expr_c ${TRIQS_LIBRARY_ALL} ${ARPACK_LIB})
@@ -17,7 +17,8 @@ install(TARGETS realevol_c time_expr_c DESTINATION lib)
 
 # Install headers
 set(HEADERS include/realevol)
-install(FILES common.hpp time_expr.hpp solver.hpp compute_2t_obs_parameters.hpp init_state.hpp
+install(FILES common.hpp time_expr.hpp solver.hpp utility.hpp
+              compute_2t_obs_parameters.hpp init_state.hpp
         DESTINATION ${HEADERS})
 install(DIRECTORY exprtk DESTINATION ${HEADERS}/exprtk FILES_MATCHING PATTERN *.hpp)
 install(DIRECTORY triqs/operators DESTINATION ${HEADERS}/triqs FILES_MATCHING PATTERN *.hpp)
