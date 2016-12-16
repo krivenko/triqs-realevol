@@ -13,11 +13,13 @@ module.use_module('init_state', 'realevol')
 
 # Add here all includes beyond what is automatically included by the triqs modules
 module.add_include("solver.hpp")
+module.add_include("utility.hpp")
 
 # Add here anything to add in the C++ code at the start, e.g. namespace using
 module.add_include("<triqs/python_tools/converters/pair.hpp>")
 module.add_include("<triqs/python_tools/converters/map.hpp>")
 module.add_include("<triqs/python_tools/converters/vector.hpp>")
+module.add_include("<triqs/python_tools/converters/gf.hpp>")
 module.add_using("realevol::operators::many_body_operator") # FIXME
 module.add_using("namespace triqs::gfs")
 module.add_preamble("""
@@ -46,8 +48,6 @@ c.add_method("""void compute_2t_obs (**compute_2t_obs_parameters_t)""",
 | verbosity          | int        | 3 on MPI rank 0, 0 otherwise. | Verbosity level                                  |
 +--------------------+------------+-------------------------------+--------------------------------------------------+
 | hbar               | double     | 1.0                           | Planck constant                                  |
-+--------------------+------------+-------------------------------+--------------------------------------------------+
-| compute_gf_ret_adv | bool       | true                          | Compute retarded and advanced Green's functions  |
 +--------------------+------------+-------------------------------+--------------------------------------------------+""")
 
 c.add_property(name = "initial_state",
@@ -60,21 +60,16 @@ c.add_property(name = "last_compute_2t_obs_parameters",
                doc = """Set of parameters used in the last call to solve""")
 
 c.add_property(name = "g_l",
-               getter = cfunction("block_gf_view<cartesian_product<retime, retime>> get_g_l ()"),
+               getter = cfunction("block_gf_2t_view get_g_l ()"),
                doc = """Lesser GF in real time""")
 
 c.add_property(name = "g_g",
-               getter = cfunction("block_gf_view<cartesian_product<retime, retime>> get_g_g ()"),
+               getter = cfunction("block_gf_2t_view get_g_g ()"),
                doc = """Greater GF in real time""")
 
-c.add_property(name = "g_ret",
-               getter = cfunction("block_gf_view<cartesian_product<retime, retime>> get_g_ret ()"),
-               doc = """Retarded GF in real time""")
-
-c.add_property(name = "g_adv",
-               getter = cfunction("block_gf_view<cartesian_product<retime, retime>> get_g_adv ()"),
-               doc = """Advanced GF in real time""")
-
 module.add_class(c)
+
+module.add_function("std::pair<block_gf_2t_view,block_gf_2t_view> make_gf_ret_adv(block_gf_2t_view g_l, block_gf_2t_view g_g)",
+                    doc = """Compute retarded and advanced Green's functions out of the lesser and greater components""")
 
 module.generate_code()

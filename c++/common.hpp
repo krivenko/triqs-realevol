@@ -25,6 +25,7 @@
 
 #include "time_expr.hpp"
 
+#include <triqs/gfs.hpp>
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/hilbert_space/fundamental_operator_set.hpp>
 #include <triqs/hilbert_space/hilbert_space.hpp>
@@ -34,10 +35,16 @@
 
 namespace realevol {
 
+using namespace triqs::gfs;
 //using namespace triqs::operators;
 //using namespace triqs::hilbert_space;
 using namespace realevol::operators;        // FIXME
 using namespace realevol::hilbert_space;    // FIXME
+
+using gf_2t_t = gf<cartesian_product<retime, retime>>;
+using block_gf_2t_t = block_gf<cartesian_product<retime,retime>>;
+using gf_2t_view = gf_view<cartesian_product<retime, retime>>;
+using block_gf_2t_view = block_gf_view<cartesian_product<retime,retime>>;
 
 using operator_t = realevol::operators::many_body_operator_generic<time_expr>;
 using static_operator_t = many_body_operator;

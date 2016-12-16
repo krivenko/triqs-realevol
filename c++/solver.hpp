@@ -26,7 +26,6 @@
 #include <utility>
 
 #include <triqs/mpi/base.hpp>
-#include <triqs/gfs.hpp>
 
 #include "time_expr.hpp"
 #include "triqs/operators/many_body_operator.hpp"
@@ -37,8 +36,6 @@ namespace realevol {
 using namespace triqs::gfs;
 
 using indices_type = operators::indices_t;
-using gf_2t_t = gf<cartesian_product<retime, retime>>;
-using block_gf_2t_t = block_gf<cartesian_product<retime,retime>>;
 
 class solver {
 
@@ -49,9 +46,6 @@ class solver {
  triqs::mpi::communicator comm;                      // MPI communicator
  compute_2t_obs_parameters_t compute_2t_obs_params;  // Parameters of the last call to solve
  gf_mesh<retime> t_mesh;                             // 1D time mesh to use in calculations
-
- // Make g_ret and g_adv out of g_l and g_g
- void make_gf_ret_adv();
 
 public:
 
@@ -75,16 +69,10 @@ public:
  compute_2t_obs_parameters_t get_last_compute_2t_obs_parameters() const { return compute_2t_obs_params; }
 
  /// Lesser GF in real time
- block_gf_2t_t get_g_l() { return g_l; }
+ block_gf_2t_view get_g_l() { return g_l; }
 
  /// Greater GF in real time
- block_gf_2t_t get_g_g() { return g_g; }
-
- /// Retarded GF in real time
- block_gf_2t_t get_g_ret() { return g_ret; }
-
- /// Advanced GF in real time
- block_gf_2t_t get_g_adv() { return g_adv; }
+ block_gf_2t_view get_g_g() { return g_g; }
 };
 
 }

@@ -73,25 +73,6 @@ operator_t try_reduce_to_constant(operator_t const& op, gf_mesh<retime> const& m
  return res;
 }
 
-void solver::make_gf_ret_adv() {
- g_ret = init_block_gf(gf_struct, t_mesh);
- g_adv = init_block_gf(gf_struct, t_mesh);
-
- gf_mesh<retime>::mesh_point_t t, tp;
- for(auto bl : g_l.mesh()) {
-  auto const& g_l_block = g_l[bl];
-  auto const& g_g_block = g_g[bl];
-  auto & g_ret_block = g_ret[bl];
-  auto & g_adv_block = g_adv[bl];
-
-  for(auto ttp : g_l_block.mesh()) {
-   std::tie(t, tp) = ttp.components_tuple();
-   if(t >= tp) g_ret_block[ttp] = g_g_block[ttp] - g_l_block[ttp];
-   if(t <= tp) g_adv_block[ttp] = g_l_block[ttp] - g_g_block[ttp];
-  }
- }
-}
-
 void solver::compute_2t_obs(compute_2t_obs_parameters_t const& params) {
 
  // Save parameters
@@ -141,6 +122,13 @@ void solver::compute_2t_obs(compute_2t_obs_parameters_t const& params) {
  if(params.verbosity >= 1 && comm.rank() == 0)
   std::cout << "Found " << hs_struct.sub_hilbert_spaces.size()
             << " invariant subspaces." << std::endl;
+ if(params.verbosity >= 2 && comm.rank() == 0) {
+  for(auto const& sp : hs_struct.sub_hilbert_spaces) {
+  std::cout << " Subspace " << sp.get_index() << " [" << sp.size() << "]: ";
+  for(auto f : sp.get_all_fock_states()) std::cout << f << " ";
+   std::cout << std::endl;
+  }
+ }
 
  // Compute subspace branching for the initial state
  auto const& subspaces = initial_state->get_sub_hilbert_spaces();
@@ -183,8 +171,6 @@ void solver::compute_2t_obs(compute_2t_obs_parameters_t const& params) {
 
  // TODO
  // Write worldline_worker
-
- if(params.compute_gf_ret_adv) make_gf_ret_adv();
 }
 
 }
