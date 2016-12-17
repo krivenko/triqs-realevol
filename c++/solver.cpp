@@ -170,6 +170,7 @@ void solver::compute_2t_obs(compute_2t_obs_parameters_t const& params) {
   std::move(wl.begin(), wl.end(), std::back_inserter(all_worldlines));
 
  // TODO
+ // Write propagator
  // Write worldline_worker
 }
 
