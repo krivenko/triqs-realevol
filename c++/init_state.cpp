@@ -531,8 +531,7 @@ init_state make_equilibrium_init_state(operator_t const& h,
  // Distribute subspaces between MPI ranks, and find the lowest energy levels
  // in each subspace without computing the corresponding eigenvectors (to save memory).
 
- mpi_dispatcher disp(comm, subspaces.size());
- int jobid;
+ mpi_dispatcher<long> disp(comm, subspaces.size());
 
  // Ground state anergy on this MPI rank
  double gs_energy = std::numeric_limits<double>::infinity();
@@ -540,43 +539,45 @@ init_state make_equilibrium_init_state(operator_t const& h,
  // Rank-local list of processed subspaces and their lowest levels
  std::vector<sp_levels_t> sp_lowest_levels;
 
- while((jobid = disp()) != mpi_dispatcher::no_jobs_left) {
-  auto const& sp = subspaces[jobid];
-  if(params.verbosity >= 2)
-   std::cout << "[Node " << comm.rank() << "] Searching the lowest eigenvalues on subspace "
-             << sp.get_index() << " (dimension " << sp.size() << ")" << std::endl;
+ try {
+  while(true) {
+   auto const& sp = subspaces[disp()];
+   if(params.verbosity >= 2)
+    std::cout << "[Node " << comm.rank() << "] Searching the lowest eigenvalues on subspace "
+              << sp.get_index() << " (dimension " << sp.size() << ")" << std::endl;
 
-  double new_gs_energy;
+   double new_gs_energy;
 
-  auto ncv_it = params.arpack_ncv.find(sp.get_index());
-  int ncv = ncv_it == params.arpack_ncv.end() ? -1 : ncv_it->second;
+   auto ncv_it = params.arpack_ncv.find(sp.get_index());
+   int ncv = ncv_it == params.arpack_ncv.end() ? -1 : ncv_it->second;
 
-  if(h_is_real) {
-   real_static_op_on_subspace_t op(h_, fops, ist.get_full_hs());
-   new_gs_energy = find_lowest_levels_on_subspace(sp, op, sp_lowest_levels,
-                                                  energy_window,
-                                                  params.verbosity,
-                                                  params.arpack_min_matrix_size,
-                                                  params.arpack_tolerance, ncv,
-                                                  comm.rank());
-  } else {
-   static_op_on_subspace_t op(h_, fops, ist.get_full_hs());
-   new_gs_energy = find_lowest_levels_on_subspace(sp, op, sp_lowest_levels,
-                                                  energy_window,
-                                                  params.verbosity,
-                                                  params.arpack_min_matrix_size,
-                                                  params.arpack_tolerance, ncv,
-                                                  comm.rank());
+   if(h_is_real) {
+    real_static_op_on_subspace_t op(h_, fops, ist.get_full_hs());
+    new_gs_energy = find_lowest_levels_on_subspace(sp, op, sp_lowest_levels,
+                                                   energy_window,
+                                                   params.verbosity,
+                                                   params.arpack_min_matrix_size,
+                                                   params.arpack_tolerance, ncv,
+                                                   comm.rank());
+   } else {
+    static_op_on_subspace_t op(h_, fops, ist.get_full_hs());
+    new_gs_energy = find_lowest_levels_on_subspace(sp, op, sp_lowest_levels,
+                                                   energy_window,
+                                                   params.verbosity,
+                                                   params.arpack_min_matrix_size,
+                                                   params.arpack_tolerance, ncv,
+                                                   comm.rank());
+   }
+
+   if(params.verbosity >= 2)
+    std::cout << "[Node " << comm.rank() << "] The lowest levels on subspace "
+              << sp.get_index() << ": "
+              << sp_lowest_levels.back().second << std::endl;
+
+   // New rank-local energy minimum
+   gs_energy = std::min(gs_energy, new_gs_energy);
   }
-
-  if(params.verbosity >= 2)
-   std::cout << "[Node " << comm.rank() << "] The lowest levels on subspace "
-             << sp.get_index() << ": "
-             << sp_lowest_levels.back().second << std::endl;
-
-  // New rank-local energy minimum
-  gs_energy = std::min(gs_energy, new_gs_energy);
- }
+ } catch(mpi_dispatcher<long>::no_jobs_left &) {}
 
  // Find the global energy minimum
  gs_energy = mpi_all_reduce(gs_energy, comm, 0, MPI_MIN);
