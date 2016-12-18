@@ -1,4 +1,3 @@
 * init_state: ARPACK: use an interpolation to predict the number of the lowest eigenvalues to be found.
-* mpi_dispatcher: allow job completion callback on master node.
 * init_state: update gs_energy dynamically using mpi_dispatcher completion callback.
 * Treat all <A(t) B(t')> correlators with A and B being monomials on an equal footing?
