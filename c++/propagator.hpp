@@ -20,8 +20,6 @@
  ******************************************************************************/
 #pragma once
 
-#include <type_traits>
-
 #include <triqs/hilbert_space/hilbert_space.hpp>
 #include <triqs/hilbert_space/state.hpp>
 #include <triqs/hilbert_space/imperative_operator.hpp>
@@ -38,10 +36,12 @@ class propagator {
 
  op_on_subspace_t h;            // Hamiltonian
  dcomplex h_coeff;              // Hamiltonian prefactor in the exponential
+ long N;                        // Dimension of Hilbert space
 
  // Preallocated temporary objects
- state_on_subspace_t state_1d;
- matrix<dcomplex> lapack_workspace;
+ mutable state_on_subspace_t state_1d;
+ mutable matrix<dcomplex> lapack_workspace;
+ mutable state_on_subspace_t lapack_st_from, lapack_st_to;
 
  state_on_subspace_t apply_h(state_on_subspace_t const& st, double t, double dt) const;
 
