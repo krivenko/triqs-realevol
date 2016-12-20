@@ -19,6 +19,10 @@
  *
  ******************************************************************************/
 
+#ifndef NDEBUG
+#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
+#endif
+
 #include <cmath>
 #include <triqs/arrays/linalg/eigenelements.hpp>
 
@@ -27,11 +31,12 @@
 
 namespace realevol {
 
+using namespace triqs::arrays;
+
 template<h_approx Approx>
 propagator<Approx>::propagator(op_on_subspace_t const& h, sub_hilbert_space const& sp,
                                double hbar, h_approx approx, int lanczos_min_matrix_size) :
- h(h), h_coeff(-1_j / hbar) {
- int N = sp.size();
+ h(h), h_coeff(-1_j / hbar), N(sp.size()) {
  if(N == 1) {
   propagate = &propagator::propagate_1d;
   state_1d = state_on_subspace_t(sp);
@@ -39,6 +44,8 @@ propagator<Approx>::propagator(op_on_subspace_t const& h, sub_hilbert_space cons
  } else if(N < lanczos_min_matrix_size) {
   propagate = &propagator::propagate_lapack;
   lapack_workspace = matrix<dcomplex>(N,N);
+  lapack_st_from = state_on_subspace_t(sp);
+  lapack_st_to = state_on_subspace_t(sp);
  } else {
   propagate = &propagator::propagate_lanczos;
  }
@@ -69,7 +76,27 @@ void propagator<Approx>::propagate_1d(state_on_subspace_t & st,
 template<h_approx Approx> void
 propagator<Approx>::propagate_lapack(state_on_subspace_t & st,
                                      time_it_t t, time_it_t const& t_max, bool forward) const {
- // TODO
+
+ dcomplex c = (forward ? 1 : -1) * h_coeff;
+ auto const& hs = st.get_hilbert();
+
+ for(; t != t_max; ++t) {
+  auto t_next = t; ++t_next;
+  double dt = *t_next - *t;
+
+  for(long i : range(N)) {
+   lapack_st_from(i) = 1.0;
+   lapack_st_to = apply_h(lapack_st_from, *t, dt);
+   lapack_workspace(range(),i) = lapack_st_to.amplitudes();
+   lapack_st_from(i) = 0;
+  }
+
+  auto & psi = st.amplitudes();
+  auto eig = linalg::eigenelements_in_place(&lapack_workspace);
+  psi = conj(eig.second) * psi;
+  for(long i : range(N)) psi(i) *= std::exp(c * dt * eig.first(i));
+  psi = eig.second.transpose() * psi;
+ }
 }
 
 template<h_approx Approx> void
