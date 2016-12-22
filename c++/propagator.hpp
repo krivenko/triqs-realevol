@@ -29,12 +29,12 @@
 namespace realevol {
 
 // Hamiltonian interpolation between time slices
-enum h_approx {Rectangle, Trapezoid, Simpson} approx;
+enum h_interpolation {Rectangle, Trapezoid, Simpson};
 
-template<h_approx Approx>
+template<h_interpolation HInterpol>
 class propagator {
 
- op_on_subspace_t h;            // Hamiltonian
+ op_on_subspace_t const& h;     // Hamiltonian
  dcomplex h_coeff;              // Hamiltonian prefactor in the exponential
  long N;                        // Dimension of Hilbert space
 
@@ -50,8 +50,7 @@ public:
  using time_it_t = gf_mesh<retime>::const_iterator;
 
  propagator(op_on_subspace_t const& h, sub_hilbert_space const& sp,
-            double hbar, h_approx approx,
-            int lanczos_min_matrix_size);
+            double hbar, int lanczos_min_matrix_size);
 
  void operator()(state_on_subspace_t & st,
                  time_it_t const& t_start, time_it_t const& t_end) const;

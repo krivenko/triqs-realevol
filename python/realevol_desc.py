@@ -28,6 +28,9 @@ using namespace realevol;
 #include "compute_2t_obs_converters.hxx"
 """)
 
+module.add_enum("h_interpolation", ["Rectangle", "Trapezoid", "Simpson"], "realevol",
+                "Hamiltonian interpolation between time slices")
+
 # The class solver
 c = class_(
         py_type = "Solver",  # name of the python class
@@ -66,6 +69,14 @@ c.add_property(name = "g_l",
 c.add_property(name = "g_g",
                getter = cfunction("block_gf_2t_view get_g_g ()"),
                doc = """Greater GF in real time""")
+
+c.add_property(name = "chi_l",
+               getter = cfunction("block_gf_2t_view get_chi_l ()"),
+               doc = """Lesser susceptibility in real time""")
+
+c.add_property(name = "chi_g",
+               getter = cfunction("block_gf_2t_view get_chi_g ()"),
+               doc = """Greater susceptibility in real time""")
 
 module.add_class(c)
 

@@ -22,6 +22,7 @@
 
 #include "common.hpp"
 #include "init_state.hpp"
+#include "propagator.hpp"
 
 namespace realevol {
 
@@ -37,6 +38,12 @@ struct compute_2t_obs_parameters_t {
 
  /// Planck constant
  double hbar = 1.0;
+
+ /// Hamiltonian interpolation between time slices
+ h_interpolation hamiltonian_interpol = Rectangle;
+
+ /// Use Lanczos algorithm to exponentiate matrices of this size or bigger
+ int lanczos_min_matrix_size = 11;
 
  compute_2t_obs_parameters_t() = default;
  compute_2t_obs_parameters_t(operator_t const& h) : h(h) {}

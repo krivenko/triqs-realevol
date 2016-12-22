@@ -41,7 +41,7 @@ class solver {
 
  gf_struct_t gf_struct, chi_struct;                  // Block structure of the Green functions and susceptibilities
  block_gf_2t_t g_l, g_g;                             // Lesser and greater GF's to be calculated
- block_gf_2t_t g_ret, g_adv;                         // Retarded and advanced GF's to be calculated
+ block_gf_2t_t chi_l, chi_g;                         // Lesser and greater susceptibility components to be calculated
  init_state const * initial_state = nullptr;         // Initial state at t=t_min
  triqs::mpi::communicator comm;                      // MPI communicator
  compute_2t_obs_parameters_t compute_2t_obs_params;  // Parameters of the last call to solve
@@ -73,6 +73,13 @@ public:
 
  /// Greater GF in real time
  block_gf_2t_view get_g_g() { return g_g; }
+
+ /// Lesser susceptibility in real time
+ block_gf_2t_view get_chi_l() { return chi_l; }
+
+ /// Greater susceptibility in real time
+ block_gf_2t_view get_chi_g() { return chi_g; }
+
 };
 
 }
