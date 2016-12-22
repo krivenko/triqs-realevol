@@ -19,8 +19,8 @@ beta = 40.0
 
 gf_struct = {'dn' : range(3)}
 chi_struct = {sn : range(4) for sn, site in product(spin_names,range(4))}
-time_window = (.0,.10)
-n_t = 101
+time_window = (.0,1.0)
+n_t = 11
 
 fops = set((sn,site) for sn, site in product(spin_names,range(4)))
 print "Fundamental operator set:", fops
@@ -57,5 +57,6 @@ S.initial_state = init_state
 
 gf_params = {}
 gf_params['verbosity'] = 2
+gf_params['lanczos_min_matrix_size'] = 10000
 
 S.compute_2t_obs(h = h, **gf_params)

@@ -13,9 +13,11 @@ namespace triqs { namespace py_tools {
 template <> struct py_converter<compute_2t_obs_parameters_t> {
  static PyObject *c2py(compute_2t_obs_parameters_t const & x) {
   PyObject * d = PyDict_New();
-  PyDict_SetItemString( d, "h"                 , convert_to_python(x.h));
-  PyDict_SetItemString( d, "verbosity"         , convert_to_python(x.verbosity));
-  PyDict_SetItemString( d, "hbar"              , convert_to_python(x.hbar));
+  PyDict_SetItemString( d, "h"                      , convert_to_python(x.h));
+  PyDict_SetItemString( d, "verbosity"              , convert_to_python(x.verbosity));
+  PyDict_SetItemString( d, "hbar"                   , convert_to_python(x.hbar));
+  PyDict_SetItemString( d, "hamiltonian_interpol"   , convert_to_python(x.hamiltonian_interpol));
+  PyDict_SetItemString( d, "lanczos_min_matrix_size", convert_to_python(x.lanczos_min_matrix_size));
   return d;
  }
 
@@ -36,8 +38,10 @@ template <> struct py_converter<compute_2t_obs_parameters_t> {
  static compute_2t_obs_parameters_t py2c(PyObject *dic) {
   compute_2t_obs_parameters_t res;
   res.h = convert_from_python<operator_t>(PyDict_GetItemString(dic, "h"));
-  _get_optional(dic, "verbosity"         , res.verbosity            ,((triqs::mpi::communicator().rank()==0)?3:0));
-  _get_optional(dic, "hbar"              , res.hbar                 ,1.0);
+  _get_optional(dic, "verbosity"              , res.verbosity                 ,((triqs::mpi::communicator().rank()==0)?3:0));
+  _get_optional(dic, "hbar"                   , res.hbar                      ,1.0);
+  _get_optional(dic, "hamiltonian_interpol"   , res.hamiltonian_interpol      ,Rectangle);
+  _get_optional(dic, "lanczos_min_matrix_size", res.lanczos_min_matrix_size   ,11);
   return res;
  }
 
@@ -68,7 +72,7 @@ template <> struct py_converter<compute_2t_obs_parameters_t> {
   std::stringstream fs, fs2; int err=0;
 
 #ifndef TRIQS_ALLOW_UNUSED_PARAMETERS
-  std::vector<std::string> ks, all_keys = {"h","verbosity","hbar"};
+  std::vector<std::string> ks, all_keys = {"h","verbosity","hbar","hamiltonian_interpol","lanczos_min_matrix_size"};
   pyref keys = PyDict_Keys(dic);
   if (!convertible_from_python<std::vector<std::string>>(keys, true)) {
    fs << "\nThe dict keys are not strings";
@@ -80,14 +84,16 @@ template <> struct py_converter<compute_2t_obs_parameters_t> {
     fs << "\n"<< ++err << " The parameter '" << k << "' is not recognized.";
 #endif
 
-  _check_mandatory<operator_t>(dic, fs, err, "h"                 , "operator_t");
-  _check_optional <int       >(dic, fs, err, "verbosity"         , "int");
-  _check_optional <double    >(dic, fs, err, "hbar"              , "double");
+  _check_mandatory<operator_t               >(dic, fs, err, "h"                      , "operator_t");
+  _check_optional <int                      >(dic, fs, err, "verbosity"              , "int");
+  _check_optional <double                   >(dic, fs, err, "hbar"                   , "double");
+  _check_optional <realevol::h_interpolation>(dic, fs, err, "hamiltonian_interpol"   , "realevol::h_interpolation");
+  _check_optional <int                      >(dic, fs, err, "lanczos_min_matrix_size", "int");
   if (err) goto _error;
   return true;
 
  _error:
-   fs2 << "\n---- There " << (err > 1 ? "are " : "is ") << err<< " error"<<(err >1 ?"s" : "")<< " in Python -> C++ transcription for the class compute_gf_parameters_t\n" <<fs.str();
+   fs2 << "\n---- There " << (err > 1 ? "are " : "is ") << err<< " error"<<(err >1 ?"s" : "")<< " in Python -> C++ transcription for the class compute_2t_obs_parameters_t\n" <<fs.str();
    if (raise_exception) PyErr_SetString(PyExc_TypeError, fs2.str().c_str());
   return false;
  }

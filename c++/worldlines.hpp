@@ -155,8 +155,8 @@ class worldlines_maker {
 public:
 
  worldlines_maker(init_state const& initial_state,
-                       hilbert_space_structure const& hss,
-                       branchings_t const& branchings) :
+                  hilbert_space_structure const& hss,
+                  branchings_t const& branchings) :
  initial_state(initial_state), hss(hss), branchings(branchings) {}
 
  auto make_gf_worldlines(gf_struct_t const& gf_struct, bool is_greater) {

@@ -33,9 +33,9 @@ namespace realevol {
 
 using namespace triqs::arrays;
 
-template<h_approx Approx>
-propagator<Approx>::propagator(op_on_subspace_t const& h, sub_hilbert_space const& sp,
-                               double hbar, h_approx approx, int lanczos_min_matrix_size) :
+template<h_interpolation HInterpol>
+propagator<HInterpol>::propagator(op_on_subspace_t const& h, sub_hilbert_space const& sp,
+                               double hbar, int lanczos_min_matrix_size) :
  h(h), h_coeff(-1_j / hbar), N(sp.size()) {
  if(N == 1) {
   propagate = &propagator::propagate_1d;
@@ -51,8 +51,8 @@ propagator<Approx>::propagator(op_on_subspace_t const& h, sub_hilbert_space cons
  }
 }
 
-template<h_approx Approx>
-void propagator<Approx>::operator()(state_on_subspace_t & st,
+template<h_interpolation HInterpol>
+void propagator<HInterpol>::operator()(state_on_subspace_t & st,
                                     time_it_t const& t_start, time_it_t const& t_end) const {
  if(t_end == t_start)       // No propagation needed
   return;
@@ -62,8 +62,8 @@ void propagator<Approx>::operator()(state_on_subspace_t & st,
   (this->*propagate)(st, t_end, t_start, false);
 }
 
-template<h_approx Approx>
-void propagator<Approx>::propagate_1d(state_on_subspace_t & st,
+template<h_interpolation HInterpol>
+void propagator<HInterpol>::propagate_1d(state_on_subspace_t & st,
                                       time_it_t t, time_it_t const& t_max, bool forward) const {
  dcomplex c = (forward ? 1 : -1) * h_coeff;
  for(; t != t_max; ++t) {
@@ -73,8 +73,8 @@ void propagator<Approx>::propagate_1d(state_on_subspace_t & st,
  }
 }
 
-template<h_approx Approx> void
-propagator<Approx>::propagate_lapack(state_on_subspace_t & st,
+template<h_interpolation HInterpol> void
+propagator<HInterpol>::propagate_lapack(state_on_subspace_t & st,
                                      time_it_t t, time_it_t const& t_max, bool forward) const {
 
  dcomplex c = (forward ? 1 : -1) * h_coeff;
@@ -99,8 +99,8 @@ propagator<Approx>::propagate_lapack(state_on_subspace_t & st,
  }
 }
 
-template<h_approx Approx> void
-propagator<Approx>::propagate_lanczos(state_on_subspace_t & st,
+template<h_interpolation HInterpol> void
+propagator<HInterpol>::propagate_lanczos(state_on_subspace_t & st,
                                       time_it_t t, time_it_t const& t_max, bool forward) const {
  // TODO
 }
