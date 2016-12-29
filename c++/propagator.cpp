@@ -101,7 +101,7 @@ propagator<HInterpol>::propagate_lapack(state_on_subspace_t & st,
 
 template<h_interpolation HInterpol> void
 propagator<HInterpol>::propagate_lanczos(state_on_subspace_t & st,
-                                      time_it_t t, time_it_t const& t_max, bool forward) const {
+                                         time_it_t t, time_it_t const& t_max, bool forward) const {
  // TODO
 }
 

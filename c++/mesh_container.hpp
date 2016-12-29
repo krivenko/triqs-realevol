@@ -87,11 +87,11 @@ public:
  const_iterator begin() const noexcept {
   return const_iterator(std::begin(mesh), std::begin(static_cast<base_t const&>(*this))); }
  const_iterator cbegin() const noexcept {
-  return const_iterator(std::cbegin(mesh), std::cbegin(static_cast<base_t const&>(*this))); }
+  return const_iterator(std::begin(mesh), std::begin(static_cast<base_t const&>(*this))); }
  const_iterator end() const noexcept {
   return const_iterator(std::end(mesh), std::end(static_cast<base_t const&>(*this))); }
  const_iterator cend() const noexcept {
-  return const_iterator(std::cend(mesh), std::cend(static_cast<base_t const&>(*this))); }
+  return const_iterator(std::end(mesh), std::end(static_cast<base_t const&>(*this))); }
 
  // Iterator over pairs mesh point-value pairs
  using iterator = iterator_<false>;

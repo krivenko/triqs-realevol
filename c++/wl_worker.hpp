@@ -23,8 +23,6 @@
 #include <vector>
 #include <type_traits>
 
-#include <triqs/utility/signal_handler.hpp>
-
 #include "common.hpp"
 #include "init_state.hpp"
 #include "worldlines.hpp"
@@ -71,7 +69,7 @@ public:
 
  // Do the actual observable calculation for one worldline
  template<h_interpolation HInterpol>
- void operator()(worldline_desc_t const& wl, block_gf_2t_t & obs,
+ void operator()(worldline_desc_t const& wl, gf_2t_t & obs,
                  std::integral_constant<h_interpolation,HInterpol>) const {
 
   auto const& left_hs = subspaces[wl.left_sp_index];
@@ -88,64 +86,65 @@ public:
   auto const& wst = initial_state.get_weighted_states()[wl.weighted_state_index];
 
   using op_with_map_t = imperative_operator<sub_hilbert_space,dcomplex,true>;
-  op_with_map_t left_op, right_op;
+  op_with_map_t A; // operator connecting middle_hs to left_hs
+  op_with_map_t B; // operator connecting right_hs to middle_hs
+  // 1d time meshes associated with operators A and B
+  gf_mesh<retime> A_mesh, B_mesh;
   dcomplex coeff = wst.weight;
 
-  if(wl.observable == worldline_desc_t::GreensFunction) { // GF
-   if(wl.is_greater) {
-    left_op = op_with_map_t(c(wl.index1), fops, full_hs,
-                            c_conn[fops[wl.index1]], &subspaces);
-    right_op = op_with_map_t(c_dag(wl.index2), fops, full_hs,
-                             cdag_conn[fops[wl.index2]], &subspaces);
+  switch(wl.observable) {
+   case worldline_desc_t::GreaterGf:
+    A = op_with_map_t(c(wl.index1), fops, full_hs, c_conn[fops[wl.index1]], &subspaces);
+    B = op_with_map_t(c_dag(wl.index2), fops, full_hs, cdag_conn[fops[wl.index2]], &subspaces);
+    A_mesh = std::get<0>(obs.mesh());
+    B_mesh = std::get<1>(obs.mesh());
     coeff *= -1_j / hbar;
-   } else {
-    left_op = op_with_map_t(c_dag(wl.index2), fops, full_hs,
-                            cdag_conn[fops[wl.index2]], &subspaces);
-    right_op = op_with_map_t(c(wl.index1), fops, full_hs,
-                             c_conn[fops[wl.index1]], &subspaces);
+    break;
+   case worldline_desc_t::LesserGf:
+    A = op_with_map_t(c_dag(wl.index2), fops, full_hs, cdag_conn[fops[wl.index2]], &subspaces);
+    B = op_with_map_t(c(wl.index1), fops, full_hs, c_conn[fops[wl.index1]], &subspaces);
+    A_mesh = std::get<1>(obs.mesh());
+    B_mesh = std::get<0>(obs.mesh());
     coeff *= 1_j / hbar;
-   }
-  } else { // Susceptibility
-   if(wl.is_greater) {
-    left_op = op_with_map_t(n(wl.index1), fops, full_hs,
-                            n_conn[fops[wl.index1]], &subspaces);
-    right_op = op_with_map_t(n(wl.index2), fops, full_hs,
-                             n_conn[fops[wl.index2]], &subspaces);
-   } else {
-    left_op = op_with_map_t(n(wl.index2), fops, full_hs,
-                            n_conn[fops[wl.index2]], &subspaces);
-    right_op = op_with_map_t(n(wl.index1), fops, full_hs,
-                             n_conn[fops[wl.index1]], &subspaces);
-   }
-   coeff *= -1_j / hbar;
+    break;
+   case worldline_desc_t::Susceptibility:
+    A = op_with_map_t(n(wl.index1), fops, full_hs, n_conn[fops[wl.index1]], &subspaces);
+    B = op_with_map_t(n(wl.index2), fops, full_hs, n_conn[fops[wl.index2]], &subspaces);
+    A_mesh = std::get<0>(obs.mesh());
+    B_mesh = std::get<1>(obs.mesh());
+    coeff *= -1_j / hbar;
+    break;
   }
 
+  // |ket_st(*B_it)> = U(*B_it,0)|psi_0>
+  auto ket_st = project<state_on_subspace_t>(wst.state, right_hs);
+  // <bra_st(*A_it)| = <psi_0| U(0,*A_it)
+  // |bra_st(*A_it)> = U(*A_it,0) |psi_0>
   auto bra_st = project<state_on_subspace_t>(wst.state, left_hs);
-  auto right_st = project<state_on_subspace_t>(wst.state, right_hs);
+
+  // Worldline contribution is evaluated as
+  // coeff * <bra_st(*A_it)| A U(*A_it,*B_it) B |ket_st(*B_it)>
+
+  // |middle_st(*A_it)> = U(*A_it,*B_it) B |ket_st(*B_it)>
   auto middle_st = state_on_subspace_t(middle_hs);
-  auto left_st = state_on_subspace_t(middle_hs);
+  // |a_st(*A_it)> = A |middle_st(*A_it)>
+  auto a_st = state_on_subspace_t(left_hs);
 
-  gf_2t_view obs_block = obs[wl.block_index];
+  auto A_it_prev = A_mesh.begin();
+  for(auto A_it = A_mesh.begin(); A_it != A_mesh.end(); A_it_prev = A_it++) {
+   left_prop(bra_st, A_it_prev, A_it);
 
-  gf_mesh<retime> left_t_mesh = (wl.is_greater ? std::get<0>(obs_block.mesh()) :
-                                                 std::get<1>(obs_block.mesh()));
-  gf_mesh<retime> right_t_mesh = (wl.is_greater ? std::get<1>(obs_block.mesh()) :
-                                                  std::get<0>(obs_block.mesh()));
+   auto B_it_prev = B_mesh.begin();
+   for(auto B_it = B_mesh.begin(); B_it != B_mesh.end(); B_it_prev = B_it++) {
+    right_prop(ket_st, B_it_prev, B_it);
 
-  auto right_it_prev = right_t_mesh.begin();
-  for(auto right_it = right_t_mesh.begin(); right_it != right_t_mesh.end();
-      right_it_prev = right_it++) {
-   right_prop(right_st, right_it_prev, right_it);
-   middle_st = right_op(right_st);
-   auto left_it_prev = right_it;
-   for(auto left_it = left_t_mesh.begin(); left_it != left_t_mesh.end();
-       left_it_prev = left_it++) {
-    middle_prop(middle_st, left_it_prev, left_it);
-    left_st = left_op(middle_st);
-    left_prop(left_st, left_it, left_t_mesh.begin());
+    B.apply(ket_st, middle_st);
+    middle_prop(middle_st, B_it, A_it);
+    A.apply(middle_st, a_st);
 
-    (wl.is_greater ? obs_block[{*left_it,*right_it}] : obs_block[{*right_it,*left_it}])
-     (wl.inner_index1, wl.inner_index2) += coeff * dot_product(bra_st, left_st);
+    (wl.observable == worldline_desc_t::LesserGf ?
+     obs[{*B_it,*A_it}] : obs[{*A_it,*B_it}])
+     (wl.inner_index1, wl.inner_index2) += coeff * dot_product(bra_st, a_st);
    }
   }
  }

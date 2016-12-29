@@ -36,27 +36,28 @@ namespace realevol {
 using namespace triqs::gfs;
 
 using indices_type = operators::indices_t;
+using chi_indices_t = std::vector<std::pair<std::string,utility::variant_int_string>>;
 
 class solver {
 
- gf_struct_t gf_struct, chi_struct;                  // Block structure of the Green functions and susceptibilities
+ gf_struct_t gf_struct;                              // Block structure of the Green functions
+ chi_indices_t chi_indices;                          // Indices of susceptibilities
  block_gf_2t_t g_l, g_g;                             // Lesser and greater GF's to be calculated
- block_gf_2t_t chi_l, chi_g;                         // Lesser and greater susceptibility components to be calculated
- init_state const * initial_state = nullptr;         // Initial state at t=t_min
+ gf_2t_t chi;                                        // Susceptibility to be calculated
+ init_state const * initial_state = nullptr;         // Initial state at t=0
  triqs::mpi::communicator comm;                      // MPI communicator
  compute_2t_obs_parameters_t compute_2t_obs_params;  // Parameters of the last call to solve
  gf_mesh<retime> t_mesh;                             // 1D time mesh to use in calculations
 
 public:
 
- solver(gf_struct_t const& gf_struct, gf_struct_t const& chi_struct,
-        std::pair<double,double> time_window, int n_t);
+ solver(gf_struct_t const& gf_struct, chi_indices_t const& chi_indices, double t_max, int n_t);
 
  /// Compute observables that are functions of two times
  TRIQS_WRAP_ARG_AS_DICT
  void compute_2t_obs(compute_2t_obs_parameters_t const& p);
 
- /// Get the initial state at t=t_min
+ /// Get the initial state at t=0
  init_state const& get_initial_state() const {
   if(initial_state == nullptr) TRIQS_RUNTIME_ERROR << "Initial state is not set!";
   return *initial_state;
@@ -74,11 +75,8 @@ public:
  /// Greater GF in real time
  block_gf_2t_view get_g_g() { return g_g; }
 
- /// Lesser susceptibility in real time
- block_gf_2t_view get_chi_l() { return chi_l; }
-
- /// Greater susceptibility in real time
- block_gf_2t_view get_chi_g() { return chi_g; }
+ /// Susceptibility in real time
+ gf_2t_view get_chi() { return chi; }
 
 };
 
