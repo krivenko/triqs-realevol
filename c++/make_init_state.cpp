@@ -456,6 +456,7 @@ init_state make_equilibrium_init_state(operator_t const& h,
  // Rank-local list of processed subspaces and their lowest levels
  std::vector<sp_levels_t> sp_lowest_levels;
 
+ comm.barrier();
  try {
   while(true) {
    auto job = disp(gs_energy);

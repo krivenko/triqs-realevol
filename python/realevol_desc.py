@@ -39,7 +39,7 @@ c = class_(
         doc = "The Real-time evolution solver",   # doc of the C++ class
 )
 
-c.add_constructor("""(gf_struct_t gf_struct, gf_struct_t chi_struct = {}, std::pair<double,double> time_window, int n_t = 1000)""",
+c.add_constructor("""(gf_struct_t gf_struct, chi_indices_t chi_indices, double t_max, int n_t = 1000)""",
                   doc = """ """)
 
 c.add_method("""void compute_2t_obs (**compute_2t_obs_parameters_t)""",
@@ -56,7 +56,7 @@ c.add_method("""void compute_2t_obs (**compute_2t_obs_parameters_t)""",
 c.add_property(name = "initial_state",
                getter = cfunction("init_state const& get_initial_state()"),
                setter = cfunction("void set_initial_state(init_state initial_state)"),
-               doc = """Initial state at t=t_min""")
+               doc = """Initial state at t=0""")
 
 c.add_property(name = "last_compute_2t_obs_parameters",
                getter = cfunction("compute_2t_obs_parameters_t get_last_compute_2t_obs_parameters ()"),
@@ -70,13 +70,9 @@ c.add_property(name = "g_g",
                getter = cfunction("block_gf_2t_view get_g_g ()"),
                doc = """Greater GF in real time""")
 
-c.add_property(name = "chi_l",
-               getter = cfunction("block_gf_2t_view get_chi_l ()"),
-               doc = """Lesser susceptibility in real time""")
-
-c.add_property(name = "chi_g",
-               getter = cfunction("block_gf_2t_view get_chi_g ()"),
-               doc = """Greater susceptibility in real time""")
+c.add_property(name = "chi",
+               getter = cfunction("gf_2t_view get_chi ()"),
+               doc = """Susceptibility in real time""")
 
 module.add_class(c)
 

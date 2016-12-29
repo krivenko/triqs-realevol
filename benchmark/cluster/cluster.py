@@ -18,8 +18,8 @@ tp = -0.1
 beta = 40.0
 
 gf_struct = {'dn' : range(3)}
-chi_struct = {sn : range(4) for sn, site in product(spin_names,range(4))}
-time_window = (.0,1.0)
+chi_indices = [(sn,site) for sn, site in product(spin_names,range(4))]
+t_max = 1.0
 n_t = 11
 
 fops = set((sn,site) for sn, site in product(spin_names,range(4)))
@@ -50,7 +50,7 @@ h = h0 + tp*sum(c_dag(sn,site1)*c(sn,site2)
 print "h(t) =", h
 
 # Solver object
-S = Solver(gf_struct, chi_struct, time_window = time_window, n_t = n_t)
+S = Solver(gf_struct, chi_indices, t_max = t_max, n_t = n_t)
 
 # Set initial state
 S.initial_state = init_state

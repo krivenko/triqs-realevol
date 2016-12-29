@@ -30,41 +30,35 @@
 namespace realevol {
 
 // Describes a world line contributing to an obsearvable \mp
-// Definition of observables:
-//  Greater component: -i<A(t) B(t')>
-//  Lesser component:   i<B(t') A(t)>
-//
-//  Green's functions
-//   A = c_{block_index,inner_index1}
-//   B = c^\dag_{block_index,inner_index2}
-//  Susceptibilities
-//   A = n_{block_index,inner_index1}
-//   B = n_{block_index,inner_index2}
-//
 // Definition of contributions:
-//  is_greater == true: -i<l| A(t) |m><m| B(t')|r> * weight
-//  is_greater == false: i<l| B(t')|m><m| A(t) |r> * weight
+//
+//  Greater component G^>_{index1,index2}(t,t'):
+//   -i<l| c_index1(t) |m><m| c^+_index2(t') |r> * weight
+//
+//  Lesser component G^<_{index1,index2}(t,t'):
+//    i<l| c^+_index2(t') |m><m| c_index1(t) |r> * weight
+//
+//  Susceptibility \chi_{index1,index2}(t,t'):
+//   -i<l| n_index1(t) |m><m| n_index2(t') |r> * weight
+//
 struct worldline_desc_t {
 
  /// Kind of observable
- enum {GreensFunction, Susceptibility} observable;
+ enum {LesserGf, GreaterGf, Susceptibility} observable;
 
- /// Greater or lesser component?
- bool is_greater;
-
- /// Pair of indices of operator A
+ /// First pair of indices of the observable
  indices_t index1;
 
- /// Pair of indices of operator B
+ /// Second pair of indices of the observable
  indices_t index2;
 
- /// Block index of operators A and B
+ /// Block index of the observable (applies only to the GF)
  int block_index;
 
- /// Inner index of operator A
+ /// First inner index of the observable
  int inner_index1;
 
- /// Inner index of operator B
+ /// Second inner index of the observable
  int inner_index2;
 
  /// Index of weighted state in init_state
@@ -80,19 +74,32 @@ struct worldline_desc_t {
  long right_sp_index;
 
  friend std::ostream& operator<<(std::ostream& os, worldline_desc_t const& desc) {
-  std::string coeff = (desc.observable == GreensFunction) ?
-                      (desc.is_greater ? "-i" : " i") : "-i";
-  auto A = desc.observable == GreensFunction ? "c_" : "n_";
-  auto B = desc.observable == GreensFunction ? "c^+_" : "n_";
-  os << coeff << " <" << desc.left_sp_index << "|";
-  if(desc.is_greater)
-   os << A << "{" << desc.index1 << "}|" << desc.middle_sp_index
-      << "><" << desc.middle_sp_index << "|" << B << "{" << desc.index2 << "}";
-  else
-   os << B << "{" << desc.index2 << "}|" << desc.middle_sp_index
-      << "><" << desc.middle_sp_index << "|" << A << "{" << desc.index1 << "}";
-  os << "|" << desc.right_sp_index << ">";
-  os << " (block_index=" << desc.block_index << ",";
+  switch(desc.observable) {
+   case GreaterGf:
+    os << "-i <" << desc.left_sp_index << "| ";
+    os << "c_{" << desc.index1 << "}(t)";
+    os << " |" << desc.middle_sp_index << "><" << desc.middle_sp_index << "| ";
+    os << "c^+_{" << desc.index2 << "}(t')";
+    os << " |" << desc.right_sp_index << "> ";
+    os << "(block_index=" << desc.block_index << ",";
+    break;
+   case LesserGf:
+    os << "i <" << desc.left_sp_index << "| ";
+    os << "c^+_{" << desc.index2 << "}(t')";
+    os << " |" << desc.middle_sp_index << "><" << desc.middle_sp_index << "| ";
+    os << "c_{" << desc.index1 << "}(t)";
+    os << " |" << desc.right_sp_index << "> ";
+    os << "(block_index=" << desc.block_index << ",";
+    break;
+   case Susceptibility:
+    os << "-i <" << desc.left_sp_index << "| ";
+    os << "n_{" << desc.index1 << "}(t)";
+    os << " |" << desc.middle_sp_index << "><" << desc.middle_sp_index << "| ";
+    os << "n_{" << desc.index2 << "}(t')";
+    os << " |" << desc.right_sp_index << "> ";
+    os << "(";
+    break;
+  }
   os << "i1=" << desc.inner_index1 << ",i2=" << desc.inner_index2 << "); ";
   os << "weighted_state " << desc.weighted_state_index;
   return os;
@@ -109,10 +116,17 @@ class worldlines_maker {
  // Subspace branchings from the initial state to the time-dependent problem
  branchings_t const& branchings;
 
- template<typename WLStep1, typename WLStep2>
- auto make_worldlines(decltype(worldline_desc_t::observable) observable,
-                      gf_struct_t const& gf_struct, bool is_greater,
-                      WLStep1 wl_step1, WLStep2 wl_step2) {
+public:
+
+ worldlines_maker(init_state const& initial_state,
+                  hilbert_space_structure const& hss,
+                  branchings_t const& branchings) :
+ initial_state(initial_state), hss(hss), branchings(branchings) {}
+
+ auto make_gf_worldlines(gf_struct_t const& gf_struct, bool is_greater) {
+  auto const& c_conn = hss.annihilation_connection[Fermion];
+  auto const& cdag_conn = hss.creation_connection[Fermion];
+
   std::vector<worldline_desc_t> res;
   auto const& fops = initial_state.get_fops();
   auto const& wst = initial_state.get_weighted_states();
@@ -122,24 +136,27 @@ class worldlines_maker {
    int bl_size = block.second.size();
    for (int inner_index1 = 0; inner_index1 < bl_size; ++inner_index1) {
     indices_t index1 = {block.first, block.second[inner_index1]};
-    int n1 = fops[index1]; // linear_index of A
+    int n1 = fops[index1]; // linear_index of c
     for (int inner_index2 = 0; inner_index2 < bl_size; ++inner_index2) {
      indices_t index2 = {block.first, block.second[inner_index2]};
-     int n2 = fops[index2]; // linear_index of B
+     int n2 = fops[index2]; // linear_index of c^+
 
      for(int wst_i = 0; wst_i < wst.size(); ++wst_i) {
       auto const& st = wst[wst_i];
       auto const& branching = branchings[st.state.get_hilbert().get_index()];
       for(long right_sp_index : branching) {
        // Checking selection rule for <middle_sp_index| |right_sp_index>
-       long middle_sp_index = wl_step1(n1,n2,right_sp_index);
+       long middle_sp_index = is_greater ? cdag_conn(n2,right_sp_index) :
+                                           c_conn(n1,right_sp_index);
        if(middle_sp_index == -1) continue;
        // Checking selection rule for <left_sp_index| |middle_sp_index>
-       long left_sp_index = wl_step2(n1,n2,middle_sp_index);
+       long left_sp_index = is_greater ? c_conn(n1,middle_sp_index) :
+                                         cdag_conn(n2,middle_sp_index);
        if(left_sp_index == -1 || !branching.count(left_sp_index)) continue;
 
-       res.push_back({observable,
-                      is_greater, index1, index2,
+       res.push_back({is_greater ?
+                      worldline_desc_t::GreaterGf : worldline_desc_t::LesserGf,
+                      index1, index2,
                       block_index, inner_index1, inner_index2,
                       wst_i, left_sp_index, middle_sp_index, right_sp_index});
       }
@@ -152,44 +169,44 @@ class worldlines_maker {
   return res;
  }
 
-public:
-
- worldlines_maker(init_state const& initial_state,
-                  hilbert_space_structure const& hss,
-                  branchings_t const& branchings) :
- initial_state(initial_state), hss(hss), branchings(branchings) {}
-
- auto make_gf_worldlines(gf_struct_t const& gf_struct, bool is_greater) {
-  auto const& c_conn = hss.annihilation_connection[Fermion];
-  auto const& cdag_conn = hss.creation_connection[Fermion];
-
-  // WL step from right_sp_index to middle_sp_index
-  auto wl_step1 = [is_greater,&c_conn,&cdag_conn](int n1, int n2, long spn) {
-   return is_greater ? cdag_conn(n2,spn) : c_conn(n1,spn);
-  };
-  // WL step from middle_sp_index to left_sp_index
-  auto wl_step2 = [is_greater,&c_conn,&cdag_conn](int n1, int n2, long spn) {
-   return is_greater ? c_conn(n1,spn) : cdag_conn(n2,spn);
-  };
-
-  return make_worldlines(worldline_desc_t::GreensFunction, gf_struct,
-                         is_greater, wl_step1, wl_step2);
- }
-
- auto make_chi_worldlines(gf_struct_t const& chi_struct, bool is_greater) {
+ auto make_chi_worldlines(chi_indices_t const& chi_indices) {
   auto const& c_conn = hss.annihilation_connection[Fermion];
 
-  // WL step from right_sp_index to middle_sp_index
-  auto wl_step1 = [is_greater,&c_conn](int n1, int n2, long spn) {
-   return (c_conn(is_greater ? n2 : n1, spn) != -1) ? spn : -1;
-  };
-  // WL step from middle_sp_index to left_sp_index
-  auto wl_step2 = [is_greater,&c_conn](int n1, int n2, long spn) {
-   return (c_conn(is_greater ? n1 : n2, spn) != -1) ? spn : -1;
-  };
+  std::vector<worldline_desc_t> res;
+  auto const& fops = initial_state.get_fops();
+  auto const& wst = initial_state.get_weighted_states();
 
-  return make_worldlines(worldline_desc_t::Susceptibility, chi_struct,
-                         is_greater, wl_step1, wl_step2);
+  int chi_size = chi_indices.size();
+  for (int inner_index1 = 0; inner_index1 < chi_size; ++inner_index1) {
+    indices_t index1 = {chi_indices[inner_index1].first,
+                        chi_indices[inner_index1].second};
+    int n1 = fops[index1]; // linear_index of n1
+    for (int inner_index2 = 0; inner_index2 < chi_size; ++inner_index2) {
+     indices_t index2 = {chi_indices[inner_index2].first,
+                         chi_indices[inner_index2].second};
+     int n2 = fops[index2]; // linear_index of n2
+
+     for(int wst_i = 0; wst_i < wst.size(); ++wst_i) {
+      auto const& st = wst[wst_i];
+      auto const& branching = branchings[st.state.get_hilbert().get_index()];
+      for(long right_sp_index : branching) {
+       // Checking selection rule for <middle_sp_index| |right_sp_index>
+       long middle_sp_index = (c_conn(n2,right_sp_index) != -1) ? right_sp_index : -1;
+       if(middle_sp_index == -1) continue;
+       // Checking selection rule for <left_sp_index| |middle_sp_index>
+       long left_sp_index = (c_conn(n1,middle_sp_index) != -1) ? middle_sp_index : -1;
+       if(left_sp_index == -1 || !branching.count(left_sp_index)) continue;
+
+       res.push_back({worldline_desc_t::Susceptibility,
+                      index1, index2,
+                      0, inner_index1, inner_index2,
+                      wst_i, left_sp_index, middle_sp_index, right_sp_index});
+      }
+     }
+   }
+  }
+
+  return res;
  }
 
 };
