@@ -179,7 +179,7 @@ void solver::compute_2t_obs(compute_2t_obs_parameters_t const& params) {
   };
   print_worldlines(g_g_wl, "the greater GF component:");
   print_worldlines(g_l_wl, "the lesser GF component:");
-  print_worldlines(chi_wl, "the susceptibility component:");
+  print_worldlines(chi_wl, "the susceptibility:");
  }
 
  std::vector<worldline_desc_t> all_worldlines;
