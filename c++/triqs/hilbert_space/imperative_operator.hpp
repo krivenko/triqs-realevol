@@ -231,10 +231,11 @@ template <typename HilbertType, typename ScalarType = double, bool UseMap = fals
  template <typename StateType, typename... Args>
  inline void apply_impl(StateType const &st, StateType & target_st, Args&&... args) const {
   auto const& hs = st.get_hilbert();
+  auto const& target_hs = target_st.get_hilbert();
 
   for (int i = 0; i < all_terms.size(); ++i) { // loop over monomials
    auto M = all_terms[i];
-   foreach(st, [this, M, &target_st,hs,args...](int i, typename StateType::value_type amplitude) {
+   foreach(st, [this, M, &target_st, &hs, &target_hs, args...](int i, typename StateType::value_type amplitude) {
     fock_state_t f2 = hs.get_fock_state(i);
 
     // Fermions
@@ -262,7 +263,7 @@ template <typename HilbertType, typename ScalarType = double, bool UseMap = fals
     }
 
     // update state vector in target Hilbert space
-    auto ind = target_st.get_hilbert().get_state_index(f3);
+    auto ind = target_hs.get_state_index(f3);
     target_st(ind) += coeff * amplitude * apply_if_possible(M.coeff,args...);
    }); // foreach
   }
