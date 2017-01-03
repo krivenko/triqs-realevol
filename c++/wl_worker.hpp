@@ -56,13 +56,14 @@ public:
   c_conn.resize(fops.size(Fermion), std::vector<int>(subspaces.size()));
   cdag_conn.resize(fops.size(Fermion), std::vector<int>(subspaces.size()));
   n_conn.resize(fops.size(Fermion), std::vector<int>(subspaces.size()));
+
   for(int linear_index : range(fops.size(Fermion))) {
    for(int spn : range(subspaces.size())) {
-    c_conn[linear_index][spn]
-     = hss.annihilation_connection[Fermion](linear_index, spn);
-    cdag_conn[linear_index][spn]
-     = hss.creation_connection[Fermion](linear_index, spn);
-    n_conn[linear_index][spn] = cdag_conn[linear_index][c_conn[linear_index][spn]];
+    int c_conn_sp = hss.annihilation_connection[Fermion](linear_index, spn);
+    c_conn[linear_index][spn] = c_conn_sp;
+    cdag_conn[linear_index][spn] = hss.creation_connection[Fermion](linear_index, spn);
+    n_conn[linear_index][spn] = (c_conn_sp == -1 ? -1 :
+     hss.creation_connection[Fermion](linear_index, c_conn_sp));
    }
   }
  }

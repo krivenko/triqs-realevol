@@ -47,6 +47,8 @@ struct hilbert_space_structure {
  // Invariant subspaces
  std::vector<sub_hilbert_space> sub_hilbert_spaces;
  // Connections between subspaces: *_connection[stat][operator_linear_index][B] -> B'
+ // WARNING: For operators belonging to fops but missing from merger_fops
+ // (not 1-to-1 mappings) no connections are stored
  matrix<long> creation_connection[2], annihilation_connection[2];
  // Hilbert space partition
  mutable space_partition<dyn_state_on_space_t, op_on_space_t> partition;
@@ -99,8 +101,8 @@ private:
     auto create = operator_t::make_canonical(stat, true, it->index);
     auto destroy = operator_t::make_canonical(stat, false, it->index);
 
-    create_ops[stat].emplace_back(create, merger_fops, full_hs);
-    destroy_ops[stat].emplace_back(destroy, merger_fops, full_hs);
+    create_ops[stat].emplace_back(create, fops, full_hs);
+    destroy_ops[stat].emplace_back(destroy, fops, full_hs);
 
     partition.merge_subspaces(create_ops[stat].back(), destroy_ops[stat].back(), true, is_zero_pred);
    }

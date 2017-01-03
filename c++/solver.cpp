@@ -186,6 +186,7 @@ void solver::compute_2t_obs(compute_2t_obs_parameters_t const& params) {
  all_worldlines.reserve(g_g_wl.size() + g_l_wl.size() + chi_wl.size());
  for(auto && wl : {g_g_wl, g_l_wl, chi_wl})
   std::move(wl.begin(), wl.end(), std::back_inserter(all_worldlines));
+ if(all_worldlines.size() == 0) return;
 
  if(params.verbosity >= 1 && comm.rank() == 0)
   std::cout << "Starting GF and susceptibility calculation" << std::endl;
