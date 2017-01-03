@@ -4,7 +4,7 @@ target_link_libraries(time_expr_c ${TRIQS_LIBRARY_ALL})
 
 # Build main solver library
 add_library(realevol_c solver.cpp init_state.cpp make_init_state.cpp
-            propagator.cpp utility.cpp
+            propagator.cpp utility.cpp signal_handler.cpp
             triqs/operators/many_body_operator.cpp
             triqs/hilbert_space/fundamental_operator_set.cpp)
 target_link_libraries(realevol_c time_expr_c ${TRIQS_LIBRARY_ALL} ${ARPACK_LIB})
