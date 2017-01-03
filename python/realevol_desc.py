@@ -14,6 +14,7 @@ module.use_module('init_state', 'realevol')
 # Add here all includes beyond what is automatically included by the triqs modules
 module.add_include("solver.hpp")
 module.add_include("utility.hpp")
+module.add_include("<triqs/gfs/functions/gf_tests.hpp>")
 
 # Add here anything to add in the C++ code at the start, e.g. namespace using
 module.add_include("<triqs/python_tools/converters/pair.hpp>")
@@ -78,5 +79,14 @@ module.add_class(c)
 
 module.add_function("std::pair<block_gf_2t_view,block_gf_2t_view> make_gf_ret_adv(block_gf_2t_view g_l, block_gf_2t_view g_g)",
                     doc = """Compute retarded and advanced Green's functions out of the lesser and greater components""")
+
+# Comparison tests
+module.add_function(name = "assert_gfs_are_close",
+                    signature = "void(gf_2t_view x, gf_2t_view y, double precision=1.e-6)",
+                    doc = """Compare two real time GFs""")
+
+module.add_function(name = "assert_block_gfs_are_close",
+                    signature = "void(block_gf_2t_view x, block_gf_2t_view y, double precision=1.e-6)",
+                    doc = """Compare two real time block GFs""")
 
 module.generate_code()
