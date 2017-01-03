@@ -38,8 +38,8 @@ template <> struct py_converter<eq_solver_parameters_t> {
  static eq_solver_parameters_t py2c(PyObject *dic) {
   eq_solver_parameters_t res;
   _get_optional(dic, "verbosity"             , res.verbosity                ,0);
-  _get_optional(dic, "min_rel_weight"        , res.min_rel_weight               ,std::numeric_limits<double>::epsilon());
-  _get_optional(dic, "arpack_min_matrix_size", res.arpack_min_matrix_size   ,-1);
+  _get_optional(dic, "min_rel_weight"        , res.min_rel_weight           ,std::numeric_limits<double>::epsilon());
+  _get_optional(dic, "arpack_min_matrix_size", res.arpack_min_matrix_size   ,101);
   _get_optional(dic, "arpack_tolerance"      , res.arpack_tolerance         ,0);
   _get_optional(dic, "arpack_ncv"            , res.arpack_ncv               ,std::map<long,int>({}));
   return res;

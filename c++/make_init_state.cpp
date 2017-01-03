@@ -44,6 +44,7 @@
 #include "mpi_dispatcher.hpp"
 #include "global_index.hpp"
 #include "sort2.hpp"
+#include "signal_handler.hpp"
 
 namespace realevol {
 
@@ -66,6 +67,8 @@ init_state make_pure_init_state(operator_t const& generator,
 
  // Static version of generator
  auto gen = make_static_op(generator, "Generating operator must be time-independent!");
+
+ signal_handler::start();
 
  init_state ist(fops, bits_per_boson);
 
@@ -96,6 +99,8 @@ init_state make_pure_init_state(operator_t const& generator,
  st_on_sp /= std::sqrt(norm2);
 
  ist.weighted_states.emplace_back(std::move(st_on_sp), 1.0);
+
+ signal_handler::stop();
 
  return ist;
 }
@@ -411,6 +416,8 @@ init_state make_equilibrium_init_state(operator_t const& h,
   energy_window = -temperature * std::log(params.min_rel_weight);
  }
 
+ signal_handler::start();
+
  // Initial state object
  init_state ist(fops, bits_per_boson);
 
@@ -609,6 +616,8 @@ init_state make_equilibrium_init_state(operator_t const& h,
  if(params.verbosity >= 1 && comm.rank() == 0)
   std::cout << "Done. " << ist.weighted_states.size()
             << " weighted pure states in the initial state." << std::endl;
+
+ signal_handler::stop();
 
  return ist;
 }
