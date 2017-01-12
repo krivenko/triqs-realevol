@@ -33,97 +33,128 @@ namespace realevol {
 
 using namespace triqs::arrays;
 
-template<h_interpolation HInterpol>
-propagator<HInterpol>::propagator(op_on_subspace_t const& h, sub_hilbert_space const& sp,
-                               double hbar, int lanczos_min_matrix_size) :
- h(h), h_coeff(-1_j / hbar), N(sp.size()) {
- if(N == 1) {
-  propagate = &propagator::propagate_1d;
-  state_1d = state_on_subspace_t(sp);
-  state_1d(0) = 1;
- } else if(N < lanczos_min_matrix_size) {
-  propagate = &propagator::propagate_lapack;
-  lapack_workspace = matrix<dcomplex>(N,N);
-  lapack_st_from = state_on_subspace_t(sp);
-  lapack_st_to = state_on_subspace_t(sp);
+/////////////////
+/// diag_1d_t ///
+/////////////////
+
+inline diag_1d_t::diag_1d_t(propagator const& prop, sub_hilbert_space const& sp) :
+ prop(prop), tmp_st(sp) {
+ tmp_st(0) = 1;
+}
+
+inline void diag_1d_t::diag(double t, double dt) {
+ eigenvalue = prop.apply_h(tmp_st, t, dt)(0).real();
+}
+
+/////////////////////
+/// diag_lapack_t ///
+/////////////////////
+
+inline diag_lapack_t::diag_lapack_t(propagator const& prop, sub_hilbert_space const& sp) :
+ prop(prop), from_st(sp), to_st(sp), workspace(prop.N, prop.N) {
+}
+
+inline void diag_lapack_t::diag(double t, double dt) {
+ for(long i : range(prop.N)) {
+  from_st(i) = 1.0;
+  to_st = prop.apply_h(from_st, t, dt);
+  workspace(range(),i) = to_st.amplitudes();
+  from_st(i) = 0;
+ }
+ eig = linalg::eigenelements_in_place(&workspace);
+}
+
+//////////////////
+/// propagator ///
+//////////////////s
+
+propagator::propagator(op_on_subspace_t const& h, sub_hilbert_space const& sp,
+                       double hbar, bool is_static_h, h_interpolation h_interpol,
+                       long lanczos_min_matrix_size) :
+ h(h), h_coeff(-1_j / hbar), N(sp.size()), is_static_h(is_static_h), h_interpol(h_interpol),
+ ed_solver(N == 1 ? OneD : (N < lanczos_min_matrix_size ? LAPACK : Lanczos)) {
+ switch(ed_solver) {
+  case OneD:
+  diag_1d = std::make_unique<diag_1d_t>(*this, sp);
+  if(is_static_h) diag_1d->diag(0,0);
+  break;
+  case LAPACK:
+  diag_lapack = std::make_unique<diag_lapack_t>(*this, sp);
+  if(is_static_h) diag_lapack->diag(0,0);
+  break;
+  case Lanczos:
+  // TODO
+  break;
+ }
+}
+
+void propagator::operator()(state_on_subspace_t & st,
+                            time_it_t const& t_start,
+                            time_it_t const& t_end) const {
+ if(t_end == t_start) return; // No propagation needed
+
+ bool forward = *t_end > *t_start;
+ dcomplex c = (forward ? 1 : -1) * h_coeff;
+
+ if(is_static_h) {
+  if(forward) propagate(st, t_start, t_end, c); // Forward propagation (static)
+  else        propagate(st, t_end, t_start, c); // Backward propagation (static)
  } else {
-  propagate = &propagator::propagate_lanczos;
- }
-}
-
-template<h_interpolation HInterpol>
-void propagator<HInterpol>::operator()(state_on_subspace_t & st,
-                                    time_it_t const& t_start, time_it_t const& t_end) const {
- if(t_end == t_start)       // No propagation needed
-  return;
- else if(*t_end > *t_start) // Forward propagation
-  (this->*propagate)(st, t_start, t_end, true);
- else                       // Backward propagation
-  (this->*propagate)(st, t_end, t_start, false);
-}
-
-template<h_interpolation HInterpol>
-void propagator<HInterpol>::propagate_1d(state_on_subspace_t & st,
-                                      time_it_t t, time_it_t const& t_max, bool forward) const {
- dcomplex c = (forward ? 1 : -1) * h_coeff;
- for(; t != t_max; ++t) {
-  auto t_next = t; ++t_next;
-  double dt = *t_next - *t;
-  st *= std::exp(c * dt * apply_h(state_1d, *t, dt)(0));
- }
-}
-
-template<h_interpolation HInterpol> void
-propagator<HInterpol>::propagate_lapack(state_on_subspace_t & st,
-                                     time_it_t t, time_it_t const& t_max, bool forward) const {
-
- dcomplex c = (forward ? 1 : -1) * h_coeff;
- auto const& hs = st.get_hilbert();
-
- for(; t != t_max; ++t) {
-  auto t_next = t; ++t_next;
-  double dt = *t_next - *t;
-
-  for(long i : range(N)) {
-   lapack_st_from(i) = 1.0;
-   lapack_st_to = apply_h(lapack_st_from, *t, dt);
-   lapack_workspace(range(),i) = lapack_st_to.amplitudes();
-   lapack_st_from(i) = 0;
+  if(forward) { // Forward propagation
+   time_it_t t_next = t_start; ++t_next;
+   for(auto t = t_start; t != t_end; ++t, ++t_next) propagate(st, t, t_next, c);
+  } else { // Backward propagation
+   time_it_t t_next = t_end; ++t_next;
+   for(auto t = t_end; t != t_start; ++t, ++t_next) propagate(st, t, t_next, c);
   }
-
-  auto & psi = st.amplitudes();
-  auto eig = linalg::eigenelements_in_place(&lapack_workspace);
-  psi = conj(eig.second) * psi;
-  for(long i : range(N)) psi(i) *= std::exp(c * dt * eig.first(i));
-  psi = eig.second.transpose() * psi;
  }
 }
 
-template<h_interpolation HInterpol> void
-propagator<HInterpol>::propagate_lanczos(state_on_subspace_t & st,
-                                         time_it_t t, time_it_t const& t_max, bool forward) const {
+inline void propagator::propagate(state_on_subspace_t & st,
+                                  time_it_t const& t_min,
+                                  time_it_t const& t_max,
+                                  dcomplex c) const {
+ switch(ed_solver) {
+  case OneD:    return propagate(st, t_min, t_max, c, ed_type<OneD>());
+  case LAPACK:  return propagate(st, t_min, t_max, c, ed_type<LAPACK>());
+  case Lanczos: return propagate(st, t_min, t_max, c, ed_type<Lanczos>());
+ }
+}
+
+/// 1D propagation
+inline void propagator::propagate(state_on_subspace_t & st,
+                                  time_it_t const& t_min, time_it_t const& t_max,
+                                  dcomplex c, ed_type<OneD>) const {
+ double dt = *t_max - *t_min;
+ if(!is_static_h) diag_1d->diag(*t_min, dt);
+ st *= std::exp(c * dt * diag_1d->eigenvalue);
+}
+
+/// LAPACK propagation
+inline void propagator::propagate(state_on_subspace_t & st,
+                                  time_it_t const& t_min, time_it_t const& t_max,
+                                  dcomplex c, ed_type<LAPACK>) const {
+ double dt = *t_max - *t_min;
+ if(!is_static_h) diag_lapack->diag(*t_min, dt);
+ auto & psi = st.amplitudes();
+ psi = conj(diag_lapack->eig.second) * psi;
+ for(long i : range(N)) psi(i) *= std::exp(c * dt * diag_lapack->eig.first(i));
+ psi = diag_lapack->eig.second.transpose() * psi;
+}
+
+inline void propagator::propagate(state_on_subspace_t & st,
+                                  time_it_t const& t_min, time_it_t const& t_max,
+                                  dcomplex c, ed_type<Lanczos>) const {
+ double dt = *t_max - *t_min;
  // TODO
 }
 
-
-template<> inline state_on_subspace_t
-propagator<Rectangle>::apply_h(state_on_subspace_t const& st, double t, double dt) const {
- return h(st, t+dt/2);
+inline state_on_subspace_t propagator::apply_h(state_on_subspace_t const& st, double t, double dt) const {
+ switch(h_interpol) {
+  case Rectangle: return h(st, t+dt/2);
+  case Trapezoid: return (h(st, t) + h(st, t+dt)) / 2.0;
+  case Simpson:   return (h(st, t) + 4*h(st, t+dt/2) + h(st, t+dt)) / 6.0;
+ }
 }
-
-template<> inline state_on_subspace_t
-propagator<Trapezoid>::apply_h(state_on_subspace_t const& st, double t, double dt) const {
- return (h(st, t) + h(st, t+dt)) / 2.0;
-}
-
-template<> inline state_on_subspace_t
-propagator<Simpson>::apply_h(state_on_subspace_t const& st, double t, double dt) const {
- return (h(st, t) + 4*h(st, t+dt/2) + h(st, t+dt)) / 6.0;
-}
-
-// Explicit instantiation
-template class propagator<Rectangle>;
-template class propagator<Trapezoid>;
-template class propagator<Simpson>;
 
 }

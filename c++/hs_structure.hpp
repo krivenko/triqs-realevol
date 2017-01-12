@@ -83,6 +83,29 @@ struct hilbert_space_structure {
   return branchings;
  }
 
+ template<typename ClassifyPredicate>
+ std::vector<bool> classify_subspaces(operator_t const& op, ClassifyPredicate classify_pred) const {
+  std::vector<bool> res(sub_hilbert_spaces.size());
+
+  dyn_state_on_space_t from_st(full_hs), to_st(full_hs);
+  op_on_space_t imp_op(op, fops, full_hs);
+
+  for(long spn = 0; spn < sub_hilbert_spaces.size(); ++spn) {
+   auto const& hs = sub_hilbert_spaces[spn];
+   res[spn] = true;
+   for(auto f : hs.get_all_fock_states()) {
+    from_st(f) = .1;
+    imp_op.apply(from_st, to_st);
+    from_st.zero();
+    if(!classify_pred(to_st)) {
+     res[spn] = false;
+     break;
+    }
+   }
+  }
+  return res;
+ }
+
 private:
 
  template<typename IsZeroPredicate>

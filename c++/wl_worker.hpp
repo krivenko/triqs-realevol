@@ -41,15 +41,18 @@ class wl_worker {
  int lanczos_min_matrix_size;
 
  std::vector<sub_hilbert_space> const& subspaces;
+ std::vector<bool> const& is_static_sp;
  std::vector<std::vector<int>> c_conn, cdag_conn, n_conn;
 
 public:
 
  wl_worker(init_state const& initial_state, operator_t const& h, double hbar,
            hilbert_space_structure const& hss,
+           std::vector<bool> const& is_static_sp,
            int lanczos_min_matrix_size) :
  initial_state(initial_state), hss(hss), subspaces(hss.sub_hilbert_spaces),
  h(h, initial_state.get_fops(), initial_state.get_full_hs()), hbar(hbar),
+ is_static_sp(is_static_sp),
  lanczos_min_matrix_size(lanczos_min_matrix_size) {
 
   auto const& fops = initial_state.get_fops();
@@ -77,9 +80,12 @@ public:
   auto const& middle_hs = subspaces[wl.middle_sp_index];
   auto const& right_hs = subspaces[wl.right_sp_index];
 
-  propagator<HInterpol> left_prop(h, left_hs, hbar, lanczos_min_matrix_size);
-  propagator<HInterpol> middle_prop(h, middle_hs, hbar, lanczos_min_matrix_size);
-  propagator<HInterpol> right_prop(h, right_hs, hbar, lanczos_min_matrix_size);
+  propagator left_prop(h, left_hs, hbar, is_static_sp[wl.left_sp_index], HInterpol,
+                       lanczos_min_matrix_size);
+  propagator middle_prop(h, middle_hs, hbar, is_static_sp[wl.middle_sp_index], HInterpol,
+                         lanczos_min_matrix_size);
+  propagator right_prop(h, right_hs, hbar, is_static_sp[wl.right_sp_index], HInterpol,
+                        lanczos_min_matrix_size);
 
   auto const& fops = initial_state.get_fops();
   auto const& full_hs = initial_state.get_full_hs();
