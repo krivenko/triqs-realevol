@@ -166,6 +166,9 @@ class state<HilbertSpace, ScalarType, true> : boost::additive<state<HilbertSpace
   */
  state& operator/=(value_type x) { return operator*=(1 / x); }
 
+ /// Set all amplitudes to zero
+ void zero() { ampli.clear(); }
+
  /// Calculate scalar product of two states
  /**
    @param s1 First state to multiply
@@ -179,6 +182,23 @@ class state<HilbertSpace, ScalarType, true> : boost::additive<state<HilbertSpace
    if (s2.ampli.count(a.first) == 1) res += conj(a.second) * s2.ampli.at(a.first);
   }
   return res;
+ }
+
+ /// Apply a callable object to **non-vanishing** amplitudes of a state
+ /**
+  The callable must take two arguments, 1) index of the basis Fock state in the associated Hilbert space, and 2) the corresponding amplitude.
+  Stops iterating over amplitudes if the callable object returns false.
+
+  @tparam Lambda Type of the callable object
+  @param st State object
+  @param l Callable object
+  */
+ template<typename Lambda>
+ friend void foreach(state const& st, Lambda l) {
+  const_cast<state&>(st).prune();
+  for (auto const& p : st.ampli) {
+   if(!l(p.first, p.second)) break;
+  }
  }
 
  /// Apply a callable object to **non-vanishing** amplitudes of a state
@@ -308,6 +328,9 @@ class state<HilbertSpace, ScalarType, false> : boost::additive<state<HilbertSpac
   return *this;
  }
 
+ /// Set all amplitudes to zero
+ void zero() { ampli() = value_type{}; }
+
  /// Calculate scalar product of two states
  /**
    @param s1 First state to multiply
@@ -315,6 +338,23 @@ class state<HilbertSpace, ScalarType, false> : boost::additive<state<HilbertSpac
    @return Value of the scalar product
   */
  friend value_type dot_product(state const& s1, state const& s2) { return dotc(s1.ampli, s2.ampli); }
+
+ /// Apply a callable object to all amplitudes of a state
+ /**
+  The callable must take two arguments, 1) index of the basis Fock state in the associated Hilbert space, and 2) the corresponding amplitude.
+  Stops iterating over amplitudes if the callable object returns false.
+
+  @tparam Lambda Type of the callable object
+  @param st State object
+  @param l Callable object
+  */
+ template<typename Lambda>
+ friend void foreach(state const& st, Lambda l) {
+  const auto L = st.size();
+  for (size_t i = 0; i < L; ++i) {
+   if(!l(i, st(i))) break;
+  }
+ }
 
  /// Apply a callable object to all amplitudes of a state
  /**

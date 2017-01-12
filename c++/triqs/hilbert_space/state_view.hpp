@@ -121,6 +121,9 @@ class state_view : boost::additive<state_view<HilbertSpace, ScalarType>>,
   return *this;
  }
 
+ /// Set all amplitdes to zero
+ void zero() { ampli() = value_type{}; }
+
  /// Calculate scalar product of two states
  /**
    @param sv1 First state_view to multiply
