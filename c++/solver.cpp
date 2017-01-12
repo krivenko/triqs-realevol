@@ -147,6 +147,23 @@ void solver::compute_2t_obs(compute_2t_obs_parameters_t const& params) {
   }
  }
 
+ // Check on which invariant subspaces the Hamiltonian is static
+ auto static_pred = [](dyn_state_on_space_t const& st) {
+  bool c;
+  foreach(st,[&c](uint32_t, time_expr const& te){ return (c = is_constant(te)); });
+  return c;
+ };
+ auto is_static_sp = hs_struct.classify_subspaces(h, static_pred);
+
+ if(params.verbosity >= 2 && comm.rank() == 0) {
+  std::cout << "The Hamiltonian is static on the following invariant subspaces";
+  std::cout << std::endl << " ";
+  for(long spn = 0; spn < is_static_sp.size(); ++spn) {
+   if(is_static_sp[spn]) std::cout << spn << " ";
+  }
+  std::cout << std::endl;
+ }
+
  // Compute subspace branching for the initial state
  auto const& subspaces = initial_state->get_sub_hilbert_spaces();
  auto subspace_branchings = hs_struct.compute_branchings(subspaces);
@@ -193,7 +210,7 @@ void solver::compute_2t_obs(compute_2t_obs_parameters_t const& params) {
 
  mpi_dispatcher<long> disp(comm, all_worldlines.size());
 
- wl_worker worker(*initial_state, h, params.hbar, hs_struct,
+ wl_worker worker(*initial_state, h, params.hbar, hs_struct, is_static_sp,
                   params.lanczos_min_matrix_size);
 
  auto choose_obs =
