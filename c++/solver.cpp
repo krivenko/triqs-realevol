@@ -19,6 +19,7 @@
  *
  ******************************************************************************/
 #include <triqs/utility/first_include.hpp>
+#include <triqs/utility/signal_handler.hpp>
 
 #include <set>
 #include <algorithm>
@@ -30,7 +31,15 @@
 #include "worldlines.hpp"
 #include "mpi_dispatcher.hpp"
 #include "wl_worker.hpp"
-#include "signal_handler.hpp"
+
+namespace signal_handler = triqs::signal_handler;
+
+#define CHECK_SIGNALS                           \
+if(signal_handler::received()) {                \
+ int signal = signal_handler::last();           \
+ if(signal == SIGINT) TRIQS_KEYBOARD_INTERRUPT; \
+ else                 TRIQS_RUNTIME_ERROR;      \
+}
 
 namespace realevol {
 
@@ -135,6 +144,7 @@ void solver::compute_2t_obs(compute_2t_obs_parameters_t const& params) {
  hilbert_space_structure hs_struct(h, initial_state->get_fops(),
                                    initial_state->get_full_hs(), obs_fops,
                                    is_zero_on_mesh<gf_mesh<retime>>(t_mesh));
+ CHECK_SIGNALS;
 
  if(params.verbosity >= 1 && comm.rank() == 0)
   std::cout << "Found " << hs_struct.sub_hilbert_spaces.size()
@@ -167,6 +177,7 @@ void solver::compute_2t_obs(compute_2t_obs_parameters_t const& params) {
  // Compute subspace branching for the initial state
  auto const& subspaces = initial_state->get_sub_hilbert_spaces();
  auto subspace_branchings = hs_struct.compute_branchings(subspaces);
+ CHECK_SIGNALS;
 
  if(params.verbosity >= 2 && comm.rank() == 0) {
   std::cout << "Subspace branching for the initial state:" << std::endl;
@@ -181,8 +192,11 @@ void solver::compute_2t_obs(compute_2t_obs_parameters_t const& params) {
  worldlines_maker wlm(*initial_state, hs_struct, subspace_branchings);
 
  auto g_g_wl = wlm.make_gf_worldlines(gf_struct, true);
+ CHECK_SIGNALS;
  auto g_l_wl = wlm.make_gf_worldlines(gf_struct, false);
+ CHECK_SIGNALS;
  auto chi_wl = wlm.make_chi_worldlines(chi_indices);
+ CHECK_SIGNALS;
 
  long nwl = 0;
  if(params.verbosity >= 2 && comm.rank() == 0) {
@@ -230,6 +244,8 @@ void solver::compute_2t_obs(compute_2t_obs_parameters_t const& params) {
   }
  };
 
+ CHECK_SIGNALS;
+
  try {
   while(true) {
    nwl = disp();
@@ -246,9 +262,12 @@ void solver::compute_2t_obs(compute_2t_obs_parameters_t const& params) {
      worker(wl, obs, std::integral_constant<h_interpolation,Simpson>());
      break;
    }
+   CHECK_SIGNALS;
   }
  } catch(decltype(disp)::no_jobs_left &) {}
  comm.barrier();
+
+ CHECK_SIGNALS;
 
  // Collect results from all MPI ranks
  g_g = mpi_reduce(g_g, comm, 0, true);
