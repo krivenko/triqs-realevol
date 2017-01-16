@@ -38,13 +38,22 @@
 #include <triqs/arrays/vector.hpp>
 #include <triqs/arrays/linalg/eigenelements.hpp>
 #include <triqs/mpi/vector.hpp>
+#include <triqs/utility/signal_handler.hpp>
 
 #include "init_state.hpp"
 #include "arpack/arpack_worker.hpp"
 #include "mpi_dispatcher.hpp"
 #include "global_index.hpp"
 #include "sort2.hpp"
-#include "signal_handler.hpp"
+
+namespace signal_handler = triqs::signal_handler;
+
+#define CHECK_SIGNALS                           \
+if(signal_handler::received()) {                \
+ int signal = signal_handler::last();           \
+ if(signal == SIGINT) TRIQS_KEYBOARD_INTERRUPT; \
+ else                 TRIQS_RUNTIME_ERROR;      \
+}
 
 namespace realevol {
 
@@ -87,6 +96,7 @@ init_state make_pure_init_state(operator_t const& generator,
 
  // Fill st.sub_hilbert_spaces[0]
  foreach(psi, [&sp](fock_state_t f, dcomplex) { sp.add_fock_state(f); });
+ CHECK_SIGNALS;
 
  // Add a weighted state
  state_on_subspace_t st_on_sp(sp);
@@ -421,15 +431,21 @@ init_state make_equilibrium_init_state(operator_t const& h,
  // Initial state object
  init_state ist(fops, bits_per_boson);
 
+ CHECK_SIGNALS;
+
  // Partition the Hilbert space
  space_partition<state_on_space_t, static_op_on_space_t>
  partition(state_on_space_t(ist.get_full_hs()), static_op_on_space_t(h_, fops, ist.get_full_hs()));
+
+ CHECK_SIGNALS;
 
  // Fill subspaces
  std::vector<sub_hilbert_space> subspaces;
  subspaces.reserve(partition.n_subspaces());
  for (long n = 0; n < partition.n_subspaces(); ++n) subspaces.emplace_back(n);
  foreach(partition, [&](fock_state_t s, int spn) { subspaces[spn].add_fock_state(s); });
+
+ CHECK_SIGNALS;
 
  bool h_is_real = imag(h_).is_zero();
  if(h_is_real) h_ = real(h_);
@@ -496,6 +512,8 @@ init_state make_equilibrium_init_state(operator_t const& h,
                                    comm.rank());
    }
 
+   CHECK_SIGNALS;
+
    if(params.verbosity >= 2 && sp_lowest_levels.back().first == sp.get_index())
     std::cout << "[Node " << comm.rank() << "] Provisionally relevant levels on subspace "
               << sp.get_index() << ": "
@@ -523,6 +541,8 @@ init_state make_equilibrium_init_state(operator_t const& h,
                                     0, [](long s, auto x){ return s + x.second.size(); });
  rel_sp_i.reserve(rank_local_n);
  eigensystems.reserve(rank_local_n);
+
+ CHECK_SIGNALS;
 
  if(params.verbosity >= 1 && comm.rank() == 0)
   std::cout << "Computing eigenvectors ..." << std::endl;
@@ -562,6 +582,8 @@ init_state make_equilibrium_init_state(operator_t const& h,
                         comm.rank());
   }
 
+  CHECK_SIGNALS;
+
   // Rank-local checks
   assert(rel_sp_i.size() == eigensystems.size());
   assert(first_dim(eigensystems.back().first) == second_dim(eigensystems.back().second));
@@ -591,6 +613,8 @@ init_state make_equilibrium_init_state(operator_t const& h,
  // Ensure that no reallocations occur in ist.sub_hilbert_spaces
  shs.reserve(all_relevant_sp_i.size());
 
+ CHECK_SIGNALS;
+
  // Finally, fill the init_state object
  eigensystem_t eig;
  for(auto const& spi : all_relevant_sp_i) {
@@ -611,6 +635,8 @@ init_state make_equilibrium_init_state(operator_t const& h,
    ist.weighted_states.emplace_back(state_on_subspace_t(shs.back()), weight);
    ist.weighted_states.back().state.amplitudes() = evec(range(),i);
   }
+
+  CHECK_SIGNALS;
  }
 
  if(params.verbosity >= 1 && comm.rank() == 0)
