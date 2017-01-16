@@ -288,8 +288,6 @@ template <typename HilbertType, typename ScalarType = double, bool UseMap = fals
   */
  template <typename StateType, typename... Args>
  void apply(StateType const &st, StateType & target_st, Args&&... args) const {
-  assert(target_st.get_hilbert().get_index() ==
-         get_target_hilbert(st, std::integral_constant<bool, UseMap>()));
   target_st.zero();
   apply_impl(st, target_st, args...);
  }
