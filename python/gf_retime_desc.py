@@ -53,7 +53,7 @@ g.add_property(name = "data",
                getter = cfunction(calling_pattern="auto result = self_c.data()", signature = "array_view<dcomplex,4>()"),
                doc ="The data ")
 g.add_property(name = "target_shape",
-               getter = cfunction(calling_pattern="auto result = get_target_shape(self_c)", signature = "shape_type()"),
+               getter = cfunction(calling_pattern="auto result = self_c.target_shape()", signature = "shape_type()"),
                doc = "")
 
 module.add_class(g)
