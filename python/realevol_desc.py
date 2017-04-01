@@ -14,7 +14,7 @@ module.use_module('init_state', 'realevol')
 # Add here all includes beyond what is automatically included by the triqs modules
 module.add_include("solver.hpp")
 module.add_include("utility.hpp")
-module.add_include("<triqs/gfs/functions/gf_tests.hpp>")
+module.add_include("<triqs/gfs/gf_tests.hpp>")
 
 # Add here anything to add in the C++ code at the start, e.g. namespace using
 module.add_include("<triqs/python_tools/converters/pair.hpp>")

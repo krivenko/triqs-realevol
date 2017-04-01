@@ -19,8 +19,8 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${TRIQS_PATH}/share/triq
 # Load TRIQS, including all predefined variables from TRIQS installation
 find_package(TRIQS REQUIRED)
 
-if(NOT TRIQS_VERSION EQUAL 1.4)
-    message(FATAL_ERROR "The application requires the TRIQS library version 1.4 (got ${TRIQS_VERSION})")
+if(NOT TRIQS_VERSION EQUAL 1.5)
+    message(FATAL_ERROR "The application requires the TRIQS library version 1.5 (got ${TRIQS_VERSION})")
 endif()
 
 # Detect MPI
