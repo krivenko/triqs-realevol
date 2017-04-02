@@ -40,8 +40,8 @@
 #include <triqs/mpi/vector.hpp>
 #include <triqs/utility/signal_handler.hpp>
 
+#include <triqs/arrays/arpack/arpack_worker.hpp>
 #include "init_state.hpp"
-#include "arpack/arpack_worker.hpp"
 #include "mpi_dispatcher.hpp"
 #include "global_index.hpp"
 #include "sort2.hpp"
