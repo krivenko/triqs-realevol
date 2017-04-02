@@ -33,5 +33,3 @@ endforeach()
 # Copy h5 files with input data
 file(GLOB h5_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.h5)
 file(COPY ${h5_files} DESTINATION .)
-
-add_subdirectory(arpack)
