@@ -118,7 +118,8 @@ private:
   triqs::h5::group gr = fg.open_group(subgroup_name);
   h5_read(gr, "vector", static_cast<base_t&>(c));
   h5_read(gr, "mesh", c.mesh);
-  if(c.size() != c.mesh.size()) TRIQS_RUNTIME_ERROR << "Error reading from HDF5! Inconsistent sizes of the mesh and the data.";
+  if(c.size() != c.mesh.size())
+   TRIQS_RUNTIME_ERROR << "Error reading from HDF5! Inconsistent sizes of the mesh and the data.";
  }
 
 };
