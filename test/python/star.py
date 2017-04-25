@@ -1,4 +1,4 @@
-from pytriqs.gf.local import BlockGf
+from pytriqs.gf import BlockGf
 from pytriqs.archive import HDFArchive
 from realevol.texpr import TExpr as te
 from realevol.operators import *
@@ -8,7 +8,7 @@ import pytriqs.utility.mpi as mpi
 import numpy as np
 from itertools import product
 
-# Chain test: correlated Hubbard atom + n bath sites
+# Star test: correlated Hubbard atom + n bath sites
 
 spin_names = ('up','dn')
 
@@ -60,7 +60,9 @@ if mpi.is_master_node():
         #ar['g_l'] = S.g_l
         #ar['g_g'] = S.g_g
         #ar['chi'] = S.chi
-        assert_block_gfs_are_close(ar['g_l'], S.g_l)
-        assert_block_gfs_are_close(ar['g_g'], S.g_g)
+        # FIXME: Workaround for library issue #342
+        for bn in spin_names:
+            assert_gfs_are_close(ar['g_l'][bn], S.g_l[bn])
+            assert_gfs_are_close(ar['g_g'][bn], S.g_g[bn])
         assert_gfs_are_close(ar['chi'], S.chi)
 

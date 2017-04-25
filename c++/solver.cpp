@@ -270,9 +270,9 @@ void solver::compute_2t_obs(compute_2t_obs_parameters_t const& params) {
  CHECK_SIGNALS;
 
  // Collect results from all MPI ranks
- g_g = mpi_reduce(g_g, comm, 0, true);
- g_l = mpi_reduce(g_l, comm, 0, true);
- chi = mpi_reduce(chi, comm, 0, true);
+ g_g() = mpi_all_reduce(g_g, comm);
+ g_l() = mpi_all_reduce(g_l, comm);
+ chi() = mpi_all_reduce(chi, comm);
 
  signal_handler::stop();
 

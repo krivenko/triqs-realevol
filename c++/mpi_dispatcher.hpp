@@ -141,7 +141,7 @@ public:
   TRIQS_ASSERT(jobs.size() > 0);
  }
 
- Job operator()(GeneratorArgs... args) throw (no_jobs_left) {
+ Job operator()(GeneratorArgs... args) {
   if(comm.size() == 1) return serial(args...);
   else {
    if(comm.rank() == 0) return master(args...);

@@ -8,7 +8,6 @@ module = module_(full_name = "realevol", doc = "The Real-time evolution solver",
 # All the triqs C++/Python modules
 module.use_module('texpr', 'realevol')
 module.use_module('operators', 'realevol')
-module.use_module('gf_retime', 'realevol')
 module.use_module('init_state', 'realevol')
 
 # Add here all includes beyond what is automatically included by the triqs modules
@@ -21,6 +20,7 @@ module.add_include("<triqs/python_tools/converters/pair.hpp>")
 module.add_include("<triqs/python_tools/converters/map.hpp>")
 module.add_include("<triqs/python_tools/converters/vector.hpp>")
 module.add_include("<triqs/python_tools/converters/gf.hpp>")
+module.add_include("<triqs/python_tools/converters/block_gf.hpp>")
 module.add_using("realevol::operators::many_body_operator") # FIXME
 module.add_using("namespace triqs::gfs")
 module.add_preamble("""
