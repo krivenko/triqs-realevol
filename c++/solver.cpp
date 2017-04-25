@@ -246,25 +246,23 @@ void solver::compute_2t_obs(compute_2t_obs_parameters_t const& params) {
 
  CHECK_SIGNALS;
 
- try {
-  while(true) {
-   nwl = disp();
-   auto const& wl = all_worldlines[nwl];
-   auto & obs = choose_obs(wl, params.verbosity >= 2, nwl);
-   switch(params.hamiltonian_interpol) {
-    case Rectangle:
-     worker(wl, obs, std::integral_constant<h_interpolation,Rectangle>());
-     break;
-    case Trapezoid:
-     worker(wl, obs, std::integral_constant<h_interpolation,Trapezoid>());
-     break;
-    case Simpson:
-     worker(wl, obs, std::integral_constant<h_interpolation,Simpson>());
-     break;
-   }
-   CHECK_SIGNALS;
+ while(true) {
+  if((nwl = disp().value_or(-1)) == -1) break;
+  auto const& wl = all_worldlines[nwl];
+  auto & obs = choose_obs(wl, params.verbosity >= 2, nwl);
+  switch(params.hamiltonian_interpol) {
+   case Rectangle:
+    worker(wl, obs, std::integral_constant<h_interpolation,Rectangle>());
+    break;
+   case Trapezoid:
+    worker(wl, obs, std::integral_constant<h_interpolation,Trapezoid>());
+    break;
+   case Simpson:
+    worker(wl, obs, std::integral_constant<h_interpolation,Simpson>());
+    break;
   }
- } catch(decltype(disp)::no_jobs_left &) {}
+  CHECK_SIGNALS;
+ }
  comm.barrier();
 
  CHECK_SIGNALS;

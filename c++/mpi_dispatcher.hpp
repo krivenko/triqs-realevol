@@ -29,6 +29,7 @@
 #include <triqs/mpi/base.hpp>
 #include <triqs/utility/tuple_tools.hpp>
 #include <triqs/utility/exceptions.hpp>
+#include <triqs/utility/optional_compat.hpp>
 
 namespace realevol {
 
@@ -50,14 +51,14 @@ class mpi_dispatcher {
                   send_job_tag,
                   generator_arg_tag};
 
- Job serial(GeneratorArgs... args) {
+ std::optional<Job> serial(GeneratorArgs... args) {
   if(next_job_index < n_jobs)
-   return job_generator(next_job_index++, args...);
+   return {job_generator(next_job_index++, args...)};
   else
-   throw(no_jobs_left());
+   return {};
  }
 
- Job master(GeneratorArgs... args) {
+ std::optional<Job> master(GeneratorArgs... args) {
   int n_workers = comm.size()-1;
   MPI_Request recv_r;
   MPI_Recv_init(nullptr, 0, MPI_INT, MPI_ANY_SOURCE, request_job_tag, comm.get(), &recv_r);
@@ -87,10 +88,10 @@ class mpi_dispatcher {
   MPI_Request_free(&recv_r);
 
   comm.barrier();
-  throw(no_jobs_left());
+  return {};
  }
 
- Job worker(GeneratorArgs... args) {
+ std::optional<Job> worker(GeneratorArgs... args) {
   // Notify master node
   MPI_Request send_r;
   MPI_Isend(nullptr, 0, MPI_INT, 0, request_job_tag, comm.get(), &send_r);
@@ -110,10 +111,10 @@ class mpi_dispatcher {
   MPI_Wait(&recv_r,&recv_s);
   int c;
   MPI_Get_count(&recv_s, job_datatype,&c);
-  if(c == 1) return job;
+  if(c == 1) return {job};
 
   comm.barrier();
-  throw(no_jobs_left());
+  return {};
  }
 
 public:
@@ -141,7 +142,7 @@ public:
   TRIQS_ASSERT(jobs.size() > 0);
  }
 
- Job operator()(GeneratorArgs... args) {
+ std::optional<Job> operator()(GeneratorArgs... args) {
   if(comm.size() == 1) return serial(args...);
   else {
    if(comm.rank() == 0) return master(args...);
@@ -151,10 +152,6 @@ public:
 
  // Restart job generation
  void reset() { next_job_index = 0; }
-
- // Throw it from operator()
- // C++17's std::optional would be a better solution.
- class no_jobs_left : std::exception {};
 };
 
 }

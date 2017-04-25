@@ -23,14 +23,14 @@ Job test_sum(mpi_dispatcher<Job,GeneratorArgs...> & disp,
              GeneratorArgs... args) {
  Job sum = 0;
  milliseconds sleep_duration(0);
- try {
-  while(true) {
-   auto job = disp(args...);
-   sleep_for(sleep_duration);
-   sleep_duration += 1ms;
-   sum += job;
-  }
- } catch(typename mpi_dispatcher<Job,GeneratorArgs...>::no_jobs_left &) {}
+ while(true) {
+  auto job_or_stop = disp(args...);
+  if(!job_or_stop) break;
+  auto job = job_or_stop.value();
+  sleep_for(sleep_duration);
+  sleep_duration += 1ms;
+  sum += job;
+ }
  sum = mpi_all_reduce(sum, comm, 0, MPI_SUM);
 
  return sum;
