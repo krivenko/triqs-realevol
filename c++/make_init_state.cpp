@@ -480,46 +480,46 @@ init_state make_equilibrium_init_state(operator_t const& h,
  std::vector<sp_levels_t> sp_lowest_levels;
 
  comm.barrier();
- try {
-  while(true) {
-   auto job = disp(gs_energy);
-   auto const& sp = subspaces[job.index];
-   gs_energy = job.gs_energy;
+ while(true) {
+  auto job_or_stop = disp(gs_energy);
+  if(!job_or_stop) break;
+  auto job = job_or_stop.value();
+  auto const& sp = subspaces[job.index];
+  gs_energy = job.gs_energy;
 
-   if(params.verbosity >= 2)
-    std::cout << "[Node " << comm.rank() << "] Searching the lowest eigenvalues on subspace "
-              << sp.get_index() << " (dimension " << sp.size() << "), "
-              << "starting E_gs = " << gs_energy << std::endl;
+  if(params.verbosity >= 2)
+   std::cout << "[Node " << comm.rank() << "] Searching the lowest eigenvalues on subspace "
+             << sp.get_index() << " (dimension " << sp.size() << "), "
+             << "starting E_gs = " << gs_energy << std::endl;
 
-   auto ncv_it = params.arpack_ncv.find(sp.get_index());
-   int ncv = ncv_it == params.arpack_ncv.end() ? -1 : ncv_it->second;
+  auto ncv_it = params.arpack_ncv.find(sp.get_index());
+  int ncv = ncv_it == params.arpack_ncv.end() ? -1 : ncv_it->second;
 
-   if(h_is_real) {
-    real_static_op_on_subspace_t op(h_, fops, ist.get_full_hs());
-    find_lowest_levels_on_subspace(sp, op, sp_lowest_levels,
-                                   gs_energy, energy_window,
-                                   params.verbosity,
-                                   params.arpack_min_matrix_size,
-                                   params.arpack_tolerance, ncv,
-                                   comm.rank());
-   } else {
-    static_op_on_subspace_t op(h_, fops, ist.get_full_hs());
-    find_lowest_levels_on_subspace(sp, op, sp_lowest_levels,
-                                   gs_energy, energy_window,
-                                   params.verbosity,
-                                   params.arpack_min_matrix_size,
-                                   params.arpack_tolerance, ncv,
-                                   comm.rank());
-   }
-
-   CHECK_SIGNALS;
-
-   if(params.verbosity >= 2 && sp_lowest_levels.back().first == sp.get_index())
-    std::cout << "[Node " << comm.rank() << "] Provisionally relevant levels on subspace "
-              << sp.get_index() << ": "
-              << sp_lowest_levels.back().second << std::endl;
+  if(h_is_real) {
+   real_static_op_on_subspace_t op(h_, fops, ist.get_full_hs());
+   find_lowest_levels_on_subspace(sp, op, sp_lowest_levels,
+                                  gs_energy, energy_window,
+                                  params.verbosity,
+                                  params.arpack_min_matrix_size,
+                                  params.arpack_tolerance, ncv,
+                                  comm.rank());
+  } else {
+   static_op_on_subspace_t op(h_, fops, ist.get_full_hs());
+   find_lowest_levels_on_subspace(sp, op, sp_lowest_levels,
+                                  gs_energy, energy_window,
+                                  params.verbosity,
+                                  params.arpack_min_matrix_size,
+                                  params.arpack_tolerance, ncv,
+                                  comm.rank());
   }
- } catch(decltype(disp)::no_jobs_left &) {}
+
+  CHECK_SIGNALS;
+
+  if(params.verbosity >= 2 && sp_lowest_levels.back().first == sp.get_index())
+   std::cout << "[Node " << comm.rank() << "] Provisionally relevant levels on subspace "
+             << sp.get_index() << ": "
+             << sp_lowest_levels.back().second << std::endl;
+ }
 
  // Find the global energy minimum
  gs_energy = mpi_all_reduce(gs_energy, comm, 0, MPI_MIN);
