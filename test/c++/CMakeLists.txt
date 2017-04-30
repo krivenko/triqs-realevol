@@ -8,7 +8,7 @@ include_directories(${CMAKE_SOURCE_DIR}/c++ ${TRIQS_INCLUDE_ALL})
 set(SIMPLE_TESTS time_expr many_body_operator hilbert_space space_partition
                  mesh_container lanczos_worker hs_structure sort2
                  init_state_pure
-                 trimer) #mesh_container_cyclic runge_kutta lanczos)
+                 trimer)
 foreach(t ${SIMPLE_TESTS})
     add_executable(${t} ${CMAKE_CURRENT_SOURCE_DIR}/${t}.cpp)
     target_link_libraries(${t} realevol_c time_expr_c ${TRIQS_LIBRARY_ALL} ${TRIQS_LIBRARY_GTEST})
