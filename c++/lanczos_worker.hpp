@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2013 I. Krivenko
+ * Copyright (C) 2013-2017 I. Krivenko
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -40,10 +40,10 @@ template <typename OperatorType, typename StateType> struct lanczos_worker {
  using scalar_t = typename StateType::value_type;
  using real_scalar_t = decltype(std::real(scalar_t{}));
 
- OperatorType const& H;
+ OperatorType const& h;
 
  // Krylov basis states
- // H \approx V * T * V^+
+ // h \approx V * T * V^+
  // Elements of 'basisstates' are columns of V
  std::vector<StateType> basisstates;
 
@@ -58,10 +58,11 @@ template <typename OperatorType, typename StateType> struct lanczos_worker {
  // Temporaries
  StateType res_vector;
 
- static constexpr unsigned int reserved_krylov_dim = 20;
-
  // Convergence threshold for the GS energy
  real_scalar_t gs_energy_convergence;
+
+ // Maximal dimension of the Krylov space
+ int max_krylov_dim;
 
  // Tridiagonal matrix diagonalizer
  tridiag_worker<false> tdw;
@@ -81,21 +82,21 @@ template <typename OperatorType, typename StateType> struct lanczos_worker {
  // Returns the only matrix element of the 1x1 Krylov-projected matrix
  real_scalar_t first_iteration(StateType const& initial_state) {
   basisstates.push_back(initial_state);
-  res_vector = H(basisstates.back());
+  res_vector = h(basisstates.back());
   alpha.push_back(checked_real(dot_product(initial_state, res_vector)));
   res_vector -= alpha.back() * initial_state;
   return alpha.back();
  }
 
  // Calculates the next state in Krylov's basis.
- // Returns false if the previous state was an eigenstate of H
+ // Returns false if the previous state was an eigenstate of h
  bool advance() {
   real_scalar_t new_beta = std::sqrt(checked_real(dot_product(res_vector, res_vector)));
   // We don't really want to divide by zero
   if(is_zero(new_beta,gs_energy_convergence)) return false;
   beta.push_back(new_beta);
   basisstates.push_back(res_vector / new_beta);
-  res_vector = H(basisstates.back());
+  res_vector = h(basisstates.back());
   alpha.push_back(checked_real(dot_product(basisstates.back(), res_vector)));
   res_vector -= alpha.back() * basisstates.back();
   res_vector -= beta.back() * basisstates[basisstates.size() - 2];
@@ -106,11 +107,13 @@ public:
 
  using state_type = StateType;
 
- lanczos_worker(OperatorType const& H, real_scalar_t gs_energy_convergence)
-        : H(H), gs_energy_convergence(gs_energy_convergence), tdw(reserved_krylov_dim) {
-  alpha.reserve(reserved_krylov_dim);
-  beta.reserve(reserved_krylov_dim - 1);
-  basisstates.reserve(reserved_krylov_dim);
+ lanczos_worker(OperatorType const& h, real_scalar_t gs_energy_convergence, int max_krylov_dim = 20) :
+  h(h), gs_energy_convergence(gs_energy_convergence), max_krylov_dim(max_krylov_dim),
+  tdw(max_krylov_dim) {
+  TRIQS_ASSERT(max_krylov_dim >= 1);
+  alpha.reserve(max_krylov_dim);
+  beta.reserve(max_krylov_dim - 1);
+  basisstates.reserve(max_krylov_dim);
  }
  lanczos_worker(lanczos_worker const&) = default;
  lanczos_worker& operator=(lanczos_worker const&) = delete;
@@ -127,6 +130,11 @@ public:
   while (advance()) {
    tdw(alpha, beta);
    if(is_zero(tdw.values()[0] - gs_energy,gs_energy_convergence)) break;
+   if(tdw.values().size() == max_krylov_dim) {
+    std::cerr << "lanczos_worker: maximal dimension of the Krylov space "
+              << max_krylov_dim << " has been reached reached"  << std::endl;
+    break;
+   }
    gs_energy = tdw.values()[0];
   }
  }
@@ -141,9 +149,14 @@ public:
   basisstates.clear();
  }
 
+ template <typename KrylovCoeffs> void krylov_2_fock(KrylovCoeffs const& phi, StateType & st) {
+  st() = {};
+  for (int i = 0; i < phi.size(); ++i) st += phi(i) * basisstates[i];
+ }
+
  template <typename KrylovCoeffs> StateType krylov_2_fock(KrylovCoeffs const& phi) {
   state_type st = make_zero_state(res_vector);
-  for (std::size_t i = 0; i < phi.size(); ++i) st += phi(i) * basisstates[i];
+  for (int i = 0; i < phi.size(); ++i) st += phi(i) * basisstates[i];
   return st;
  }
 };
