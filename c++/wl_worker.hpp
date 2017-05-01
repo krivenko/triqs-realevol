@@ -39,6 +39,8 @@ class wl_worker {
  double hbar;
 
  int lanczos_min_matrix_size;
+ std::map<long,double> const& lanczos_gs_energy_tol;
+ std::map<long,int> const& lanczos_max_krylov_dim;
 
  std::vector<sub_hilbert_space> const& subspaces;
  std::vector<bool> const& is_static_sp;
@@ -49,11 +51,16 @@ public:
  wl_worker(init_state const& initial_state, operator_t const& h, double hbar,
            hilbert_space_structure const& hss,
            std::vector<bool> const& is_static_sp,
-           int lanczos_min_matrix_size) :
+           int lanczos_min_matrix_size,
+           std::map<long,double> const& lanczos_gs_energy_tol,
+           std::map<long,int> const& lanczos_max_krylov_dim
+          ) :
  initial_state(initial_state), hss(hss), subspaces(hss.sub_hilbert_spaces),
  h(h, initial_state.get_fops(), initial_state.get_full_hs()), hbar(hbar),
  is_static_sp(is_static_sp),
- lanczos_min_matrix_size(lanczos_min_matrix_size) {
+ lanczos_min_matrix_size(lanczos_min_matrix_size),
+ lanczos_gs_energy_tol(lanczos_gs_energy_tol),
+ lanczos_max_krylov_dim(lanczos_max_krylov_dim) {
 
   auto const& fops = initial_state.get_fops();
   c_conn.resize(fops.size(Fermion), std::vector<int>(subspaces.size()));
@@ -80,12 +87,30 @@ public:
   auto const& middle_hs = subspaces[wl.middle_sp_index];
   auto const& right_hs = subspaces[wl.right_sp_index];
 
+  auto get_gs_energy_tol = [this](int spn) {
+   auto it = lanczos_gs_energy_tol.find(spn);
+   return it != lanczos_gs_energy_tol.end() ? it->second : -1;
+  };
+  auto get_max_krylov_dim = [this](int spn) {
+   auto it = lanczos_max_krylov_dim.find(spn);
+   return it != lanczos_max_krylov_dim.end() ? it->second : -1;
+  };
+
   propagator left_prop(h, left_hs, hbar, is_static_sp[wl.left_sp_index], HInterpol,
-                       lanczos_min_matrix_size);
+                       lanczos_min_matrix_size,
+                       get_gs_energy_tol(wl.left_sp_index),
+                       get_max_krylov_dim(wl.left_sp_index)
+                      );
   propagator middle_prop(h, middle_hs, hbar, is_static_sp[wl.middle_sp_index], HInterpol,
-                         lanczos_min_matrix_size);
+                         lanczos_min_matrix_size,
+                         get_gs_energy_tol(wl.middle_sp_index),
+                         get_max_krylov_dim(wl.middle_sp_index)
+                        );
   propagator right_prop(h, right_hs, hbar, is_static_sp[wl.right_sp_index], HInterpol,
-                        lanczos_min_matrix_size);
+                        lanczos_min_matrix_size,
+                        get_gs_energy_tol(wl.right_sp_index),
+                        get_max_krylov_dim(wl.right_sp_index)
+                       );
 
   auto const& fops = initial_state.get_fops();
   auto const& full_hs = initial_state.get_full_hs();

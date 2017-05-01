@@ -45,6 +45,12 @@ struct compute_2t_obs_parameters_t {
  /// Use Lanczos algorithm to exponentiate matrices of this size or bigger
  int lanczos_min_matrix_size = 11;
 
+ /// Lanczos convergence threshold for the GS energy, for each invariant subspace
+ std::map<long,double> lanczos_gs_energy_tol = std::map<long,double>({});
+
+ /// Maximal dimension of the Krylov space, for each invariant subspace
+ std::map<long,int> lanczos_max_krylov_dim = std::map<long,int>({});
+
  compute_2t_obs_parameters_t() = default;
  compute_2t_obs_parameters_t(operator_t const& h) : h(h) {}
 };
