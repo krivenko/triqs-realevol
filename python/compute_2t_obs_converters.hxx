@@ -1,6 +1,6 @@
 // DO NOT EDIT
 // Generated automatically using libclang using the command :
-// c++2py.py ../c++/solver.hpp -I../c++ --only_converters -p -m realevol -o compute_2t_obs --appname realevol --moduledoc "The Real-time evolution solver"
+// c++2py.py ../c++/solver.hpp -I../c++ --only_converters -p -m realevol -o realevol --appname realevol --moduledoc "The Real-time evolution solver"
 
 
 // --- C++ Python converter for compute_2t_obs_parameters_t
@@ -18,6 +18,8 @@ template <> struct py_converter<compute_2t_obs_parameters_t> {
   PyDict_SetItemString( d, "hbar"                   , convert_to_python(x.hbar));
   PyDict_SetItemString( d, "hamiltonian_interpol"   , convert_to_python(x.hamiltonian_interpol));
   PyDict_SetItemString( d, "lanczos_min_matrix_size", convert_to_python(x.lanczos_min_matrix_size));
+  PyDict_SetItemString( d, "lanczos_gs_energy_tol"  , convert_to_python(x.lanczos_gs_energy_tol));
+  PyDict_SetItemString( d, "lanczos_max_krylov_dim" , convert_to_python(x.lanczos_max_krylov_dim));
   return d;
  }
 
@@ -42,6 +44,8 @@ template <> struct py_converter<compute_2t_obs_parameters_t> {
   _get_optional(dic, "hbar"                   , res.hbar                      ,1.0);
   _get_optional(dic, "hamiltonian_interpol"   , res.hamiltonian_interpol      ,Rectangle);
   _get_optional(dic, "lanczos_min_matrix_size", res.lanczos_min_matrix_size   ,11);
+  _get_optional(dic, "lanczos_gs_energy_tol"  , res.lanczos_gs_energy_tol     ,std::map<long,double>({}));
+  _get_optional(dic, "lanczos_max_krylov_dim" , res.lanczos_max_krylov_dim    ,std::map<long,int>({}));
   return res;
  }
 
@@ -72,7 +76,7 @@ template <> struct py_converter<compute_2t_obs_parameters_t> {
   std::stringstream fs, fs2; int err=0;
 
 #ifndef TRIQS_ALLOW_UNUSED_PARAMETERS
-  std::vector<std::string> ks, all_keys = {"h","verbosity","hbar","hamiltonian_interpol","lanczos_min_matrix_size"};
+  std::vector<std::string> ks, all_keys = {"h","verbosity","hbar","hamiltonian_interpol","lanczos_min_matrix_size","lanczos_gs_energy_tol","lanczos_max_krylov_dim"};
   pyref keys = PyDict_Keys(dic);
   if (!convertible_from_python<std::vector<std::string>>(keys, true)) {
    fs << "\nThe dict keys are not strings";
@@ -89,6 +93,8 @@ template <> struct py_converter<compute_2t_obs_parameters_t> {
   _check_optional <double                   >(dic, fs, err, "hbar"                   , "double");
   _check_optional <realevol::h_interpolation>(dic, fs, err, "hamiltonian_interpol"   , "realevol::h_interpolation");
   _check_optional <int                      >(dic, fs, err, "lanczos_min_matrix_size", "int");
+  _check_optional <std::map<long, double>   >(dic, fs, err, "lanczos_gs_energy_tol"  , "std::map<long, double>");
+  _check_optional <std::map<long, int>      >(dic, fs, err, "lanczos_max_krylov_dim" , "std::map<long, int>");
   if (err) goto _error;
   return true;
 

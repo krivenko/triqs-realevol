@@ -93,7 +93,7 @@ template <typename OperatorType, typename StateType> struct lanczos_worker {
  bool advance() {
   real_scalar_t new_beta = std::sqrt(checked_real(dot_product(res_vector, res_vector)));
   // We don't really want to divide by zero
-  if(is_zero(new_beta,gs_energy_convergence)) return false;
+  if(is_zero(new_beta, gs_energy_convergence)) return false;
   beta.push_back(new_beta);
   basisstates.push_back(res_vector / new_beta);
   res_vector = h(basisstates.back());
@@ -129,10 +129,10 @@ public:
 
   while (advance()) {
    tdw(alpha, beta);
-   if(is_zero(tdw.values()[0] - gs_energy,gs_energy_convergence)) break;
+   if(is_zero(tdw.values()[0] - gs_energy, gs_energy_convergence)) break;
    if(tdw.values().size() == max_krylov_dim) {
-    std::cerr << "lanczos_worker: maximal dimension of the Krylov space "
-              << max_krylov_dim << " has been reached reached"  << std::endl;
+    std::cerr << "lanczos_worker: maximal dimension of the Krylov space ("
+              << max_krylov_dim << ") has been reached"  << std::endl;
     break;
    }
    gs_energy = tdw.values()[0];
@@ -150,7 +150,7 @@ public:
  }
 
  template <typename KrylovCoeffs> void krylov_2_fock(KrylovCoeffs const& phi, StateType & st) {
-  st() = {};
+  st.zero();
   for (int i = 0; i < phi.size(); ++i) st += phi(i) * basisstates[i];
  }
 

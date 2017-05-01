@@ -225,7 +225,10 @@ void solver::compute_2t_obs(compute_2t_obs_parameters_t const& params) {
  mpi_dispatcher<long> disp(comm, all_worldlines.size());
 
  wl_worker worker(*initial_state, h, params.hbar, hs_struct, is_static_sp,
-                  params.lanczos_min_matrix_size);
+                  params.lanczos_min_matrix_size,
+                  params.lanczos_gs_energy_tol,
+                  params.lanczos_max_krylov_dim
+                 );
 
  auto choose_obs =
  [this](worldline_desc_t const& wl, bool verbose, long nwl) -> gf_2t_t& {

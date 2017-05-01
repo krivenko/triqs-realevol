@@ -43,11 +43,14 @@ class propagator;
 
 // Instantaneous Hamiltonian
 struct inst_h_t {
+ const bool is_static;
  op_on_subspace_t const& h;        // Hamiltonian
  const h_interpolation h_interpol; // Hamiltonian interpolation
  double t;
  double dt;
- const bool is_static;
+ inst_h_t(op_on_subspace_t const& h, bool is_static, h_interpolation h_interpol);
+ inst_h_t(inst_h_t const&) = delete;
+ inst_h_t(inst_h_t &&) noexcept = default;
  state_on_subspace_t operator()(state_on_subspace_t const& st) const;
 };
 
@@ -82,7 +85,9 @@ struct prop_lapack_t {
 struct prop_lanczos_t {
  inst_h_t inst_h;
  lanczos_worker<inst_h_t, state_on_subspace_t> lw;
- prop_lanczos_t(inst_h_t && inst_h, double gs_energy_convergence, int max_krylov_dim);
+ matrix<dcomplex> lanczos_exp;
+ prop_lanczos_t(inst_h_t && inst_h, sub_hilbert_space const& sp,
+                double gs_energy_convergence, int max_krylov_dim);
  prop_lanczos_t(prop_lanczos_t const&) = delete;
  void operator()(state_on_subspace_t & st,
                  time_it_t const& t_min, time_it_t const& t_max,
@@ -98,16 +103,13 @@ class propagator {
  enum {OneD, LAPACK, Lanczos} ed_solver;
 
  std::shared_ptr<void> prop_impl;
- std::shared_ptr<void> make_prop_impl(op_on_subspace_t const& h, sub_hilbert_space const& sp,
-                                      bool is_static_h, h_interpolation h_interpol);
-
  void propagate(state_on_subspace_t & st, time_it_t const& t_min, time_it_t const& t_max, dcomplex c) const;
 
 public:
 
  propagator(op_on_subspace_t const& h, sub_hilbert_space const& sp,
             double hbar, bool is_static_op, h_interpolation h_interpol,
-            long lanczos_min_matrix_size);
+            long lanczos_min_matrix_size, double gs_energy_convergence, int max_krylov_dim);
 
  void operator()(state_on_subspace_t & st,
                  time_it_t const& t_start, time_it_t const& t_end) const;
