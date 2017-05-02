@@ -26,7 +26,7 @@ gf_struct = {'dn':[0], 'up':[0]}
 chi_indices = [('dn',0),('up',0)]
 
 t_max = 1.0
-n_t = 11
+n_t = 21
 
 ## Initial Hamiltonian
 h0 = -mu*(n('up',0) + n('dn',0)) + U*n('up',0)*n('dn',0)
