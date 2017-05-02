@@ -249,6 +249,10 @@ void solver::compute_2t_obs(compute_2t_obs_parameters_t const& params) {
 
  CHECK_SIGNALS;
 
+ g_g() = 0;
+ g_l() = 0;
+ chi() = 0;
+
  while(true) {
   if((nwl = disp().value_or(-1)) == -1) break;
   auto const& wl = all_worldlines[nwl];
