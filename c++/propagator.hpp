@@ -85,7 +85,7 @@ struct prop_lapack_t {
 struct prop_lanczos_t {
  inst_h_t inst_h;
  lanczos_worker<inst_h_t, state_on_subspace_t> lw;
- matrix<dcomplex> lanczos_exp;
+ vector<dcomplex> krylov_coeffs;
  prop_lanczos_t(inst_h_t && inst_h, sub_hilbert_space const& sp,
                 double gs_energy_convergence, int max_krylov_dim);
  prop_lanczos_t(prop_lanczos_t const&) = delete;

@@ -114,7 +114,7 @@ inline prop_lanczos_t::prop_lanczos_t(inst_h_t && inst_h_, sub_hilbert_space con
  inst_h(std::move(inst_h_)),
  lw(inst_h, gs_energy_convergence > 0 ? gs_energy_convergence : 1e-8,
             std::min((max_krylov_dim > 0 ? max_krylov_dim : 20), sp.size())),
- lanczos_exp(lw.max_krylov_dim, lw.max_krylov_dim) {
+ krylov_coeffs(lw.max_krylov_dim) {
 }
 
 inline void prop_lanczos_t::operator()(state_on_subspace_t & st,
@@ -133,11 +133,11 @@ inline void prop_lanczos_t::operator()(state_on_subspace_t & st,
  auto all = range(eigenvalues.size());
 
  for(int n : all)
-  lanczos_exp(n, all) = std::exp(c * inst_h.dt * eigenvalues(n)) * lw.vectors()(n, all);
- lanczos_exp(all, all) = lw.vectors().transpose() * lanczos_exp(all, all);
+  krylov_coeffs(n) = std::exp(c * inst_h.dt * eigenvalues(n)) * lw.vectors()(n, 0);
+ krylov_coeffs(all) = lw.vectors().transpose() * krylov_coeffs(all);
 
  // Propagate
- lw.krylov_2_fock(norm * lanczos_exp(all, 0), st);
+ lw.krylov_2_fock(norm * krylov_coeffs(all), st);
 }
 
 //////////////////

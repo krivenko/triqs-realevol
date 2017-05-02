@@ -131,8 +131,8 @@ public:
    tdw(alpha, beta);
    if(is_zero(tdw.values()[0] - gs_energy, gs_energy_convergence)) break;
    if(tdw.values().size() == max_krylov_dim) {
-    std::cerr << "lanczos_worker: maximal dimension of the Krylov space ("
-              << max_krylov_dim << ") has been reached"  << std::endl;
+    //std::cerr << "lanczos_worker: maximal dimension of the Krylov space ("
+    //          << max_krylov_dim << ") has been reached"  << std::endl;
     break;
    }
    gs_energy = tdw.values()[0];
