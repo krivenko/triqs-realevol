@@ -194,7 +194,7 @@ class state<HilbertSpace, ScalarType, true> : boost::additive<state<HilbertSpace
   @param l Callable object
   */
  template<typename Lambda>
- friend void foreach(state const& st, Lambda l) {
+ friend void foreach_if(state const& st, Lambda l) {
   const_cast<state&>(st).prune();
   for (auto const& p : st.ampli) {
    if(!l(p.first, p.second)) break;
@@ -349,7 +349,7 @@ class state<HilbertSpace, ScalarType, false> : boost::additive<state<HilbertSpac
   @param l Callable object
   */
  template<typename Lambda>
- friend void foreach(state const& st, Lambda l) {
+ friend void foreach_if(state const& st, Lambda l) {
   const auto L = st.size();
   for (size_t i = 0; i < L; ++i) {
    if(!l(i, st(i))) break;
