@@ -22,11 +22,13 @@
 import pytriqs.utility.mpi as mpi
 from texpr import TExpr, is_constant, is_zero, conj
 from operators import Operator, c, c_dag, n, a, a_dag
+from gf_retime import MeshReTimeReTime, GfReTime_x_ReTime
 from init_state import InitState, make_pure_init_state, make_equilibrium_init_state
 from realevol import Solver, make_gf_ret_adv, assert_gfs_are_close, assert_block_gfs_are_close
 
 __all__ = ['TExpr','is_constant','is_zero','conj',
            'Operator','c','c_dag','n','a','a_dag',
+           'MeshReTimeReTime','GfReTime_x_ReTime',
            'InitState', 'make_pure_init_state','make_equilibrium_init_state',
            'Solver', 'make_gf_ret_adv',
            'assert_gfs_are_close', 'assert_block_gfs_are_close']

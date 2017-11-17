@@ -13,8 +13,8 @@ spin_names = ('up','dn')
 U = 2.0
 mu = U*0.1
 t = 0.3
-#tp = -0.1
-tp = -0.1*te("1-exp(-10*t)")
+tp = -0.1
+#tp = -0.1*te("1-exp(-10*t)")
 beta = 40.0
 
 gf_struct = {'dn' : range(3)}
