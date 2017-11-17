@@ -65,7 +65,7 @@ TEST(init_state_equilibrium, real) {
  }
  EXPECT_CLOSE(1.0, total_weight);
 }
-
+/*
 TEST(init_state_equilibrium, complex) {
  double U = 3.0;
  double mu = U/2;
@@ -121,5 +121,5 @@ TEST(init_state_equilibrium, complex) {
  }
  EXPECT_CLOSE(1.0, total_weight);
 }
-
+*/
 MAKE_MAIN;

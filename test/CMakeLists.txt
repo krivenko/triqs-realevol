@@ -1,2 +1,3 @@
 add_subdirectory(c++)
-add_subdirectory(python)
+# FIXME
+#add_subdirectory(python)

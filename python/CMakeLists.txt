@@ -1,25 +1,37 @@
+# Build Python modules
+
+# texpr
+add_cpp2py_module(texpr)
+target_link_libraries(texpr triqs realevol_c)
+
+# operators
+#add_cpp2py_module(operators)
+#target_link_libraries(operators triqs realevol_c)
+
+
 # make a local pytriqs copy
-triqs_prepare_local_pytriqs(${CMAKE_PROJECT_NAME})
-
-# Build the python modules
-triqs_python_extension_and_install(texpr)
-target_link_libraries(texpr realevol_c ${TRIQS_LIBRARY_ALL})
-triqs_set_rpath_for_target(texpr)
-
-triqs_python_extension_and_install(operators)
-target_link_libraries(operators realevol_c ${TRIQS_LIBRARY_ALL})
-triqs_set_rpath_for_target(operators)
-
-triqs_python_extension_and_install(init_state)
-target_link_libraries(init_state realevol_c ${TRIQS_LIBRARY_ALL})
-triqs_set_rpath_for_target(init_state)
-
-triqs_python_extension_and_install(realevol)
-target_link_libraries(realevol realevol_c ${TRIQS_LIBRARY_ALL})
-triqs_set_rpath_for_target(realevol)
-
-include_directories(${CMAKE_BINARY_DIR}/include ${CMAKE_SOURCE_DIR}/c++ ${CMAKE_CURRENT_SOURCE_DIR} ${TRIQS_INCLUDE_ALL})
-
+# triqs_prepare_local_pytriqs(${CMAKE_PROJECT_NAME})
+#
+# # Build the python modules
+# triqs_python_extension_and_install(texpr)
+# target_link_libraries(texpr realevol_c ${TRIQS_LIBRARY_ALL})
+# triqs_set_rpath_for_target(texpr)
+#
+# triqs_python_extension_and_install(operators)
+# target_link_libraries(operators realevol_c ${TRIQS_LIBRARY_ALL})
+# triqs_set_rpath_for_target(operators)
+#
+# triqs_python_extension_and_install(init_state)
+# target_link_libraries(init_state realevol_c ${TRIQS_LIBRARY_ALL})
+# triqs_set_rpath_for_target(init_state)
+#
+# triqs_python_extension_and_install(realevol)
+# target_link_libraries(realevol realevol_c ${TRIQS_LIBRARY_ALL})
+# triqs_set_rpath_for_target(realevol)
+#
+# include_directories(${CMAKE_BINARY_DIR}/include ${CMAKE_SOURCE_DIR}/c++ ${CMAKE_CURRENT_SOURCE_DIR} ${TRIQS_INCLUDE_ALL})
+#
 # add version file
 configure_file(version.py.in version.py)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/version.py DESTINATION ${TRIQS_PYTHON_LIB_DEST_ROOT}/${CMAKE_PROJECT_NAME})
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/version.py DESTINATION ${PYTHON_LIB_DEST}/version.py)
+

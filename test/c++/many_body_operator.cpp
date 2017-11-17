@@ -62,19 +62,19 @@ TEST(operator, real_or_complex) {
  EXPECT_PRINT("2 + 1*C^+(1)",     Cd + 2.0);
  EXPECT_PRINT("2 + 1*A(0)",       A + 2.0);
  EXPECT_PRINT("2 + 1*A^+(1)",     Ad + 2.0);
- EXPECT_PRINT("(0,2) + 1*C(0)",   C + 2.0*I);
- EXPECT_PRINT("(0,2) + 1*C^+(1)", Cd + 2.0*I);
- EXPECT_PRINT("(0,2) + 1*A(0)",   A + 2.0*I);
- EXPECT_PRINT("(0,2) + 1*A^+(1)", Ad + 2.0*I);
+ EXPECT_PRINT("(0+2j) + 1*C(0)",   C + 2.0*I);
+ EXPECT_PRINT("(0+2j) + 1*C^+(1)", Cd + 2.0*I);
+ EXPECT_PRINT("(0+2j) + 1*A(0)",   A + 2.0*I);
+ EXPECT_PRINT("(0+2j) + 1*A^+(1)", Ad + 2.0*I);
 
  EXPECT_PRINT("2 + 1*C(0)",       2.0 + C);
  EXPECT_PRINT("2 + 1*C^+(1)",     2.0 + Cd);
  EXPECT_PRINT("2 + 1*A(0)",       2.0 + A);
  EXPECT_PRINT("2 + 1*A^+(1)",     2.0 + Ad);
- EXPECT_PRINT("(0,2) + 1*C(0)",   2.0*I + C);
- EXPECT_PRINT("(0,2) + 1*C^+(1)", 2.0*I + Cd);
- EXPECT_PRINT("(0,2) + 1*A(0)",   2.0*I + A);
- EXPECT_PRINT("(0,2) + 1*A^+(1)", 2.0*I + Ad);
+ EXPECT_PRINT("(0+2j) + 1*C(0)",   2.0*I + C);
+ EXPECT_PRINT("(0+2j) + 1*C^+(1)", 2.0*I + Cd);
+ EXPECT_PRINT("(0+2j) + 1*A(0)",   2.0*I + A);
+ EXPECT_PRINT("(0+2j) + 1*A^+(1)", 2.0*I + Ad);
 
  EXPECT_PRINT("1*C^+(1) + 1*C(0) + 1*A^+(1) + 1*A(0)", C + Cd + A + Ad);
 
@@ -83,19 +83,19 @@ TEST(operator, real_or_complex) {
  EXPECT_PRINT("-2 + 1*C^+(1)",     Cd - 2.0);
  EXPECT_PRINT("-2 + 1*A(0)",       A - 2.0);
  EXPECT_PRINT("-2 + 1*A^+(1)",     Ad - 2.0);
- EXPECT_PRINT("(-0,-2) + 1*C(0)",   C - 2.0*I);
- EXPECT_PRINT("(-0,-2) + 1*C^+(1)", Cd - 2.0*I);
- EXPECT_PRINT("(-0,-2) + 1*A(0)",   A - 2.0*I);
- EXPECT_PRINT("(-0,-2) + 1*A^+(1)", Ad - 2.0*I);
+ EXPECT_PRINT("(-0-2j) + 1*C(0)",   C - 2.0*I);
+ EXPECT_PRINT("(-0-2j) + 1*C^+(1)", Cd - 2.0*I);
+ EXPECT_PRINT("(-0-2j) + 1*A(0)",   A - 2.0*I);
+ EXPECT_PRINT("(-0-2j) + 1*A^+(1)", Ad - 2.0*I);
 
  EXPECT_PRINT("2 + -1*C(0)",       2.0 - C);
  EXPECT_PRINT("2 + -1*C^+(1)",     2.0 - Cd);
  EXPECT_PRINT("2 + -1*A(0)",       2.0 - A);
  EXPECT_PRINT("2 + -1*A^+(1)",     2.0 - Ad);
- EXPECT_PRINT("(0,2) + -1*C(0)",   2.0*I - C);
- EXPECT_PRINT("(0,2) + -1*C^+(1)", 2.0*I - Cd);
- EXPECT_PRINT("(0,2) + -1*A(0)",   2.0*I - A);
- EXPECT_PRINT("(0,2) + -1*A^+(1)", 2.0*I - Ad);
+ EXPECT_PRINT("(0+2j) + -1*C(0)",   2.0*I - C);
+ EXPECT_PRINT("(0+2j) + -1*C^+(1)", 2.0*I - Cd);
+ EXPECT_PRINT("(0+2j) + -1*A(0)",   2.0*I - A);
+ EXPECT_PRINT("(0+2j) + -1*A^+(1)", 2.0*I - Ad);
 
  EXPECT_PRINT("-1*C^+(1) + 1*C(0) + -1*A^+(1) + -1*A(0)", C - Cd - A - Ad);
 
@@ -104,19 +104,19 @@ TEST(operator, real_or_complex) {
  EXPECT_PRINT("3*C^+(1)",     Cd * 3.0);
  EXPECT_PRINT("3*A(0)",       A * 3.0);
  EXPECT_PRINT("3*A^+(1)",     Ad * 3.0);
- EXPECT_PRINT("(0,3)*C(0)",   C * 3.0*I);
- EXPECT_PRINT("(0,3)*C^+(1)", Cd * 3.0*I);
- EXPECT_PRINT("(0,3)*A(0)",   A * 3.0*I);
- EXPECT_PRINT("(0,3)*A^+(1)", Ad * 3.0*I);
+ EXPECT_PRINT("(0+3j)*C(0)",   C * 3.0*I);
+ EXPECT_PRINT("(0+3j)*C^+(1)", Cd * 3.0*I);
+ EXPECT_PRINT("(0+3j)*A(0)",   A * 3.0*I);
+ EXPECT_PRINT("(0+3j)*A^+(1)", Ad * 3.0*I);
 
  EXPECT_PRINT("3*C(0)",       3.0 * C);
  EXPECT_PRINT("3*C^+(1)",     3.0 * Cd);
  EXPECT_PRINT("3*A(0)",       3.0 * A);
  EXPECT_PRINT("3*A^+(1)",     3.0 * Ad);
- EXPECT_PRINT("(0,3)*C(0)",   3.0*I * C);
- EXPECT_PRINT("(0,3)*C^+(1)", 3.0*I * Cd);
- EXPECT_PRINT("(0,3)*A(0)",   3.0*I * A);
- EXPECT_PRINT("(0,3)*A^+(1)", 3.0*I * Ad);
+ EXPECT_PRINT("(0+3j)*C(0)",   3.0*I * C);
+ EXPECT_PRINT("(0+3j)*C^+(1)", 3.0*I * Cd);
+ EXPECT_PRINT("(0+3j)*A(0)",   3.0*I * A);
+ EXPECT_PRINT("(0+3j)*A^+(1)", 3.0*I * Ad);
 
  EXPECT_PRINT("-2 + 2*C^+(2)C(2) + -2*C^+(2)A^+(2) + 2*C(2)A(2) + -1*[A^+(2)]^2 + 1*[A(2)]^2",
               (c(2) + c_dag(2) + a(2) + a_dag(2))*(c(2) - c_dag(2) + a(2) - a_dag(2)));
@@ -132,8 +132,8 @@ TEST(operator, real_or_complex) {
 
  // Dagger
  auto X = I*c_dag(1) * c_dag(2) * c(3) * c(4) * a_dag(5) * a(6);
- EXPECT_PRINT("(0,-1)*C^+(1)C^+(2)C(4)C(3)A^+(5)A(6)", X);
- EXPECT_PRINT("(0,1)*C^+(3)C^+(4)C(2)C(1)A^+(6)A(5)", dagger(X));
+ EXPECT_PRINT("(0-1j)*C^+(1)C^+(2)C(4)C(3)A^+(5)A(6)", X);
+ EXPECT_PRINT("(0+1j)*C^+(3)C^+(4)C(2)C(1)A^+(6)A(5)", dagger(X));
 }
 
 TEST(operator, time_expr) {

@@ -1,4 +1,4 @@
-from wrap_generator import *
+from cpp2py.wrap_generator import *
 
 module = module_(full_name = "texpr", app_name = "realevol", doc = "Time-dependent expression")
 
