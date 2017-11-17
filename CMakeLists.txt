@@ -19,8 +19,8 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${TRIQS_PATH}/share/triq
 # Load TRIQS, including all predefined variables from TRIQS installation
 find_package(TRIQS REQUIRED)
 
-if(NOT TRIQS_VERSION EQUAL 1.5)
-    message(FATAL_ERROR "The application requires the TRIQS library version 1.5 (got ${TRIQS_VERSION})")
+if(NOT TRIQS_VERSION EQUAL 1.4)
+    message(FATAL_ERROR "The application requires the TRIQS library version 1.4 (got ${TRIQS_VERSION})")
 endif()
 
 # Detect MPI
@@ -46,6 +46,15 @@ message(STATUS "TRIQS : Adding compilation flags detected by the library")
 add_definitions(${TRIQS_CXX_DEFINITIONS})
 
 option(Tests "Enable Tests" ON)
+
+#Check availability of <optional>
+try_compile(has_optional_header ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/cmake/has_optional.cpp COMPILE_DEFINITIONS -std=c++1z )
+if (NOT has_optional_header)
+    message(STATUS "Using <experimental/optional> header instead of <optional>")
+else ()
+    message(STATUS "<optional> header is available. No workaround needed")
+    add_definitions(-DHAS_OPTIONAL_HEADER)
+endif()
 
 # Compile C++ code
 add_subdirectory(c++)
