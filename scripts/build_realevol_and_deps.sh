@@ -1,12 +1,14 @@
 #!/bin/sh
 
-export CC=gcc
-export CXX=g++
-BUILD_TYPE=Debug
-INSTALL_DIR=$(pwd)/installed
-REALEVOL_SRC_DIR=$(pwd)/realevol.git
-PYTHON_INTERPRETER=/usr/bin/python2.7
-PYTHON_LIBRARY=/usr/lib64/libpython2.7.so
+export CC=gcc                               # C compiler to build TRIQS/realevol
+export CXX=g++                              # C++ compiler to build TRIQS/realevol
+export FC=gfortran                          # FORTRAN compiler to build ARPACK-NG
+BUILD_TYPE=Debug                            # CMake build type (Release, Debug, RelWithDebInfo)
+INSTALL_DIR=$(pwd)/installed                # Installation directory for TRIQS/ARPACK-NG/triqs_arpack/realevol
+REALEVOL_SRC_DIR=$(pwd)/realevol.git        # Directory with realevol sources
+BUILD_DIR=$(pwd)/build                      # Directory to build realevol and its prerequisites in
+PYTHON_INTERPRETER=/usr/bin/python2.7       # Path to Python interpreter
+PYTHON_LIBRARY=/usr/lib64/libpython2.7.so   # Path to Python shared library
 
 set -x
 set -e
@@ -19,7 +21,13 @@ mkdir -p ${INSTALL_DIR}
 [ -e ${INSTALL_DIR} ] && rm -rf ${INSTALL_DIR}/*
 
 #
-# Install TRIQS library from my own repository
+# Create build directory
+#
+mkdir -p $BUILD_DIR
+pushd $BUILD_DIR
+
+#
+# Install TRIQS library
 #
 
 if [ ! -d triqs.git ]; then
@@ -91,4 +99,6 @@ cmake ${REALEVOL_SRC_DIR} \
   -DARPACK_DIR=${INSTALL_DIR} \
   -DTests=ON
 make -j4 && make test
+popd
+
 popd
