@@ -141,7 +141,37 @@ Following a standard derivation, one can show that the time evolution operator $
     \right.
 \end{equation}
 
-\textit{Warning}: Even though the studied system can contain bosonic degrees of freedom, computation of correlators of $b^\dagger_i$/$b_i$ is not implemented.
+\textbf{Warning}: Even though the studied system can contain bosonic degrees of freedom, computation of correlators of $b^\dagger_i$/$b_i$ is not implemented.
+
+\section{\label{sec:init_state}\texttt{InitState}: Representation of the initial state}
+
+Any initial state $\hat\rho_0$ supported by \realevol\ can be represented as a finite sum of weighted pure states.
+\begin{equation}
+    \hat\rho_0 = \sum_m w_m \ket{\psi_m}\bra{\psi_m},\quad\sum_m w_m = 1.
+\end{equation}
+The way state vectors $\ket{\psi_m}$ and their respective weights $w_m$ are chosen, varies between the three cases listed in \ref{sec:formulation:initial} and will be discussed below. Before we proceed with this discussion, we need to introduce the notion of states space partition.
+
+The full states space of the problem can, in general, be partitioned into a direct sum of subspaces,
+\begin{equation}
+    \mathcal{H} = \mathcal{H}_1 \oplus \mathcal{H}_2 \oplus \ldots \oplus
+                  \mathcal{H}_S,\quad 1\le S\le \dim(\mathcal{H}).
+\end{equation}
+If a given state $\ket{\psi}\in\mathcal{H}_s$, it is possible to save memory by storing only expansion coefficients of $\ket{\psi}$ over the basis vectors of
+$\mathcal{H}_s$. This optimization technique is implemented in \texttt{InitState}, the Python object used to store $\hat\rho_0$ in \realevol\
+(the corresponding C++ type is called \texttt{init\_state}). An instance of
+\texttt{InitState} contains information about space partition ($S$, and a list of basis vectors for each $\mathcal{H}_s$) and a list of all contributing state/weight pairs accompanied by indices of the respective subspaces.
+\begin{equation}
+    \mathtt{InitState} = \{\mathcal{H}_s\}, \{(\ket{\psi_m}, w_m, s)\}.
+\end{equation}
+
+\section{\label{sec:make_pure_init_state}Function \texttt{make\_pure\_init\_state()}}
+
+Python function \texttt{make\_pure\_init\_state()} creates a pure initial state (see Section \ref{sec:formulation:initial}, point 1). It takes three arguments.
+\begin{itemize}
+    \item A generating operator $\hat P$. Must be time-independent and such that
+    $\hat P\ket{0} \neq 0$.
+    \item A fundamental operator set, i.e.
+\end{itemize}
 
 \bibliographystyle{plain}
 
