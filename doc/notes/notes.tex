@@ -178,12 +178,38 @@ $\mathcal{H}_s$. This optimization technique is implemented in \texttt{InitState
 
 \section{\label{sec:make_pure_init_state}Function \texttt{make\_pure\_init\_state()}}
 
-Python function \texttt{make\_pure\_init\_state()} creates a pure initial state (see Section \ref{sec:formulation:initial}, point 1). It takes three arguments.
+Python function \texttt{make\_pure\_init\_state()} creates a pure initial state (see Sec.~\ref{sec:formulation:initial}, point 1). It takes four arguments.
 \begin{itemize}
-    \item A generating operator $\hat P$. Must be time-independent and such that
-    $\hat P\ket{0} \neq 0$.
-    \item A fundamental operator set, i.e.
+    \item A Python object of type \texttt{realevol.operators.Operator}
+    representing the generating operator $\hat P$.
+
+    $\hat P$ must be time-independent and such that $\hat P\ket{0} \neq 0$.
+    \item An index set for fermions, i.e. a \texttt{set} of \texttt{(block\_index,inner\_index)} pairs to label all operators $c^\dagger_i$/$c_i$.
+
+    \item An index set for bosons, i.e. a \texttt{set} of \texttt{(block\_index,inner\_index)} pairs to label all operators $b^\dagger_i$/$b_i$.
+
+    \item \texttt{bits\_per\_boson}, number of bits per bosonic
+    degree of freedom passed as Python dictionary\\
+    \texttt{\{(block\_index,inner\_index):int\}}. Must be empty if
+    system contains no bosons.
+
 \end{itemize}
+
+The two index sets and \texttt{bits\_per\_boson} together define the full Fock
+space $\mathcal{H}$ (see Sec.~\ref{sec:formulation:space}).
+
+\texttt{make\_pure\_init\_state()} returns an instance of \texttt{InitState}
+containing one triplet
+\begin{equation}
+    \left(
+        \frac{\hat P\ket{0}}{\sqrt{\bra{0}\hat P^\dagger \hat P\ket{0}}},
+        1,
+        1
+    \right),
+\end{equation}
+and two subspaces, $\mathcal{H}=\mathcal{H}_1\otimes\mathcal{H}_2$.
+$\mathcal{H}_1$ is spanned by all basis vectors of $\mathcal{H}$ that have non-zero overlaps with $\hat P\ket{0}$. The rest of the basis vectors span
+$\mathcal{H}_2$.
 
 \bibliographystyle{plain}
 
