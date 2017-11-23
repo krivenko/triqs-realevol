@@ -184,9 +184,9 @@ Python function \texttt{make\_pure\_init\_state()} creates a pure initial state 
     representing the generating operator $\hat P$.
 
     $\hat P$ must be time-independent and such that $\hat P\ket{0} \neq 0$.
-    \item An index set for fermions, i.e. a \texttt{set} of \texttt{(block\_index,inner\_index)} pairs to label all operators $c^\dagger_i$/$c_i$.
+    \item Index set for fermions, i.e. a \texttt{set} of \texttt{(block\_index,inner\_index)} pairs to label all operators $c^\dagger_i$/$c_i$.
 
-    \item An index set for bosons, i.e. a \texttt{set} of \texttt{(block\_index,inner\_index)} pairs to label all operators $b^\dagger_i$/$b_i$.
+    \item Index set for bosons, i.e. a \texttt{set} of \texttt{(block\_index,inner\_index)} pairs to label all operators $b^\dagger_i$/$b_i$.
 
     \item \texttt{bits\_per\_boson}, number of bits per bosonic
     degree of freedom passed as Python dictionary\\
@@ -211,14 +211,75 @@ and two subspaces, $\mathcal{H}=\mathcal{H}_1\otimes\mathcal{H}_2$.
 $\mathcal{H}_1$ is spanned by all basis vectors of $\mathcal{H}$ that have non-zero overlaps with $\hat P\ket{0}$. The rest of the basis vectors span
 $\mathcal{H}_2$.
 
+\section{\label{sec:make_equilibrium_init_state}Function \texttt{make\_equilibrium\_init\_state()}}
+
+As its name suggests, function \texttt{make\_equilibrium\_init\_state()} creates
+an equilibrium initial state with a given (possibly zero) temperature $T$ (Sec. \ref{sec:formulation:initial}, points 2 and 3). The function has the following arguments.
+\begin{itemize}
+    \item $\hat H_0$, Hamiltonian of the system at $t=0$ as an \texttt{Operator} object.
+    \item Index set for fermions.
+    \item Index set for bosons.
+    \item Temperature $T$.
+    \item Dictionary of calculation parameters (will be explained shortly).
+    \item \texttt{bits\_per\_boson}, number of bits per bosonic
+    degree of freedom.
+\end{itemize}
+
+In order to construct $\hat\rho_0$, one needs to (partially) diagonalize $\hat H_0$ and obtain some of its eigenpairs $(E_n,\ket{\psi_n})$ with the smallest energies. The diagonalization is preceded by a preparatory step, where $\mathcal{H}$
+is partitioned into a direct sum of invariant subspaces of $\hat H_0$,
+\begin{equation}
+    \mathcal{H} = \mathcal{H}_1 \oplus \mathcal{H}_2 \oplus \ldots \oplus
+        \mathcal{H}_S,\quad \hat H_0\mathcal{H}_s = \mathcal{H}_s.
+\end{equation}
+This sort of space partition effectively transforms $\hat H_0$ to a block-diagonal form and greatly reduces computational costs of the diagonalization. \realevol~employs the first phase of so called autopartition
+algorithm described in Sec. 4.2 of \cite{CTHYB}.
+
+Diagonalization of each diagonal block is then performed with one of three
+methods, depending on the dimension of the corresponding $\mathcal{H}_s$.
+\begin{itemize}
+    \item $\dim(\mathcal{H}_s) = 1$, diagonalization of a $1\times1$ matrix is trivial.
+    \item $\dim(\mathcal{H}_s)$ is smaller than the value of calculation parameter \texttt{arpack\_min\_matrix\_size}.
+
+    LAPACK routine \texttt{zheev} is called to obtain all eigenpairs of the diagonal block.
+
+    \item $\dim(\mathcal{H}_s)$ is no lesser than \texttt{arpack\_min\_matrix\_size}.
+
+    ARPACK is used to compute a few states with the lowest energies within
+    the block. Calculation parameter \texttt{arpack\_tolerance} can be used
+    to control the eigenvalue convergence tolerance. Another relevant parameter
+    is \texttt{arpack\_ncv}. It is a dictionary \texttt{\{int:int\}} that allows to set NCV (number of Lanczos vectors) for individual subspaces (keys of the dictionary are subspace indices $s$).
+\end{itemize}
+
+\texttt{make\_equilibrium\_init\_state()} fills \texttt{InitState} with
+eigenvectors of $\hat H_0$ and their statistical weights,
+\begin{equation}
+    \mathtt{InitState} = \{\mathcal{H}_s\},
+    \left\{\left(\ket{\psi_n}, \frac{\exp(-E_n/T)}{Z}, s\right)\right\}.
+\end{equation}
+
+The total number of included eigenstates depends on the cutoff imposed on
+the statistical weight $\exp(-E_n/T)/Z$. This cutoff can be adjusted via
+\texttt{min\_rel\_weight} parameter and equals the machine epsilon by default.
+It is worth noting that usually only a few subspaces contribute to the
+initial state if the temperature is not too high.
+
+The amount of information being printed out by \texttt{make\_equilibrium\_init\_state()} is controlled via \texttt{verbosity}
+parameter.
+
 \bibliographystyle{plain}
 
 \begin{thebibliography}{9}
 
-    \bibitem{NoneqDMFT}
-    ``Nonequilibrium dynamical mean-field theory and its applications''.
-    H. Aoki, N. Tsuji, M. Eckstein, M. Kollar, T. Oka, and Ph. Werner,
-    Rev. Mod. Phys. {\bf 86}, 779 (2014)
+\bibitem{NoneqDMFT}
+``Nonequilibrium dynamical mean-field theory and its applications''.
+H. Aoki, N. Tsuji, M. Eckstein, M. Kollar, T. Oka, and Ph. Werner,
+Rev. Mod. Phys. {\bf 86}, 779 (2014)
+
+\bibitem{CTHYB}
+``TRIQS/CTHYB: A continuous-time quantum Monte Carlo hybridisation
+expansion solver for quantum impurity problems``.
+P. Seth, I. Krivenko, M. Ferrero and O. Parcollet,
+Comp. Phys. Comm. {\bf 200}, 274-284 (2016)
 
 \end{thebibliography}
 
