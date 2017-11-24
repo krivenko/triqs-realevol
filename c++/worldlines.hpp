@@ -33,13 +33,13 @@ namespace realevol {
 // Definition of contributions:
 //
 //  Greater component G^>_{index1,index2}(t,t'):
-//   -i<l| c_index1(t) |m><m| c^+_index2(t') |r> * weight
+//   (-i/hbar) * <l| c_index1(t) |m><m| c^+_index2(t') |r> * weight
 //
 //  Lesser component G^<_{index1,index2}(t,t'):
-//    i<l| c^+_index2(t') |m><m| c_index1(t) |r> * weight
+//   (i/hbar) * <l| c^+_index2(t') |m><m| c_index1(t) |r> * weight
 //
 //  Susceptibility \chi_{index1,index2}(t,t'):
-//   -i<l| n_index1(t) |m><m| n_index2(t') |r> * weight
+//   (-i/hbar) * <l| n_index1(t) |m><m| n_index2(t') |r> * weight
 //
 struct worldline_desc_t {
 
