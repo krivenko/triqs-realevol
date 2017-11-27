@@ -29,7 +29,7 @@ namespace realevol {
 /// Compute retarded and advanced Green's functions out of the lesser and greater components
 /**
    @param g_l Lesser Green's function
-   @param g_l Greater Green's function
+   @param g_g Greater Green's function
    @return Retarded and advanced Green's functions
  */
 std::pair<block_gf_2t_t,block_gf_2t_t> make_gf_ret_adv(block_gf_2t_t const& g_l, block_gf_2t_t const& g_g);
