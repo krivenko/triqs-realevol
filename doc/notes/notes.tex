@@ -8,6 +8,7 @@
 \usepackage[a4paper, total={7in, 8in}]{geometry}
 
 \lstset{basicstyle=\footnotesize\ttfamily,breaklines=true}
+\lstloadlanguages{bash,Python}
 
 \DeclareMathOperator{\sign}{sign}
 \DeclareMathOperator{\Tr}{Tr}
@@ -435,6 +436,15 @@ Now comes the main and the most expensive part of the algorithm, calculation of 
     The r.h.s. of \ref{U_psi_dynamic} is computed using the Lanczos algorithm
     as described in \cite{matexp,Potthoff}. {\it Since the Lanczos algorithm reveals only a part of the spectrum, the short time propagation has to be used even if $\hat H^{ss}$ is static}.
 \end{itemize}
+
+\section{\label{sec:example} Simulation example}
+
+The following Python script is to be run as \texttt{pytriqs example.py} or
+\texttt{mpirun -n \$NPROCS pytriqs example.py}.
+
+\hrule
+
+\lstinputlisting[language=python]{example.py}
 
 \begin{thebibliography}{9}
 
