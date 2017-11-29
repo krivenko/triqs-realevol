@@ -437,7 +437,51 @@ Now comes the main and the most expensive part of the algorithm, calculation of 
     as described in \cite{matexp,Potthoff}. {\it Since the Lanczos algorithm reveals only a part of the spectrum, the short time propagation has to be used even if $\hat H^{ss}$ is static}.
 \end{itemize}
 
-\section{\label{sec:example} Simulation example}
+\section{\label{sec:operators}Python representation of time-dependent operators}
+
+Representation of quantum-mechanical operators in Python scripts strives to be as close to the mathematical notation as possible. It is implemented in two modules,
+\begin{lstlisting}[language=Python]
+from realevol.texpr import TExpr    # Time-dependent expressions
+from realevol.operators import *    # Second quantization operators
+\end{lstlisting}
+\texttt{TExpr} is a small utility class made to encapsulate mathematical expressions involving the time variable $t$. Upon creation, \texttt{TExpr} takes a string and tries to interpret it as an expression. After \texttt{TExpr} object is created, one can call it with a real number as the argument, and this will return value of the expression with $t$ substituted with the argument.
+\begin{lstlisting}[language=Python]
+>>> te = TExpr("2*cos(2*pi*t)")
+>>> te(0.5) # Shall return 2*cos(2*pi*0.5)
+(-2+0j)
+\end{lstlisting}
+
+Operators are constructed as algebraic expressions made of creation, annihilation and occupation number operator objects.
+\begin{lstlisting}[language=Python]
+>>> cd1 = c_dag('up',0)     # cd1 creates fermion ('up',0)
+>>> cd1
+1*C^+(up,0)
+>>> c1 = c('up',0)          # c1 destroys fermion ('up',0)
+>>> c1
+1*C(up,0)
+>>> n1 = n('up',0)          # n1 is the number of fermions ('up',0)
+>>> n1
+1*C^+(up,0)C(up,0)
+>>> bd1 = a_dag('B',0)      # bd1 creates boson ('B',0)
+>>> bd1
+1*A^+(B,0)
+>>> b1 = a('B',0)           # b1 destroys boson ('B',0)
+>>> b1
+1*A(B,0)
+\end{lstlisting}
+\textit{N.B.: There is no occupation number operator for bosons.}
+
+The elementary operators are combined into algebraic expressions with coefficients being real/complex constants or \texttt{TExpr} objects.
+\begin{lstlisting}[language=Python]
+>>> H1 = -1.0 * (n('up',0) + n('dn',0)) + 2.0 * n('up',0) * n('dn',0)
+>>> H1
+-1*C^+(dn,0)C(dn,0) + -1*C^+(up,0)C(up,0) + 2*C^+(dn,0)C^+(up,0)C(up,0)C(dn,0)
+>>> H2 = TExpr("0.1*cos(0.5*t)") * (a_dag('B',0) + a('B',0))
+>>> H2
+0.1*cos(0.5*t)*A^+(B,0) + 0.1*cos(0.5*t)*A(B,0)
+\end{lstlisting}
+
+\section{\label{sec:example}Simulation example}
 
 The following Python script is to be run as \texttt{pytriqs example.py} or
 \texttt{mpirun -n \$NPROCS pytriqs example.py}.
