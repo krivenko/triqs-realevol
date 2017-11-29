@@ -36,7 +36,7 @@ struct compute_2t_obs_parameters_t {
  /// default: 3 on MPI rank 0, 0 otherwise.
  int verbosity = ((triqs::mpi::communicator().rank() == 0) ? 3 : 0); // silence the slave nodes
 
- /// Planck constant
+ /// Planck's constant
  double hbar = 1.0;
 
  /// Hamiltonian interpolation between time slices
