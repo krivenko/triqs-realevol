@@ -17,7 +17,6 @@
 \newcommand{\ket}[1]{\ensuremath{|#1\rangle}}
 \newcommand{\aver}[1]{\ensuremath{\langle#1\rangle}}
 
-% Title Page
 \title{Lanczos short time propagation solver: implementation notes}
 \author{Igor Krivenko}
 
@@ -179,6 +178,8 @@ $\mathcal{H}_s$. This optimization technique is implemented in \texttt{InitState
     \mathtt{InitState} = \{\mathcal{H}_s\}, \{(\ket{\psi_m}, w_m, s)\}.
 \end{equation}
 
+\texttt{InitState}, as well as functions to create initial states, are found in \texttt{realevol.init\_state} Python module.
+
 \section{\label{sec:make_pure_init_state}Function \texttt{make\_pure\_init\_state()}}
 
 Python function \texttt{make\_pure\_init\_state()} creates a pure initial state (see Sec.~\ref{sec:formulation:initial}, point 1). It takes four arguments.
@@ -217,7 +218,7 @@ $\mathcal{H}_2$.
 \section{\label{sec:make_equilibrium_init_state}Function \texttt{make\_equilibrium\_init\_state()}}
 
 As its name suggests, function \texttt{make\_equilibrium\_init\_state()} creates
-an equilibrium initial state with a given (possibly zero) temperature $T$ (Sec. \ref{sec:formulation:initial}, points 2 and 3). The function has the following arguments.
+an equilibrium initial state with a given (possibly zero) temperature $T$ (Sec.~\ref{sec:formulation:initial}, points 2 and 3). The function has the following arguments.
 \begin{itemize}
     \item $\hat H_0$, Hamiltonian of the system at $t=0$ as an \texttt{Operator} object.
     \item Index set for fermions.
@@ -277,7 +278,7 @@ parameter.
 
 \section{\label{sec:worldlines}World line decomposition of two-time correlation functions}
 
-Definitions of the two-time observables listed in Sec. \ref{sec:formulation:observables} involve products of evolution and creation/annihilation/occupation number operators,
+Definitions of the two-time observables listed in Sec.~ \ref{sec:formulation:observables} involve products of evolution and creation/annihilation/occupation number operators,
 \begin{eqnarray}\label{prods}
 c_i(t) c^\dagger_j(t') = \hat U(0,t)c_i\hat U(t,t')c^\dagger_j \hat U(t',0),\nonumber\\
 c^\dagger_j(t') c_i(t) = \hat U(0,t')c^\dagger_j\hat U(t',t)c_i \hat U(t,0),\\
@@ -480,6 +481,56 @@ The elementary operators are combined into algebraic expressions with coefficien
 >>> H2
 0.1*cos(0.5*t)*A^+(B,0) + 0.1*cos(0.5*t)*A(B,0)
 \end{lstlisting}
+
+\section{\label{sec:solver}\texttt{Solver} object}
+
+The Python object solver \texttt{Solver} is central to any \realevol\ simulation. A typical workflow consists of four steps involving an instance of \texttt{Solver}.
+
+\begin{enumerate}
+    \item Create a \texttt{Solver} instance.
+    \begin{lstlisting}[language=Python]
+    S = Solver(gf_struct, chi_indices, t_max = t_max, n_t = n_t)
+    \end{lstlisting}
+    \texttt{gf\_struct} defines the structure of the greater/lesser Green's functions to be measured. It has a form of a dictionary, \texttt{\{block\_index:[inner\_indices]\}} (see Sec.~ \ref{sec:formulation:space}). \texttt{chi\_indices} controls what components of the susceptibility are to be measured. It is a \texttt{set} of
+    \texttt{(block\_index,inner\_index)} pairs. The two-times correlation functions will be defined on a time grid with nodes $t_n = n\Delta t$, $n=\overline{0,\mathtt{n\_t}-1}$, $\Delta t = \mathtt{t\_max}/ (\mathtt{n\_t}-1)$.
+
+    \item Set the initial state to be used in the simulation (Sec.~ \ref{sec:init_state}).
+    \begin{lstlisting}[language=Python]
+    S.initial_state = init_state
+    \end{lstlisting}
+
+    \item Compute the two-times correlation functions.
+
+    \begin{lstlisting}[language=Python]
+    S.compute_2t_obs(h,
+                     verbosity,
+                     hbar,
+                     hamiltonian_interpol,
+                     lanczos_min_matrix_size,
+                     lanczos_gs_energy_tol,
+                     lanczos_max_krylov_dim)
+    \end{lstlisting}
+    Keyword arguments:
+    \begin{itemize}
+        \item \texttt{h}, $\hat H(t)$ as an operator object (Sec.~\ref{sec:operators});
+        \item \texttt{version}, positive integer, verbosity level;
+        \item \texttt{hbar}, floating point, Planck's constant, 1.0 by default;
+        \item \texttt{hamiltonian\_interpol}, $\hat H(t)^{ss}$ interpolation type (Sec.~\ref{sec:evol}), one of \texttt{'Rectangle'}, \texttt{'Trapezoid'}, \texttt{'Simpson'};
+        \item \texttt{lanczos\_min\_matrix\_size}, positive integer, minimum $\dim(\mathcal{\tilde H}_s)$ that triggers use of the Lanczos algorithm for state propagation (Sec.~\ref{sec:evol});
+        \item \texttt{lanczos\_gs\_energy\_tol}, dictionary \texttt{\{int:float\}}, allows to set Lanczos eigenvalue convergence tolerance for individual subspaces $\mathcal{\tilde H}_s$. Generation of Krylov basis vectors stops when the lowest eigenvalue of the tridiagonal Lanczos matrix converges within that tolerance;
+        \item \texttt{lanczos\_max\_krylov\_dim}, dictionary \texttt{\{int:float\}}, allows to set a cap on the Krylov basis size for individual subspaces $\mathcal{\tilde H}_s$.
+    \end{itemize}
+
+    \item Extract results.
+    \begin{lstlisting}[language=Python]
+    S.g_g       # Greater GF
+    S.g_l       # Lesser GF
+    S.chi       # Susceptibility
+    \end{lstlisting}
+
+\end{enumerate}
+
+{\it Important}: All indices met in \texttt{gf\_struct}, \texttt{chi\_indices} and in \texttt{h} must be known to the \texttt{InitState} object used in the simulation.
 
 \section{\label{sec:example}Simulation example}
 
