@@ -29,5 +29,5 @@ install(FILES _gf_retime.py DESTINATION ${TRIQS_PYTHON_LIB_DEST_ROOT}/${CMAKE_PR
 
 # add version file
 configure_file(version.py.in version.py)
-install(FILES ${CMAKE_SOURCE_DIR}/__init__.py ${CMAKE_CURRENT_BINARY_DIR}/version.py
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py ${CMAKE_CURRENT_BINARY_DIR}/version.py
         DESTINATION ${TRIQS_PYTHON_LIB_DEST_ROOT}/${CMAKE_PROJECT_NAME})
