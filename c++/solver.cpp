@@ -159,10 +159,11 @@ void solver::compute_2t_obs(compute_2t_obs_parameters_t const& params) {
 
  // Check on which invariant subspaces the Hamiltonian is static
  auto static_pred = [](dyn_state_on_space_t const& st) {
-  bool c;
-  foreach(st,[&c](uint32_t, time_expr const& te){ return (c = is_constant(te)); });
-  return c;
+   bool c = true;
+   foreach(st,[&c](uint32_t, time_expr const& te){ if(!is_constant(te)) c = false; });
+   return c;
  };
+
  auto is_static_sp = hs_struct.classify_subspaces(h, static_pred);
 
  if(params.verbosity >= 2 && comm.rank() == 0) {
