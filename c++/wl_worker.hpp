@@ -148,14 +148,15 @@ public:
     break;
   }
 
+  // Worldline contribution is evaluated as
+  // coeff * <bra_st(*A_it)| A U(*A_it,*B_it) B |ket_st(*B_it)>
+
   // |ket_st(*B_it)> = U(*B_it,0)|psi_0>
-  auto ket_st = project<state_on_subspace_t>(wst.state, right_hs);
+  auto psi_0 = project<state_on_subspace_t>(wst.state, right_hs);
+  auto ket_st = psi_0;
   // <bra_st(*A_it)| = <psi_0| U(0,*A_it)
   // |bra_st(*A_it)> = U(*A_it,0) |psi_0>
   auto bra_st = project<state_on_subspace_t>(wst.state, left_hs);
-
-  // Worldline contribution is evaluated as
-  // coeff * <bra_st(*A_it)| A U(*A_it,*B_it) B |ket_st(*B_it)>
 
   // |middle_st(*A_it)> = U(*A_it,*B_it) B |ket_st(*B_it)>
   auto middle_st = state_on_subspace_t(middle_hs);
@@ -166,6 +167,7 @@ public:
   for(auto A_it = A_mesh.begin(); A_it != A_mesh.end(); A_it_prev = A_it++) {
    left_prop(bra_st, A_it_prev, A_it);
 
+   ket_st = psi_0;
    auto B_it_prev = B_mesh.begin();
    for(auto B_it = B_mesh.begin(); B_it != B_mesh.end(); B_it_prev = B_it++) {
     right_prop(ket_st, B_it_prev, B_it);
