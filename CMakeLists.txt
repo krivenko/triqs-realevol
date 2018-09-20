@@ -77,4 +77,5 @@ if (${TRIQS_WITH_PYTHON_SUPPORT})
 endif()
 
 # Compile C++ benchmarks
-#add_subdirectory(benchmark)
+option(COMPILE_BENCHMARKS "Compile C++ benchmarks (requires Google benchmark)" OFF)
+add_subdirectory(benchmark)

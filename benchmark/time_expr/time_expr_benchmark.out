@@ -1,0 +1,35 @@
+2018-09-20 13:24:10
+Running benchmark/time_expr/time_expr_benchmark
+Run on (4 X 3100 MHz CPU s)
+CPU Caches:
+  L1 Data 32K (x2)
+  L1 Instruction 32K (x2)
+  L2 Unified 256K (x2)
+  L3 Unified 4096K (x1)
+--------------------------------------------------------------------
+Benchmark                             Time           CPU Iterations
+--------------------------------------------------------------------
+time_expr_real_const/0              183 ns        183 ns    3842482
+time_expr_real_const/1              182 ns        182 ns    3819324
+time_expr_real_const/8              181 ns        181 ns    3827497
+time_expr_real_const/64             183 ns        183 ns    3823211
+time_expr_real_const/512            182 ns        182 ns    3833017
+time_expr_real_const/1024           183 ns        183 ns    3850222
+time_expr_complex_const/0           182 ns        182 ns    3805078
+time_expr_complex_const/1           224 ns        224 ns    3081637
+time_expr_complex_const/8           222 ns        222 ns    3126184
+time_expr_complex_const/64          222 ns        222 ns    3136302
+time_expr_complex_const/512         223 ns        223 ns    3051181
+time_expr_complex_const/1024        226 ns        226 ns    3046325
+time_expr_real/0                    182 ns        182 ns    3851365
+time_expr_real/1                    182 ns        182 ns    3805131
+time_expr_real/8                  12860 ns      12860 ns      52449
+time_expr_real/64                111193 ns     111193 ns       6314
+time_expr_real/512               944853 ns     944842 ns        732
+time_expr_real/1024             2024183 ns    2024183 ns        353
+time_expr_complex/0                 182 ns        182 ns    3789595
+time_expr_complex/1                 229 ns        229 ns    3038249
+time_expr_complex/8               31414 ns      31414 ns      22179
+time_expr_complex/64             318035 ns     318035 ns       2216
+time_expr_complex/512           2703361 ns    2703360 ns        263
+time_expr_complex/1024          5665250 ns    5665213 ns        123

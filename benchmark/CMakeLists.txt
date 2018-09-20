@@ -1,1 +1,12 @@
-#triqs_add_all_subdirectories_with_cmakelist()
+if(COMPILE_BENCHMARKS)
+  if (NOT gbench_downloaded)
+    message(STATUS "Downloading Google benchmark")
+    file(DOWNLOAD https://github.com/google/benchmark/archive/v1.4.1.tar.gz ${CMAKE_BINARY_DIR}/gbench.tar.gz)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_BINARY_DIR}/gbench.tar.gz WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+    set(gbench_downloaded TRUE CACHE INTERNAL "")
+  endif()
+  set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
+  add_subdirectory(${CMAKE_BINARY_DIR}/benchmark-1.4.1 "gbench" EXCLUDE_FROM_ALL)
+
+  add_subdirectory(time_expr)
+endif()
