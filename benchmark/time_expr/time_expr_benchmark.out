@@ -1,4 +1,4 @@
-2018-09-20 13:24:10
+2018-09-20 14:26:52
 Running benchmark/time_expr/time_expr_benchmark
 Run on (4 X 3100 MHz CPU s)
 CPU Caches:
@@ -9,27 +9,27 @@ CPU Caches:
 --------------------------------------------------------------------
 Benchmark                             Time           CPU Iterations
 --------------------------------------------------------------------
-time_expr_real_const/0              183 ns        183 ns    3842482
-time_expr_real_const/1              182 ns        182 ns    3819324
-time_expr_real_const/8              181 ns        181 ns    3827497
-time_expr_real_const/64             183 ns        183 ns    3823211
-time_expr_real_const/512            182 ns        182 ns    3833017
-time_expr_real_const/1024           183 ns        183 ns    3850222
-time_expr_complex_const/0           182 ns        182 ns    3805078
-time_expr_complex_const/1           224 ns        224 ns    3081637
-time_expr_complex_const/8           222 ns        222 ns    3126184
-time_expr_complex_const/64          222 ns        222 ns    3136302
-time_expr_complex_const/512         223 ns        223 ns    3051181
-time_expr_complex_const/1024        226 ns        226 ns    3046325
-time_expr_real/0                    182 ns        182 ns    3851365
-time_expr_real/1                    182 ns        182 ns    3805131
-time_expr_real/8                  12860 ns      12860 ns      52449
-time_expr_real/64                111193 ns     111193 ns       6314
-time_expr_real/512               944853 ns     944842 ns        732
-time_expr_real/1024             2024183 ns    2024183 ns        353
-time_expr_complex/0                 182 ns        182 ns    3789595
-time_expr_complex/1                 229 ns        229 ns    3038249
-time_expr_complex/8               31414 ns      31414 ns      22179
-time_expr_complex/64             318035 ns     318035 ns       2216
-time_expr_complex/512           2703361 ns    2703360 ns        263
-time_expr_complex/1024          5665250 ns    5665213 ns        123
+time_expr_real_const/0              162 ns        162 ns    4378604
+time_expr_real_const/1              156 ns        156 ns    4368506
+time_expr_real_const/8              156 ns        156 ns    4394814
+time_expr_real_const/64             157 ns        157 ns    4405136
+time_expr_real_const/512            156 ns        156 ns    4454101
+time_expr_real_const/1024           157 ns        157 ns    4476478
+time_expr_complex_const/0           170 ns        170 ns    4038488
+time_expr_complex_const/1           228 ns        228 ns    3104143
+time_expr_complex_const/8           227 ns        226 ns    3090707
+time_expr_complex_const/64          230 ns        230 ns    3117518
+time_expr_complex_const/512         229 ns        229 ns    3122626
+time_expr_complex_const/1024        230 ns        230 ns    3091848
+time_expr_real/0                    158 ns        158 ns    4428613
+time_expr_real/1                    157 ns        157 ns    4391618
+time_expr_real/8                  13600 ns      13594 ns      51638
+time_expr_real/64                110560 ns     110560 ns       6280
+time_expr_real/512               953435 ns     953435 ns        731
+time_expr_real/1024             1980041 ns    1979891 ns        349
+time_expr_complex/0                 170 ns        170 ns    4104915
+time_expr_complex/1                 226 ns        226 ns    3127843
+time_expr_complex/8               31937 ns      31923 ns      22453
+time_expr_complex/64             317661 ns     317650 ns       2219
+time_expr_complex/512           2855340 ns    2855340 ns        253
+time_expr_complex/1024          5589612 ns    5589563 ns        125
