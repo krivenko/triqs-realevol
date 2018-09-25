@@ -29,6 +29,7 @@
 #include <triqs/utility/complex_ops.hpp>
 
 #include "time_expr.hpp"
+#include "mesh_utils.hpp"
 
 using namespace realevol;
 using triqs::gfs::segment_mesh;
