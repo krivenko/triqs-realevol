@@ -31,6 +31,7 @@
 #include "worldlines.hpp"
 #include "mpi_dispatcher.hpp"
 #include "wl_worker.hpp"
+#include "mesh_utils.hpp"
 
 namespace signal_handler = triqs::signal_handler;
 

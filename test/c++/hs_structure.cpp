@@ -3,6 +3,7 @@
 #include <set>
 
 #include "hs_structure.hpp"
+#include "mesh_utils.hpp"
 
 using namespace realevol;
 //using namespace triqs::operators;

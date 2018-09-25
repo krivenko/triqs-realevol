@@ -75,7 +75,7 @@ time_expr::time_expr(double r) : time_expr(to_string(r)) {}
 
 time_expr::time_expr(double r, double i) : time_expr(to_string(r),to_string(i)) {}
 
-time_expr::time_expr(dcomplex const& z) : time_expr(z.real(),z.imag()) {}
+time_expr::time_expr(std::complex<double> const& z) : time_expr(z.real(),z.imag()) {}
 
 time_expr::time_expr(const char* str) : time_expr(std::string(str)) {}
 
@@ -116,9 +116,9 @@ time_expr::time_expr(time_expr && te) :
   if(!_is_real) init_im_expr(symt);
 }
 
-dcomplex time_expr::operator()(double t) const {
+std::complex<double> time_expr::operator()(double t) const {
   arg = t;
-  return _is_real ? re.value() : dcomplex(re.value(),im.value());
+  return _is_real ? re.value() : std::complex<double>(re.value(),im.value());
 }
 
 std::ostream& operator<<(std::ostream& os, time_expr const& te) {
