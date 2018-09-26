@@ -3,7 +3,7 @@ from wrap_generator import *
 # The module
 module = module_(full_name = "init_state", app_name = "realevol", doc = "Functions to produce initial states for real-time evolution")
 
-module.use_module('operators', 'realevol')
+module.use_module('operators_texpr', 'realevol')
 
 module.add_include("<init_state.hpp>")
 

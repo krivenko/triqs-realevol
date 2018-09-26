@@ -1,5 +1,5 @@
 from realevol.texpr import TExpr as te
-from realevol.operators import *
+from realevol.operators_texpr import *
 from itertools import product
 
 def check_str(ref_string, op):
@@ -21,9 +21,9 @@ for i,j in product(range(3),range(3)):
 
 # Algebra
 C = te("t^2") * c("",0)
-Cd = c_dag("",1);
+Cd = c_dag("",1)
 A = a("",0)
-Ad = te("sin(t)") * a_dag("",1);
+Ad = te("sin(t)") * a_dag("",1)
 
 check_table = [("t^2*C(,0)",C), ("1*C^+(,1)",Cd),("1*A(,0)",A),("sin(t)*A^+(,1)",Ad),
                # Unary minus
