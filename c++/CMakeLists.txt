@@ -11,7 +11,7 @@ add_library(realevol_c solver.cpp init_state.cpp make_init_state.cpp
             propagator.cpp utility.cpp
             triqs/operators/many_body_operator.cpp
             triqs/hilbert_space/fundamental_operator_set.cpp)
-target_link_libraries(realevol_c time_expr_c ${TRIQS_LIBRARY_ALL} arpack)
+target_link_libraries(realevol_c time_expr_c time_interp_c ${TRIQS_LIBRARY_ALL} arpack)
 triqs_set_rpath_for_target(realevol_c)
 add_dependencies(realevol_c time_expr_c time_interp_c)
 

@@ -6,6 +6,10 @@ triqs_python_extension_and_install(texpr)
 target_link_libraries(texpr realevol_c ${TRIQS_LIBRARY_ALL})
 triqs_set_rpath_for_target(texpr)
 
+triqs_python_extension_and_install(tinterp)
+target_link_libraries(tinterp realevol_c ${TRIQS_LIBRARY_ALL})
+triqs_set_rpath_for_target(tinterp)
+
 triqs_python_extension_and_install(operators)
 target_link_libraries(operators realevol_c ${TRIQS_LIBRARY_ALL})
 triqs_set_rpath_for_target(operators)
