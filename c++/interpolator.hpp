@@ -96,7 +96,7 @@ public:
     if(interp.is_constant_)
       os << interp.data(0);
     else {
-      os << "interp([" << interp.mesh.x_min() << "," << interp.mesh.x_max() << "]->[";
+      os << "ti([" << interp.mesh.x_min() << "," << interp.mesh.x_max() << "]->[";
       os << interp.data(0) << (interp.mesh.size() > 2 ? ",...," : ",") << interp.data(interp.mesh.size()-1) << "])";
     }
     return os;

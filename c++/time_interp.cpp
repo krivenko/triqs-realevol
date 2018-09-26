@@ -59,8 +59,10 @@ time_interp & time_interp::operator+=(const time_interp& ti) {
   } else {
     if(ti.is_constant_)
       data += ti.data(0);
-    else
+    else {
+      TRIQS_ASSERT(mesh == ti.mesh);
       data += ti.data;
+    }
   }
   return *this;
 }
@@ -77,8 +79,10 @@ time_interp & time_interp::operator-=(const time_interp& ti) {
   } else {
     if(ti.is_constant_)
       data -= ti.data(0);
-    else
+    else {
+      TRIQS_ASSERT(mesh == ti.mesh);
       data -= ti.data;
+    }
   }
   return *this;
 }
@@ -95,8 +99,10 @@ time_interp & time_interp::operator*=(const time_interp& ti) {
   } else {
     if(ti.is_constant_)
       data *= ti.data(0);
-    else
+    else {
+      TRIQS_ASSERT(mesh == ti.mesh);
       data *= ti.data;
+    }
   }
   return *this;
 }
@@ -113,8 +119,10 @@ time_interp & time_interp::operator/=(const time_interp& ti) {
   } else {
     if(ti.is_constant_)
       data /= ti.data(0);
-    else
+    else {
+      TRIQS_ASSERT(mesh == ti.mesh);
       data /= ti.data;
+    }
   }
   return *this;
 }
