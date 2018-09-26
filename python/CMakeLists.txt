@@ -10,9 +10,13 @@ triqs_python_extension_and_install(tinterp)
 target_link_libraries(tinterp realevol_c ${TRIQS_LIBRARY_ALL})
 triqs_set_rpath_for_target(tinterp)
 
-triqs_python_extension_and_install(operators)
-target_link_libraries(operators realevol_c ${TRIQS_LIBRARY_ALL})
-triqs_set_rpath_for_target(operators)
+triqs_python_extension_and_install(operators_texpr)
+target_link_libraries(operators_texpr realevol_c ${TRIQS_LIBRARY_ALL})
+triqs_set_rpath_for_target(operators_texpr)
+
+triqs_python_extension_and_install(operators_tinterp)
+target_link_libraries(operators_tinterp realevol_c ${TRIQS_LIBRARY_ALL})
+triqs_set_rpath_for_target(operators_tinterp)
 
 triqs_python_extension_and_install(gf_retime)
 target_link_libraries(gf_retime realevol_c ${TRIQS_LIBRARY_ALL})

@@ -1,23 +1,21 @@
 from wrap_generator import *
 
-module = module_(full_name = "operators", app_name = "realevol", doc = "Many-body operator as a function of time")
+module = module_(full_name = "operators_texpr", app_name = "realevol", doc = "Many-body operator with TExpr coefficients")
 
-module.use_module("texpr")
+module.use_module("texpr", "realevol")
 
 module.add_include("<triqs/operators/many_body_operator.hpp>")
 module.add_include("<triqs/python_tools/converters/pair.hpp>")
 module.add_include("<triqs/python_tools/converters/vector.hpp>")
 module.add_include("<triqs/python_tools/converters/variant_int_string.hpp>")
 module.add_include("<triqs/python_tools/converters/h5.hpp>")
-#module.add_using("namespace triqs::operators") # FIXME
-module.add_using("namespace realevol::operators") # FIXME
+module.add_using("namespace realevol::operators")
 module.add_using("namespace realevol")
 
 # The operator class
 op = class_(
         py_type = "Operator",
         c_type = "many_body_operator_generic<time_expr>",
-        #c_type_absolute = "triqs::operators::many_body_operator_generic<realevol::time_expr>",
         c_type_absolute = "realevol::operators::many_body_operator_generic<realevol::time_expr>",
         is_printable= True,
         arithmetic = ("algebra","with_unit","with_unary_minus","realevol::time_expr","double","dcomplex")

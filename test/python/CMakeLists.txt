@@ -1,6 +1,6 @@
 find_package(TriqsTest)
 
-set(PYTHON_TESTS texpr tinterp operators gf_retime)
+set(PYTHON_TESTS texpr tinterp operators_texpr operators_tinterp gf_retime)
 foreach(t ${PYTHON_TESTS})
   triqs_add_python_test(${t})
 endforeach(t)

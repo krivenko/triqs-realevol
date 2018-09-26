@@ -1,5 +1,5 @@
 from realevol.texpr import TExpr as te
-from realevol.operators import *
+from realevol.operators_texpr import *
 from realevol.init_state import *
 from realevol.realevol import *
 from itertools import product

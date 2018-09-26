@@ -1,5 +1,5 @@
 from realevol.texpr import TExpr
-from realevol.operators import c, c_dag, n, a, a_dag
+from realevol.operators_texpr import c, c_dag, n, a, a_dag
 from realevol import Solver
 
 gf_struct = {'up':[0], 'dn':[0]}
