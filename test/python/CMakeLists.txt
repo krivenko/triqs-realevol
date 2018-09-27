@@ -6,7 +6,7 @@ foreach(t ${PYTHON_TESTS})
 endforeach(t)
 
 # Parallel tests
-foreach(t star)
+foreach(t star_texpr star_tinterp)
 
  foreach(np 1 2 4)
   set(TEST_MPI_NUMPROC ${np})

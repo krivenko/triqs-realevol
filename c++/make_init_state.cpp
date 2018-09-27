@@ -57,7 +57,8 @@ if(signal_handler::received()) {                \
 
 namespace realevol {
 
-static_operator_t make_static_op(operator_t const& op, std::string const& error_message) {
+template<typename OperatorType>
+static_operator_t make_static_op(OperatorType const& op, std::string const& error_message) {
  static_operator_t static_op;
  for(auto const& m : op) {
   if(!is_constant(m.coef)) TRIQS_RUNTIME_ERROR << error_message;
@@ -70,7 +71,8 @@ static_operator_t make_static_op(operator_t const& op, std::string const& error_
  return static_op;
 }
 
-init_state make_pure_init_state(operator_t const& generator,
+template<typename OperatorType>
+init_state make_pure_init_state(OperatorType const& generator,
                                 fundamental_operator_set const& fops,
                                 std::map<operators::indices_t, int> const& bits_per_boson) {
 
@@ -114,6 +116,15 @@ init_state make_pure_init_state(operator_t const& generator,
 
  return ist;
 }
+
+template
+init_state make_pure_init_state(time_expr_operator_t const&,
+                                fundamental_operator_set const&,
+                                std::map<operators::indices_t, int> const&);
+template
+init_state make_pure_init_state(time_interp_operator_t const&,
+                                fundamental_operator_set const&,
+                                std::map<operators::indices_t, int> const&);
 
 // -----------------------------------------------------------------
 
@@ -401,7 +412,8 @@ template<> inline MPI_Datatype mpi_datatype<realevol::JobWithGsEnergy>() {
 
 namespace realevol {
 
-init_state make_equilibrium_init_state(operator_t const& h,
+template<typename OperatorType>
+init_state make_equilibrium_init_state(OperatorType const& h,
                                        fundamental_operator_set const& fops,
                                        double temperature,
                                        eq_solver_parameters_t const& params,
@@ -648,4 +660,19 @@ init_state make_equilibrium_init_state(operator_t const& h,
  return ist;
 }
 
+template
+init_state make_equilibrium_init_state(time_expr_operator_t const&,
+                                       fundamental_operator_set const&,
+                                       double,
+                                       eq_solver_parameters_t const&,
+                                       std::map<operators::indices_t, int> const&,
+                                       triqs::mpi::communicator const&);
+
+template
+init_state make_equilibrium_init_state(time_interp_operator_t const&,
+                                       fundamental_operator_set const&,
+                                       double,
+                                       eq_solver_parameters_t const&,
+                                       std::map<operators::indices_t, int> const&,
+                                       triqs::mpi::communicator const&);
 }

@@ -47,17 +47,19 @@ using block_gf_2t_view = block_gf_view<cartesian_product<retime,retime>>;
 
 using time_expr_operator_t = realevol::operators::many_body_operator_generic<time_expr>;
 using time_interp_operator_t = realevol::operators::many_body_operator_generic<time_interp>;
-using operator_t = time_expr_operator_t; // FIXME
 using static_operator_t = many_body_operator;
 
-using op_on_space_t = imperative_operator<class hilbert_space,time_expr,false>;
-using op_on_subspace_t = imperative_operator<sub_hilbert_space,time_expr,false>;
+template<typename ScalarType>
+using op_on_space_t = imperative_operator<class hilbert_space, ScalarType, false>;
+template<typename ScalarType>
+using op_on_subspace_t = imperative_operator<sub_hilbert_space, ScalarType, false>;
 
-using static_op_on_space_t = imperative_operator<class hilbert_space,dcomplex,false>;
-using static_op_on_subspace_t = imperative_operator<sub_hilbert_space,dcomplex,false>;
+using static_op_on_space_t = imperative_operator<class hilbert_space, dcomplex, false>;
+using static_op_on_subspace_t = imperative_operator<sub_hilbert_space, dcomplex, false>;
 
-using state_on_space_t = state<class hilbert_space,dcomplex,true>;
-using state_on_subspace_t = state<sub_hilbert_space,dcomplex,false>;
-using dyn_state_on_space_t = state<class hilbert_space,time_expr,true>;
+using state_on_space_t = state<class hilbert_space, dcomplex, true>;
+using state_on_subspace_t = state<sub_hilbert_space, dcomplex, false>;
+template<typename ScalarType>
+using dyn_state_on_space_t = state<class hilbert_space, ScalarType, true>;
 
 }
