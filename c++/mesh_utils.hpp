@@ -42,11 +42,11 @@ struct is_zero_on_mesh {
  Mesh const& mesh;
  is_zero_on_mesh(Mesh const& mesh) : mesh(mesh) {}
 
- template<class Callable> bool operator()(Callable const& te) {
+ template<class Callable> bool operator()(Callable const& callable) {
   using triqs::utility::is_zero;
-  if(te.is_zero()) return true;
+  if(callable.is_zero()) return true;
   for(auto t : mesh)
-   if(!is_zero(te(t))) return false;
+   if(!is_zero(callable(t))) return false;
   return true;
  }
 };
