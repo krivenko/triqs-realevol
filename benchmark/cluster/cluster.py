@@ -59,4 +59,4 @@ gf_params = {}
 gf_params['verbosity'] = 2
 gf_params['lanczos_min_matrix_size'] = 10000
 
-S.compute_2t_obs(h = h, **gf_params)
+S.compute_2t_obs(h = h, params = gf_params)
