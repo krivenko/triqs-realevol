@@ -6,7 +6,7 @@
 
 from pytriqs.archive import HDFArchive  # HDF5 archive interface
 from realevol.texpr import TExpr        # Time-dependent expressions
-from realevol.operators import *        # Time-dependent second quantization operators
+from realevol.operators_texpr import *  # Time-dependent second quantization operators
 from realevol.gf_retime import *        # Green's function of two times
 from realevol.init_state import *       # Routines to prepare initial states
 from realevol.realevol import *         # Solver object
@@ -68,7 +68,7 @@ gf_params['hamiltonian_interpol'] = 'Trapezoid' # Trapezoid rule interpolation o
 gf_params['lanczos_min_matrix_size'] = 33       # Use LAPACK for subspaces of dim 32 and smaller
 
 # Run calculation!
-S.compute_2t_obs(h = H, **gf_params)
+S.compute_2t_obs(h = H, params = gf_params)
 
 # On MPI rank 0, save results to HDF5 archive
 if mpi.is_master_node():
