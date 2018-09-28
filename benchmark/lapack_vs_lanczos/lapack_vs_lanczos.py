@@ -1,4 +1,4 @@
-from pytriqs.gf import BlockGf
+from pytriqs.gf.local import BlockGf
 from pytriqs.archive import HDFArchive
 from realevol.texpr import TExpr as te
 from realevol.operators_texpr import *
@@ -55,25 +55,25 @@ gf_params['lanczos_min_matrix_size'] = 10000
 
 print "Computing with LAPACK ..."
 timing = datetime.now()
-S.compute_2t_obs(h = h, **gf_params)
+S.compute_2t_obs(h = h, params = gf_params)
 timing = datetime.now() - timing
 print "Elapsed time:", timing
 
-lapack = {'g_l' : S.g_l.copy(),
-          'g_g' : S.g_g.copy(),
-          'chi' : S.chi.copy(),
+lapack = {'g_l' : S.g_l,
+          'g_g' : S.g_g,
+          'chi' : S.chi,
           'timing' : str(timing)}
 
 print "Computing with Lanczos algorithm ..."
 gf_params['lanczos_min_matrix_size'] = 9
 timing = datetime.now()
-S.compute_2t_obs(h = h, **gf_params)
+S.compute_2t_obs(h = h, params = gf_params)
 timing = datetime.now() - timing
 print "Elapsed time:", timing
 
-lanczos = {'g_l' : S.g_l.copy(),
-           'g_g' : S.g_g.copy(),
-           'chi' : S.chi.copy(),
+lanczos = {'g_l' : S.g_l,
+           'g_g' : S.g_g,
+           'chi' : S.chi,
            'timing' : str(timing)}
 
 if mpi.is_master_node():
@@ -90,5 +90,5 @@ if mpi.is_master_node():
         gr['g_g_up'] = diff(lapack['g_g']['up'], lanczos['g_g']['up'])
         gr['g_g_dn'] = diff(lapack['g_g']['dn'], lanczos['g_g']['dn'])
         for i, j in product(range(2), range(2)):
-            gr['chi_%i_%i' % (i,j)] = diff(lapack ['chi'][i, j],
-                                           lanczos['chi'][i, j])
+            gr['chi_%i_%i' % (i,j)] = diff(lapack ['chi'],
+                                           lanczos['chi'])
