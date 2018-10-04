@@ -31,11 +31,14 @@
 namespace realevol {
 
 // Evaluate worldlines
+template<typename HamiltonianType>
 class wl_worker {
 
+ using HScalarType = typename HamiltonianType::scalar_t;
+
  init_state const& initial_state;
- hilbert_space_structure const& hss;
- op_on_subspace_t h;
+ hilbert_space_structure<HamiltonianType> const& hss;
+ op_on_subspace_t<HScalarType> h;
  double hbar;
 
  int lanczos_min_matrix_size;
@@ -48,8 +51,8 @@ class wl_worker {
 
 public:
 
- wl_worker(init_state const& initial_state, operator_t const& h, double hbar,
-           hilbert_space_structure const& hss,
+ wl_worker(init_state const& initial_state, HamiltonianType const& h, double hbar,
+           hilbert_space_structure<HamiltonianType> const& hss,
            std::vector<bool> const& is_static_sp,
            int lanczos_min_matrix_size,
            std::map<long,double> const& lanczos_gs_energy_tol,
@@ -96,21 +99,21 @@ public:
    return it != lanczos_max_krylov_dim.end() ? it->second : -1;
   };
 
-  propagator left_prop(h, left_hs, hbar, is_static_sp[wl.left_sp_index], HInterpol,
-                       lanczos_min_matrix_size,
-                       get_gs_energy_tol(wl.left_sp_index),
-                       get_max_krylov_dim(wl.left_sp_index)
-                      );
-  propagator middle_prop(h, middle_hs, hbar, is_static_sp[wl.middle_sp_index], HInterpol,
-                         lanczos_min_matrix_size,
-                         get_gs_energy_tol(wl.middle_sp_index),
-                         get_max_krylov_dim(wl.middle_sp_index)
-                        );
-  propagator right_prop(h, right_hs, hbar, is_static_sp[wl.right_sp_index], HInterpol,
-                        lanczos_min_matrix_size,
-                        get_gs_energy_tol(wl.right_sp_index),
-                        get_max_krylov_dim(wl.right_sp_index)
-                       );
+  propagator<HScalarType> left_prop(h, left_hs, hbar, is_static_sp[wl.left_sp_index], HInterpol,
+                                    lanczos_min_matrix_size,
+                                    get_gs_energy_tol(wl.left_sp_index),
+                                    get_max_krylov_dim(wl.left_sp_index)
+                                   );
+  propagator<HScalarType> middle_prop(h, middle_hs, hbar, is_static_sp[wl.middle_sp_index], HInterpol,
+                                      lanczos_min_matrix_size,
+                                      get_gs_energy_tol(wl.middle_sp_index),
+                                      get_max_krylov_dim(wl.middle_sp_index)
+                                    );
+  propagator<HScalarType> right_prop(h, right_hs, hbar, is_static_sp[wl.right_sp_index], HInterpol,
+                                     lanczos_min_matrix_size,
+                                     get_gs_energy_tol(wl.right_sp_index),
+                                     get_max_krylov_dim(wl.right_sp_index)
+                                    );
 
   auto const& fops = initial_state.get_fops();
   auto const& full_hs = initial_state.get_full_hs();

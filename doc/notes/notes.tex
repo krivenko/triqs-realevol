@@ -34,11 +34,20 @@ Besides TRIQS, \realevol\ has the following prerequisites:
     (\url{https://github.com/krivenko/triqs_arpack/tree/0.5}).
 \end{itemize}
 
-\realevol\ does runtime evaluation of mathematical expressions when computes
-matrix elements of time-dependent Hamiltonians. A backend for this feature is
-provided by the C++ Mathematical Expression Parsing And Evaluation Library,
-a.k.a. ExprTk from Arash Partow (\url{https://github.com/ArashPartow/exprtk}).
-A copy of ExprTk is bundled to the source codes.
+In \realevol\ Python scripts, time dependence of operators can be specified in 
+two ways.
+\begin{itemize}
+    \item Using \texttt{TExpr} objects that are constructed from strings
+    containing mathematical expressions (functions of variable $t$).
+    A backend for this feature is provided by the C++ Mathematical Expression
+    Parsing And Evaluation Library, a.k.a. ExprTk from Arash Partow
+    (\url{https://github.com/ArashPartow/exprtk}). A copy of ExprTk is bundled
+    to the source codes.
+
+    \item Using \texttt{TInterp} objects, which are linear interpolators 
+    constructed on a time mesh from a user-provided \texttt{NumPy} array of 
+    complex values.
+\end{itemize}
 
 In order to ease installation of \realevol\ and of its prerequisites, I wrote a
 shell script called \texttt{build\_realevol\_and\_deps.sh} (to be found in \texttt{/scripts} subdirectory). When run, it tries to find the source codes of \realevol\ in subdirectory \texttt{\$(pwd)/realevol.git}. It also creates two more subdirectories in the current directory,
@@ -184,7 +193,8 @@ $\mathcal{H}_s$. This optimization technique is implemented in \texttt{InitState
 
 Python function \texttt{make\_pure\_init\_state()} creates a pure initial state (see Sec.~\ref{sec:formulation:initial}, point 1). It takes four arguments.
 \begin{itemize}
-    \item A Python object of type \texttt{realevol.operators.Operator}
+    \item A Python object of type \texttt{realevol.operators\_texpr.Operator} or
+    \texttt{realevol.operators\_tinterp.Operator}
     representing the generating operator $\hat P$.
 
     $\hat P$ must be time-independent and such that $\hat P\ket{0} \neq 0$.
@@ -220,7 +230,9 @@ $\mathcal{H}_2$.
 As its name suggests, function \texttt{make\_equilibrium\_init\_state()} creates
 an equilibrium initial state with a given (possibly zero) temperature $T$ (Sec.~\ref{sec:formulation:initial}, points 2 and 3). The function has the following arguments.
 \begin{itemize}
-    \item $\hat H_0$, Hamiltonian of the system at $t=0$ as an \texttt{Operator} object.
+    \item $\hat H_0$, Hamiltonian of the system at $t=0$ as an 
+    \texttt{realevol.operators\_texpr.Operator} or\\
+    \texttt{realevol.operators\_tinterp.Operator} object.
     \item Index set for fermions.
     \item Index set for bosons.
     \item Temperature $T$.
@@ -438,12 +450,13 @@ Now comes the main and the most expensive part of the algorithm, calculation of 
     as described in \cite{matexp,Potthoff}. {\it Since the Lanczos algorithm reveals only a part of the spectrum, the short time propagation has to be used even if $\hat H^{ss}$ is static}.
 \end{itemize}
 
-\section{\label{sec:operators}Python representation of time-dependent operators}
+\section{\label{sec:operators_texpr}Python representation of time-dependent 
+operators}
 
 Representation of quantum-mechanical operators in Python scripts strives to be as close to the mathematical notation as possible. It is implemented in two modules,
 \begin{lstlisting}[language=Python]
-from realevol.texpr import TExpr    # Time-dependent expressions
-from realevol.operators import *    # Second quantization operators
+from realevol.texpr import TExpr          # Time-dependent expressions
+from realevol.operators_texpr import *    # Second quantization operators
 \end{lstlisting}
 \texttt{TExpr} is a small utility class made to encapsulate mathematical expressions involving the time variable $t$. Upon creation, \texttt{TExpr} takes a string and tries to interpret it as an expression. After \texttt{TExpr} object is created, one can call it with a real number as the argument, and this will return value of the expression with $t$ substituted with the argument.
 \begin{lstlisting}[language=Python]
@@ -482,6 +495,48 @@ The elementary operators are combined into algebraic expressions with coefficien
 0.1*cos(0.5*t)*A^+(B,0) + 0.1*cos(0.5*t)*A(B,0)
 \end{lstlisting}
 
+\section{\label{sec:operators_tinterp}Python representation of time-dependent 
+operators: alternative approach}
+
+An alternative to the \texttt{TExpr} object is the linear interpolator object
+\texttt{TInterp}.
+
+\begin{lstlisting}[language=Python]
+from pytriqs.gf.local import MeshReTime     # Real time mesh
+from realevol.tinterp import TInterp        # Linear interpolator
+from realevol.operators_tinterp import *    # Second quantization operators
+\end{lstlisting}
+
+\texttt{TInterp} instances are constructed from a given time mesh and a 
+\texttt{NumPy} array of values. If all values in the array happen to be equal,
+the resulting object will internally store only one number and return it upon
+every evaluation call.
+\begin{lstlisting}[language=Python]
+>>> mesh = MeshReTime(0, 5.0, 101)
+>>> ti = TInterp(mesh, numpy.array([2*cos(2*pi*t) for t in mesh]))
+>>> ti(0.99) # Shall return linearly interpolated value of 2*cos(2*pi*0.99)
+(1.92+0j)
+>>> 2*cos(2*pi*0.99) # Exact value
+(1.9960534568565431+0j)
+\end{lstlisting}
+The constant-valued instances can also be constructed explicitly from the 
+corresponding real/complex constant.
+\begin{lstlisting}[language=Python]
+>>> ti_const = TInterp(7+5j)
+>>> ti_const(1)
+(7+5j)
+\end{lstlisting}
+
+The use of \texttt{TInterp} coefficients in operator expressions is analogous
+to that of \texttt{TExpr}.
+
+\textit{N.B.: \texttt{TExpr}-based operators and \texttt{TInterp}-based 
+operators cannot be mixed within one expression.}
+
+Evaluation performance of \texttt{TInterp} objects is normally much higher 
+compared to \texttt{TExpr}, but there is a trade-off between evaluation 
+accuracy and the amount of memory required to store data arrays.
+
 \section{\label{sec:solver}\texttt{Solver} object}
 
 The Python object solver \texttt{Solver} is central to any \realevol\ simulation. A typical workflow consists of four steps involving an instance of \texttt{Solver}.
@@ -502,17 +557,14 @@ The Python object solver \texttt{Solver} is central to any \realevol\ simulation
     \item Compute the two-times correlation functions.
 
     \begin{lstlisting}[language=Python]
-    S.compute_2t_obs(h,
-                     verbosity,
-                     hbar,
-                     hamiltonian_interpol,
-                     lanczos_min_matrix_size,
-                     lanczos_gs_energy_tol,
-                     lanczos_max_krylov_dim)
+    S.compute_2t_obs(h, params)
     \end{lstlisting}
-    Keyword arguments:
+    \texttt{h}, $\hat H(t)$ as an operator object 
+    (Sec.~\ref{sec:operators_texpr} and 
+    \ref{sec:operators_tinterp});
+
+    \texttt{params}, a parameters dictionary with the following elements.
     \begin{itemize}
-        \item \texttt{h}, $\hat H(t)$ as an operator object (Sec.~\ref{sec:operators});
         \item \texttt{version}, positive integer, verbosity level;
         \item \texttt{hbar}, floating point, Planck's constant, 1.0 by default;
         \item \texttt{hamiltonian\_interpol}, $\hat H(t)^{ss}$ interpolation type (Sec.~\ref{sec:evol}), one of \texttt{'Rectangle'}, \texttt{'Trapezoid'}, \texttt{'Simpson'};

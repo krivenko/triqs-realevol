@@ -38,7 +38,10 @@ using triqs::arrays::matrix;
 ///      \-> sp'_3              \-> sp'_3
 using branchings_t = std::vector<std::set<long>>;
 
+template<typename HamiltonianType>
 struct hilbert_space_structure {
+
+ using HScalarType = typename HamiltonianType::scalar_t;
 
  // Fundamental operator set
  fundamental_operator_set const& fops;
@@ -51,17 +54,20 @@ struct hilbert_space_structure {
  // (not 1-to-1 mappings) no connections are stored
  matrix<long> creation_connection[2], annihilation_connection[2];
  // Hilbert space partition
- mutable space_partition<dyn_state_on_space_t, op_on_space_t> partition;
+ mutable space_partition<dyn_state_on_space_t<HScalarType>, op_on_space_t<HScalarType>> partition;
 
  /// Partition a space
  template<typename IsZeroPredicate>
- hilbert_space_structure(operator_t const& h,
+ hilbert_space_structure(HamiltonianType const& h,
                          fundamental_operator_set const& fops,
                          class hilbert_space const& full_hs,
                          fundamental_operator_set const& merger_fops,
                          IsZeroPredicate is_zero_pred) :
   fops(fops), full_hs(full_hs),
-  partition(dyn_state_on_space_t(full_hs), op_on_space_t(h, fops, full_hs), false, is_zero_pred) {
+  partition(dyn_state_on_space_t<HScalarType>(full_hs),
+            op_on_space_t<HScalarType>(h, fops, full_hs),
+            false,
+            is_zero_pred) {
   merge(merger_fops, is_zero_pred);
   fill_subspaces();
  }
@@ -84,11 +90,11 @@ struct hilbert_space_structure {
  }
 
  template<typename ClassifyPredicate>
- std::vector<bool> classify_subspaces(operator_t const& op, ClassifyPredicate classify_pred) const {
+ std::vector<bool> classify_subspaces(HamiltonianType const& op, ClassifyPredicate classify_pred) const {
   std::vector<bool> res(sub_hilbert_spaces.size());
 
-  dyn_state_on_space_t from_st(full_hs), to_st(full_hs);
-  op_on_space_t imp_op(op, fops, full_hs);
+  dyn_state_on_space_t<HScalarType> from_st(full_hs), to_st(full_hs);
+  op_on_space_t<HScalarType> imp_op(op, fops, full_hs);
 
   for(long spn = 0; spn < sub_hilbert_spaces.size(); ++spn) {
    auto const& hs = sub_hilbert_spaces[spn];
@@ -115,14 +121,14 @@ private:
   using realevol::hilbert_space::Boson;
 
   // Merge subspaces
-  std::vector<op_on_space_t> create_ops[2], destroy_ops[2];
+  std::vector<op_on_space_t<HScalarType>> create_ops[2], destroy_ops[2];
   for(auto stat : {Fermion, Boson}) {
    create_ops[stat].reserve(merger_fops.size(stat));
    destroy_ops[stat].reserve(merger_fops.size(stat));
 
    for (auto it = merger_fops.begin(stat); it != merger_fops.end(stat); ++it) {
-    auto create = operator_t::make_canonical(stat, true, it->index);
-    auto destroy = operator_t::make_canonical(stat, false, it->index);
+    auto create = HamiltonianType::make_canonical(stat, true, it->index);
+    auto destroy = HamiltonianType::make_canonical(stat, false, it->index);
 
     create_ops[stat].emplace_back(create, fops, full_hs);
     destroy_ops[stat].emplace_back(destroy, fops, full_hs);

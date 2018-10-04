@@ -27,7 +27,6 @@
 
 #include <triqs/mpi/base.hpp>
 
-#include "time_expr.hpp"
 #include "triqs/operators/many_body_operator.hpp"
 #include "compute_2t_obs_parameters.hpp"
 
@@ -54,8 +53,8 @@ public:
  solver(gf_struct_t const& gf_struct, chi_indices_t const& chi_indices, double t_max, int n_t);
 
  /// Compute observables that are functions of two times
- TRIQS_WRAP_ARG_AS_DICT
- void compute_2t_obs(compute_2t_obs_parameters_t const& p);
+ template<typename HamiltonianType>
+ void compute_2t_obs(HamiltonianType const& h, compute_2t_obs_parameters_t const& p);
 
  /// Get the initial state at t=0
  init_state const& get_initial_state() const {

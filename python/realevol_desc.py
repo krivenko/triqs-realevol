@@ -7,7 +7,9 @@ module = module_(full_name = "realevol", doc = "The Real-time evolution solver",
 
 # All the triqs C++/Python modules
 module.use_module('texpr', 'realevol')
-module.use_module('operators', 'realevol')
+module.use_module('tinterp', 'realevol')
+module.use_module('operators_texpr', 'realevol')
+module.use_module('operators_tinterp', 'realevol')
 module.use_module('gf_retime', 'realevol')
 module.use_module('init_state', 'realevol')
 
@@ -21,7 +23,8 @@ module.add_include("<triqs/python_tools/converters/pair.hpp>")
 module.add_include("<triqs/python_tools/converters/map.hpp>")
 module.add_include("<triqs/python_tools/converters/vector.hpp>")
 module.add_include("<triqs/python_tools/converters/gf.hpp>")
-module.add_using("realevol::operators::many_body_operator") # FIXME
+module.add_include("<triqs/python_tools/converters/variant.hpp>")
+module.add_using("realevol::operators::many_body_operator")
 module.add_using("namespace triqs::gfs")
 module.add_preamble("""
 using namespace realevol;
@@ -43,24 +46,31 @@ c = class_(
 c.add_constructor("""(gf_struct_t gf_struct, chi_indices_t chi_indices, double t_max, int n_t = 1000)""",
                   doc = """ """)
 
-c.add_method("""void compute_2t_obs (**compute_2t_obs_parameters_t)""",
-             doc = """+-------------------------+---------------------------+-------------------------------+-------------------------------------------------------------------------------+
-| Parameter Name          | Type                      | Default                       | Documentation                                                                 |
-+=========================+===========================+===============================+===============================================================================+
-| h                       | operator_t                | --                            | Hamiltonian                                                                   |
-+-------------------------+---------------------------+-------------------------------+-------------------------------------------------------------------------------+
-| verbosity               | int                       | 3 on MPI rank 0, 0 otherwise. | Verbosity level                                                               |
-+-------------------------+---------------------------+-------------------------------+-------------------------------------------------------------------------------+
-| hbar                    | double                    | 1.0                           | Planck constant                                                               |
-+-------------------------+---------------------------+-------------------------------+-------------------------------------------------------------------------------+
-| hamiltonian_interpol    | realevol::h_interpolation | Rectangle                     | Hamiltonian interpolation between time slices                                 |
-+-------------------------+---------------------------+-------------------------------+-------------------------------------------------------------------------------+
-| lanczos_min_matrix_size | int                       | 11                            | Use Lanczos algorithm to exponentiate matrices of this size or bigger         |
-+-------------------------+---------------------------+-------------------------------+-------------------------------------------------------------------------------+
-| lanczos_gs_energy_tol   | std::map<long, double>    | {}                            | Lanczos convergence threshold for the GS energy, for each invariant subspace  |
-+-------------------------+---------------------------+-------------------------------+-------------------------------------------------------------------------------+
-| lanczos_max_krylov_dim  | std::map<long, int>       | {}                            | Maximal dimension of the Krylov space, for each invariant subspace            |
-+-------------------------+---------------------------+-------------------------------+-------------------------------------------------------------------------------+""")
+compute_2t_obs_doc = """\
+h (%s) - time-dependent Hamiltonian
+params (dict) - solver parameters
+
++-------------------------+-----------------------------------+------------------------------+------------------------------------------------------------------------------+
+| Parameter Name          | Type                              | Default                      | Documentation                                                                |
++=========================+===================================+==============================+==============================================================================+
+| verbosity               | int                               | 3 on MPI rank 0, 0 otherwise | Verbosity level                                                              |
++-------------------------+-----------------------------------+------------------------------+------------------------------------------------------------------------------+
+| hbar                    | float                             | 1.0                          | Planck constant                                                              |
++-------------------------+-----------------------------------+------------------------------+------------------------------------------------------------------------------+
+| hamiltonian_interpol    | str: Rectangle|Trapezoid|Simpson  | Rectangle                    | Hamiltonian interpolation between time slices                                |
++-------------------------+-----------------------------------+------------------------------+------------------------------------------------------------------------------+
+| lanczos_min_matrix_size | int                               | 11                           | Use Lanczos algorithm to exponentiate matrices of this size or bigger        |
++-------------------------+-----------------------------------+------------------------------+------------------------------------------------------------------------------+
+| lanczos_gs_energy_tol   | dict(int : float)                 | {}                           | Lanczos convergence threshold for the GS energy, for each invariant subspace |
++-------------------------+-----------------------------------+------------------------------+------------------------------------------------------------------------------+
+| lanczos_max_krylov_dim  | dict(int : int)                   | {}                           | Maximal dimension of the Krylov space, for each invariant subspace           |
++-------------------------+-----------------------------------+------------------------------+------------------------------------------------------------------------------+
+"""
+
+c.add_method("""void compute_2t_obs (time_expr_operator_t h, compute_2t_obs_parameters_t params)""",
+             doc = compute_2t_obs_doc % "operators_texpr.Operator")
+c.add_method("""void compute_2t_obs (time_interp_operator_t h, compute_2t_obs_parameters_t params)""",
+             doc = compute_2t_obs_doc % "operators_tinterp.Operator")
 
 c.add_property(name = "initial_state",
                getter = cfunction("init_state const& get_initial_state()"),

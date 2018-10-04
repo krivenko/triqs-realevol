@@ -5,10 +5,8 @@
 #include "init_state.hpp"
 
 using namespace realevol;
-//using namespace triqs::operators;
-//using namespace triqs::hilbert_space;
-using namespace realevol::operators;       // FIXME
-using namespace realevol::hilbert_space;   // FIXME
+using namespace realevol::operators;
+using namespace realevol::hilbert_space;
 
 TEST(init_state, pure) {
  fundamental_operator_set fops;

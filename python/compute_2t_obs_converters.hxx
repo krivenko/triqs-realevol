@@ -13,7 +13,6 @@ namespace triqs { namespace py_tools {
 template <> struct py_converter<compute_2t_obs_parameters_t> {
  static PyObject *c2py(compute_2t_obs_parameters_t const & x) {
   PyObject * d = PyDict_New();
-  PyDict_SetItemString( d, "h"                      , convert_to_python(x.h));
   PyDict_SetItemString( d, "verbosity"              , convert_to_python(x.verbosity));
   PyDict_SetItemString( d, "hbar"                   , convert_to_python(x.hbar));
   PyDict_SetItemString( d, "hamiltonian_interpol"   , convert_to_python(x.hamiltonian_interpol));
@@ -39,7 +38,6 @@ template <> struct py_converter<compute_2t_obs_parameters_t> {
 
  static compute_2t_obs_parameters_t py2c(PyObject *dic) {
   compute_2t_obs_parameters_t res;
-  res.h = convert_from_python<operator_t>(PyDict_GetItemString(dic, "h"));
   _get_optional(dic, "verbosity"              , res.verbosity                 ,((triqs::mpi::communicator().rank()==0)?3:0));
   _get_optional(dic, "hbar"                   , res.hbar                      ,1.0);
   _get_optional(dic, "hamiltonian_interpol"   , res.hamiltonian_interpol      ,Rectangle);
@@ -88,13 +86,12 @@ template <> struct py_converter<compute_2t_obs_parameters_t> {
     fs << "\n"<< ++err << " The parameter '" << k << "' is not recognized.";
 #endif
 
-  _check_mandatory<operator_t               >(dic, fs, err, "h"                      , "operator_t");
-  _check_optional <int                      >(dic, fs, err, "verbosity"              , "int");
-  _check_optional <double                   >(dic, fs, err, "hbar"                   , "double");
-  _check_optional <realevol::h_interpolation>(dic, fs, err, "hamiltonian_interpol"   , "realevol::h_interpolation");
-  _check_optional <int                      >(dic, fs, err, "lanczos_min_matrix_size", "int");
-  _check_optional <std::map<long, double>   >(dic, fs, err, "lanczos_gs_energy_tol"  , "std::map<long, double>");
-  _check_optional <std::map<long, int>      >(dic, fs, err, "lanczos_max_krylov_dim" , "std::map<long, int>");
+  _check_optional <int                                    >(dic, fs, err, "verbosity"              , "int");
+  _check_optional <double                                 >(dic, fs, err, "hbar"                   , "double");
+  _check_optional <realevol::h_interpolation              >(dic, fs, err, "hamiltonian_interpol"   , "realevol::h_interpolation");
+  _check_optional <int                                    >(dic, fs, err, "lanczos_min_matrix_size", "int");
+  _check_optional <std::map<long, double>                 >(dic, fs, err, "lanczos_gs_energy_tol"  , "std::map<long, double>");
+  _check_optional <std::map<long, int>                    >(dic, fs, err, "lanczos_max_krylov_dim" , "std::map<long, int>");
   if (err) goto _error;
   return true;
 
