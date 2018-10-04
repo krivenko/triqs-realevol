@@ -31,12 +31,14 @@
 // Disable some features of ExprTk to speed up compilation
 #define exprtk_disable_comments
 #define exprtk_disable_break_continue
+#define exprtk_disable_return_statement
 #define exprtk_disable_string_capabilities
+#define exprtk_disable_rtl_io_file
+#define exprtk_disable_rtl_vecops
+#define exprtk_disable_caseinsensitivity
 #include "exprtk/exprtk.hpp"
 
 namespace realevol {
-
-using dcomplex = std::complex<double>;
 
 // Time-dependent expressions;
 class time_expr : public boost::operators<time_expr>
@@ -53,7 +55,7 @@ public:
   time_expr();
   time_expr(double r);
   time_expr(double r, double i);
-  time_expr(dcomplex const& z);
+  time_expr(std::complex<double> const& z);
   time_expr(std::string const& re_str);
   time_expr(const char* str);
 
@@ -95,7 +97,7 @@ public:
   time_expr conj() const { return _is_real ? *this : time_expr(re_str,"-(" + im_str + ")"); }
 
   // Evaluation of the expression
-  dcomplex operator()(double t) const;
+  std::complex<double> operator()(double t) const;
 
   friend bool is_constant(time_expr const& te) {
     return exprtk::expression_helper<double>::is_constant(te.re) &&
@@ -122,33 +124,6 @@ private:
 
 inline time_expr operator ""_te(long double r){ return time_expr(r); }
 inline time_expr operator ""_te(const char* expr, std::size_t) { return time_expr(expr); };
-
-// Replace the expression with a constant if it takes equal values at all mesh points
-template<class Mesh>
-time_expr try_reduce_to_constant(time_expr const& te, Mesh const& m) {
-  auto it = m.begin();
-  auto value = te(*it);
-
-  using triqs::utility::is_zero;
-  for(it++; it != m.end(); it++)
-    if(!is_zero(te(*it) - value)) return te;
-
-  return is_zero(value.imag()) ? time_expr(value.real()) : time_expr(value);
-}
-
-// Predicate to check whether time_expr object is zero on a mesh
-template<class Mesh>
-struct is_zero_on_mesh {
- Mesh const& mesh;
- is_zero_on_mesh(Mesh const& mesh) : mesh(mesh) {}
- bool operator()(time_expr const& te) {
-  using triqs::utility::is_zero;
-  if(te.is_zero()) return true;
-  for(auto t : mesh)
-   if(!is_zero(te(t))) return false;
-  return true;
- }
-};
 
 }
 

@@ -3,6 +3,7 @@
 #include <set>
 
 #include "hs_structure.hpp"
+#include "mesh_utils.hpp"
 
 using namespace realevol;
 //using namespace triqs::operators;
@@ -29,7 +30,7 @@ TEST(hs_structure, BosonFermion) {
 
  triqs::gfs::segment_mesh mesh(0,1.0,101);
  class hilbert_space full_hs(fops, {3});
- hilbert_space_structure hss(h, fops, full_hs, fops,
+ hilbert_space_structure<time_expr_operator_t> hss(h, fops, full_hs, fops,
                              is_zero_on_mesh<triqs::gfs::segment_mesh>(mesh));
 
  EXPECT_EQ(32, hss.sub_hilbert_spaces.size());
@@ -63,7 +64,7 @@ TEST(hs_structure, BosonFermionCoupled) {
 
  triqs::gfs::segment_mesh mesh(0,1.0,101);
  class hilbert_space full_hs(fops, {3});
- hilbert_space_structure hss(h, fops, full_hs, fops,
+ hilbert_space_structure<time_expr_operator_t> hss(h, fops, full_hs, fops,
                              is_zero_on_mesh<triqs::gfs::segment_mesh>(mesh));
 
  EXPECT_EQ(4, hss.sub_hilbert_spaces.size());

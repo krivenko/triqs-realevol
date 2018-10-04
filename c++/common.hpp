@@ -24,6 +24,7 @@
 #include <type_traits>
 
 #include "time_expr.hpp"
+#include "time_interp.hpp"
 
 #include <triqs/gfs.hpp>
 #include <triqs/operators/many_body_operator.hpp>
@@ -36,27 +37,29 @@
 namespace realevol {
 
 using namespace triqs::gfs;
-//using namespace triqs::operators;
-//using namespace triqs::hilbert_space;
-using namespace realevol::operators;        // FIXME
-using namespace realevol::hilbert_space;    // FIXME
+using namespace realevol::operators;
+using namespace realevol::hilbert_space;
 
 using gf_2t_t = gf<cartesian_product<retime, retime>>;
 using block_gf_2t_t = block_gf<cartesian_product<retime,retime>>;
 using gf_2t_view = gf_view<cartesian_product<retime, retime>>;
 using block_gf_2t_view = block_gf_view<cartesian_product<retime,retime>>;
 
-using operator_t = realevol::operators::many_body_operator_generic<time_expr>;
+using time_expr_operator_t = realevol::operators::many_body_operator_generic<time_expr>;
+using time_interp_operator_t = realevol::operators::many_body_operator_generic<time_interp>;
 using static_operator_t = many_body_operator;
 
-using op_on_space_t = imperative_operator<class hilbert_space,time_expr,false>;
-using op_on_subspace_t = imperative_operator<sub_hilbert_space,time_expr,false>;
+template<typename ScalarType>
+using op_on_space_t = imperative_operator<class hilbert_space, ScalarType, false>;
+template<typename ScalarType>
+using op_on_subspace_t = imperative_operator<sub_hilbert_space, ScalarType, false>;
 
-using static_op_on_space_t = imperative_operator<class hilbert_space,dcomplex,false>;
-using static_op_on_subspace_t = imperative_operator<sub_hilbert_space,dcomplex,false>;
+using static_op_on_space_t = imperative_operator<class hilbert_space, dcomplex, false>;
+using static_op_on_subspace_t = imperative_operator<sub_hilbert_space, dcomplex, false>;
 
-using state_on_space_t = state<class hilbert_space,dcomplex,true>;
-using state_on_subspace_t = state<sub_hilbert_space,dcomplex,false>;
-using dyn_state_on_space_t = state<class hilbert_space,time_expr,true>;
+using state_on_space_t = state<class hilbert_space, dcomplex, true>;
+using state_on_subspace_t = state<sub_hilbert_space, dcomplex, false>;
+template<typename ScalarType>
+using dyn_state_on_space_t = state<class hilbert_space, ScalarType, true>;
 
 }

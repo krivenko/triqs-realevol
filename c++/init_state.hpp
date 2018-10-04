@@ -36,9 +36,19 @@ namespace realevol {
 class init_state;
 
 /// Apply a generating operator to the vacuum state to make a pure initial state
-init_state make_pure_init_state(operator_t const& generator,
+template<typename OperatorType>
+init_state make_pure_init_state(OperatorType const& generator,
                                 fundamental_operator_set const& fops,
                                 std::map<operators::indices_t, int> const& bits_per_boson = {});
+
+extern template
+init_state make_pure_init_state(time_expr_operator_t const&,
+                                fundamental_operator_set const&,
+                                std::map<operators::indices_t, int> const&);
+extern template
+init_state make_pure_init_state(time_interp_operator_t const&,
+                                fundamental_operator_set const&,
+                                std::map<operators::indices_t, int> const&);
 
 struct eq_solver_parameters_t {
 
@@ -59,15 +69,29 @@ struct eq_solver_parameters_t {
 };
 
 /// Make an equilibrium initial state at a given temperature (zero temperature is valid)
-init_state make_equilibrium_init_state(operator_t const& h,
+template<typename OperatorType>
+init_state make_equilibrium_init_state(OperatorType const& h,
                                        fundamental_operator_set const& fops,
                                        double temperature,
                                        eq_solver_parameters_t const& params,
                                        std::map<operators::indices_t, int> const& bits_per_boson = {},
                                        triqs::mpi::communicator const& comm = {});
 
-//TRIQS_WRAP_ARG_AS_DICT
-//void wrap_eq_solver_parameters(eq_solver_parameters_t const& params);
+extern template
+init_state make_equilibrium_init_state(time_expr_operator_t const&,
+                                       fundamental_operator_set const&,
+                                       double,
+                                       eq_solver_parameters_t const&,
+                                       std::map<operators::indices_t, int> const&,
+                                       triqs::mpi::communicator const&);
+
+extern template
+init_state make_equilibrium_init_state(time_interp_operator_t const&,
+                                       fundamental_operator_set const&,
+                                       double,
+                                       eq_solver_parameters_t const&,
+                                       std::map<operators::indices_t, int> const&,
+                                       triqs::mpi::communicator const&);
 
 /// Initial state, including information about the Hilbert space structure
 class init_state {
@@ -164,10 +188,20 @@ private:
  /// List of pure states
  std::vector<weighted_state_t> weighted_states;
 
- friend init_state make_pure_init_state(operator_t const&,
+ friend init_state make_pure_init_state<time_expr_operator_t>(time_expr_operator_t const&,
                                         fundamental_operator_set const&,
                                         std::map<operators::indices_t, int> const&);
- friend init_state make_equilibrium_init_state(operator_t const&,
+ friend init_state make_pure_init_state<time_interp_operator_t>(time_interp_operator_t const&,
+                                        fundamental_operator_set const&,
+                                        std::map<operators::indices_t, int> const&);
+
+ friend init_state make_equilibrium_init_state<time_expr_operator_t>(time_expr_operator_t const&,
+                                               fundamental_operator_set const&,
+                                               double,
+                                               eq_solver_parameters_t const&,
+                                               std::map<operators::indices_t, int> const&,
+                                               triqs::mpi::communicator const&);
+ friend init_state make_equilibrium_init_state<time_interp_operator_t>(time_interp_operator_t const&,
                                                fundamental_operator_set const&,
                                                double,
                                                eq_solver_parameters_t const&,

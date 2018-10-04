@@ -20,6 +20,8 @@
  ******************************************************************************/
 #pragma once
 
+#include <triqs/utility/variant.hpp>
+
 #include "common.hpp"
 #include "init_state.hpp"
 #include "propagator.hpp"
@@ -28,9 +30,6 @@ namespace realevol {
 
 // All the arguments of the compute_2t_obs function
 struct compute_2t_obs_parameters_t {
-
- /// Hamiltonian
- operator_t h;
 
  /// Verbosity level
  /// default: 3 on MPI rank 0, 0 otherwise.
@@ -52,7 +51,6 @@ struct compute_2t_obs_parameters_t {
  std::map<long,int> lanczos_max_krylov_dim = std::map<long,int>({});
 
  compute_2t_obs_parameters_t() = default;
- compute_2t_obs_parameters_t(operator_t const& h) : h(h) {}
 };
 
 }
