@@ -200,8 +200,8 @@ void propagator<HScalarType>::operator()(state_on_subspace_t & st, int t_start_i
    for(int t_index = t_start_index; t_index != t_end_index; ++t_index, ++t_next_index)
     propagate(st, t_index, t_next_index, c);
   } else { // Backward propagation
-   int t_next_index = t_end_index; ++t_next_index;
-   for(auto t_index = t_end_index; t_index != t_start_index; ++t_index, ++t_next_index)
+   int t_next_index = t_start_index; --t_next_index;
+   for(auto t_index = t_start_index; t_index != t_end_index; --t_index, --t_next_index)
     propagate(st, t_index, t_next_index, c);
   }
  }
