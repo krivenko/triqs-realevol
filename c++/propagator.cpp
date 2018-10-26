@@ -72,11 +72,9 @@ inline void prop_1d_t<HScalarType>::diag(double t, double dt) {
 }
 
 template<typename HScalarType>
-inline void prop_1d_t<HScalarType>::operator()(state_on_subspace_t & st,
-                                               time_it_t const& t_min, time_it_t const& t_max,
-                                               dcomplex c) {
- double dt = *t_max - *t_min;
- if(!inst_h.is_static) diag(*t_min, dt);
+inline void prop_1d_t<HScalarType>::operator()(state_on_subspace_t & st, double t_min, double t_max, dcomplex c) {
+ double dt = t_max - t_min;
+ if(!inst_h.is_static) diag(t_min, dt);
  st *= std::exp(c * dt * eigenvalue);
 }
 
@@ -104,11 +102,9 @@ inline void prop_lapack_t<HScalarType>::diag(double t, double dt) {
 }
 
 template<typename HScalarType>
-inline void prop_lapack_t<HScalarType>::operator()(state_on_subspace_t & st,
-                                                   time_it_t const& t_min, time_it_t const& t_max,
-                                                   dcomplex c) {
- double dt = *t_max - *t_min;
- if(!inst_h.is_static) diag(*t_min, dt);
+inline void prop_lapack_t<HScalarType>::operator()(state_on_subspace_t & st, double t_min, double t_max, dcomplex c) {
+ double dt = t_max - t_min;
+ if(!inst_h.is_static) diag(t_min, dt);
  auto & psi = st.amplitudes();
  psi = conj(eig.second) * psi;
  for(long i : range(psi.size())) psi(i) *= std::exp(c * dt * eig.first(i));
@@ -129,11 +125,9 @@ inline prop_lanczos_t<HScalarType>::prop_lanczos_t(inst_h_t<HScalarType> && inst
 }
 
 template<typename HScalarType>
-inline void prop_lanczos_t<HScalarType>::operator()(state_on_subspace_t & st,
-                                                    time_it_t const& t_min, time_it_t const& t_max,
-                                                    dcomplex c) {
- inst_h.t = *t_min;
- inst_h.dt = *t_max - *t_min;
+inline void prop_lanczos_t<HScalarType>::operator()(state_on_subspace_t & st, double t_min, double t_max, dcomplex c) {
+ inst_h.t = t_min;
+ inst_h.dt = t_max - t_min;
 
  // Construct the Krylov basis
  double norm = std::sqrt(lw.checked_real(dot_product(st, st)));
@@ -158,12 +152,13 @@ inline void prop_lanczos_t<HScalarType>::operator()(state_on_subspace_t & st,
 
 template<typename HScalarType>
 propagator<HScalarType>::propagator(op_on_subspace_t<HScalarType> const& h, sub_hilbert_space const& sp,
+                                    gf_mesh<retime> const& t_mesh,
                                     double hbar, bool is_static_h, h_interpolation h_interpol,
                                     long lanczos_min_matrix_size,
                                     double gs_energy_convergence,
                                     int max_krylov_dim
                                     ) :
- is_static_h(is_static_h), h_coeff(-1_j / hbar),
+ is_static_h(is_static_h), h_coeff(-1_j / hbar), t_mesh(t_mesh),
  ed_solver(sp.size() == 1 ? OneD : (sp.size() < lanczos_min_matrix_size ? LAPACK : Lanczos)) {
  switch(ed_solver) {
   case OneD:
@@ -181,36 +176,30 @@ propagator<HScalarType>::propagator(op_on_subspace_t<HScalarType> const& h, sub_
 
 
 template<typename HScalarType>
-inline void propagator<HScalarType>::propagate(state_on_subspace_t & st,
-                                               time_it_t const& t_min,
-                                               time_it_t const& t_max,
-                                               dcomplex c) const {
+inline void propagator<HScalarType>::propagate(state_on_subspace_t & st, int t_min_index, int t_max_index, dcomplex c) const {
  switch(ed_solver) {
-  case OneD:    (*static_cast<prop_1d_t<HScalarType>*>(prop_impl.get()))(st, t_min, t_max, c); break;
-  case LAPACK:  (*static_cast<prop_lapack_t<HScalarType>*>(prop_impl.get()))(st, t_min, t_max, c); break;
-  case Lanczos: (*static_cast<prop_lanczos_t<HScalarType>*>(prop_impl.get()))(st, t_min, t_max, c); break;
+  case OneD:    (*static_cast<prop_1d_t<HScalarType>*>(prop_impl.get()))(st, t_mesh[t_min_index], t_mesh[t_max_index], c); break;
+  case LAPACK:  (*static_cast<prop_lapack_t<HScalarType>*>(prop_impl.get()))(st, t_mesh[t_min_index], t_mesh[t_max_index], c); break;
+  case Lanczos: (*static_cast<prop_lanczos_t<HScalarType>*>(prop_impl.get()))(st, t_mesh[t_min_index], t_mesh[t_max_index], c); break;
  }
 }
 
 template<typename HScalarType>
-void propagator<HScalarType>::operator()(state_on_subspace_t & st,
-                                         time_it_t const& t_start,
-                                         time_it_t const& t_end) const {
- if(t_end == t_start) return; // No propagation needed
-
- bool forward = *t_end > *t_start;
- dcomplex c = (forward ? 1 : -1) * h_coeff;
+void propagator<HScalarType>::operator()(state_on_subspace_t & st, int t_start_index, int t_end_index) const {
+ if(t_end_index == t_start_index) return; // No propagation needed
 
  if(is_static_h && ed_solver != Lanczos) {
-  if(forward) propagate(st, t_start, t_end, c); // Forward propagation (static)
-  else        propagate(st, t_end, t_start, c); // Backward propagation (static)
+  propagate(st, t_start_index, t_end_index, h_coeff); // Forward or backward propagation (static)
  } else {
+  bool forward = t_end_index > t_start_index;
   if(forward) { // Forward propagation
-   time_it_t t_next = t_start; ++t_next;
-   for(auto t = t_start; t != t_end; ++t, ++t_next) propagate(st, t, t_next, c);
+   int t_next_index = t_start_index; ++t_next_index;
+   for(int t_index = t_start_index; t_index != t_end_index; ++t_index, ++t_next_index)
+    propagate(st, t_index, t_next_index, h_coeff);
   } else { // Backward propagation
-   time_it_t t_next = t_end; ++t_next;
-   for(auto t = t_end; t != t_start; ++t, ++t_next) propagate(st, t, t_next, c);
+   int t_next_index = t_start_index; --t_next_index;
+   for(auto t_index = t_start_index; t_index != t_end_index; --t_index, --t_next_index)
+    propagate(st, t_index, t_next_index, h_coeff);
   }
  }
 }

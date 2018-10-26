@@ -99,17 +99,18 @@ public:
    return it != lanczos_max_krylov_dim.end() ? it->second : -1;
   };
 
-  propagator<HScalarType> left_prop(h, left_hs, hbar, is_static_sp[wl.left_sp_index], HInterpol,
+  auto t_mesh = std::get<0>(obs.mesh());
+  propagator<HScalarType> left_prop(h, left_hs, t_mesh, hbar, is_static_sp[wl.left_sp_index], HInterpol,
                                     lanczos_min_matrix_size,
                                     get_gs_energy_tol(wl.left_sp_index),
                                     get_max_krylov_dim(wl.left_sp_index)
                                    );
-  propagator<HScalarType> middle_prop(h, middle_hs, hbar, is_static_sp[wl.middle_sp_index], HInterpol,
+  propagator<HScalarType> middle_prop(h, middle_hs, t_mesh, hbar, is_static_sp[wl.middle_sp_index], HInterpol,
                                       lanczos_min_matrix_size,
                                       get_gs_energy_tol(wl.middle_sp_index),
                                       get_max_krylov_dim(wl.middle_sp_index)
                                     );
-  propagator<HScalarType> right_prop(h, right_hs, hbar, is_static_sp[wl.right_sp_index], HInterpol,
+  propagator<HScalarType> right_prop(h, right_hs, t_mesh, hbar, is_static_sp[wl.right_sp_index], HInterpol,
                                      lanczos_min_matrix_size,
                                      get_gs_energy_tol(wl.right_sp_index),
                                      get_max_krylov_dim(wl.right_sp_index)
@@ -123,30 +124,22 @@ public:
   using op_with_map_t = imperative_operator<sub_hilbert_space,dcomplex,true>;
   op_with_map_t A; // operator connecting middle_hs to left_hs
   op_with_map_t B; // operator connecting right_hs to middle_hs
-  // 1d time meshes associated with operators A and B
-  gf_mesh<retime> A_mesh, B_mesh;
   dcomplex coeff = wst.weight;
 
   switch(wl.observable) {
    case worldline_desc_t::GreaterGf:
     A = op_with_map_t(c(wl.index1), fops, full_hs, c_conn[fops[wl.index1]], &subspaces);
     B = op_with_map_t(c_dag(wl.index2), fops, full_hs, cdag_conn[fops[wl.index2]], &subspaces);
-    A_mesh = std::get<0>(obs.mesh());
-    B_mesh = std::get<1>(obs.mesh());
     coeff *= -1_j / hbar;
     break;
    case worldline_desc_t::LesserGf:
     A = op_with_map_t(c_dag(wl.index2), fops, full_hs, cdag_conn[fops[wl.index2]], &subspaces);
     B = op_with_map_t(c(wl.index1), fops, full_hs, c_conn[fops[wl.index1]], &subspaces);
-    A_mesh = std::get<1>(obs.mesh());
-    B_mesh = std::get<0>(obs.mesh());
     coeff *= 1_j / hbar;
     break;
    case worldline_desc_t::Susceptibility:
     A = op_with_map_t(n(wl.index1), fops, full_hs, n_conn[fops[wl.index1]], &subspaces);
     B = op_with_map_t(n(wl.index2), fops, full_hs, n_conn[fops[wl.index2]], &subspaces);
-    A_mesh = std::get<0>(obs.mesh());
-    B_mesh = std::get<1>(obs.mesh());
     coeff *= -1_j / hbar;
     break;
   }
@@ -166,21 +159,21 @@ public:
   // |a_st(*A_it)> = A |middle_st(*A_it)>
   auto a_st = state_on_subspace_t(left_hs);
 
-  auto A_it_prev = A_mesh.begin();
-  for(auto A_it = A_mesh.begin(); A_it != A_mesh.end(); A_it_prev = A_it++) {
-   left_prop(bra_st, A_it_prev, A_it);
+  int A_index_prev = 0;
+  for(int A_index = 0; A_index < t_mesh.size(); A_index_prev = A_index++) {
+   left_prop(bra_st, A_index_prev, A_index);
 
    ket_st = psi_0;
-   auto B_it_prev = B_mesh.begin();
-   for(auto B_it = B_mesh.begin(); B_it != B_mesh.end(); B_it_prev = B_it++) {
-    right_prop(ket_st, B_it_prev, B_it);
+   int B_index_prev = 0;
+   for(auto B_index = 0; B_index < t_mesh.size(); B_index_prev = B_index++) {
+    right_prop(ket_st, B_index_prev, B_index);
 
     B.apply(ket_st, middle_st);
-    middle_prop(middle_st, B_it, A_it);
+    middle_prop(middle_st, B_index, A_index);
     A.apply(middle_st, a_st);
 
     (wl.observable == worldline_desc_t::LesserGf ?
-     obs[{*B_it,*A_it}] : obs[{*A_it,*B_it}])
+     obs[{B_index, A_index}] : obs[{A_index, B_index}])
      (wl.inner_index1, wl.inner_index2) += coeff * dot_product(bra_st, a_st);
    }
   }
