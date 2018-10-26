@@ -37,8 +37,6 @@ namespace realevol {
 // Hamiltonian interpolation between time slices
 enum h_interpolation {Rectangle, Trapezoid, Simpson};
 
-using time_it_t = gf_mesh<retime>::const_iterator;
-
 template<typename HScalarType> class propagator;
 
 // Instantaneous Hamiltonian
@@ -64,9 +62,7 @@ struct prop_1d_t {
  prop_1d_t(inst_h_t<HScalarType> && inst_h, sub_hilbert_space const& sp);
  prop_1d_t(prop_1d_t const&) = delete;
  void diag(double t, double dt);
- void operator()(state_on_subspace_t & st,
-                 time_it_t const& t_min, time_it_t const& t_max,
-                 dcomplex c);
+ void operator()(state_on_subspace_t & st, double t_min, double t_max, dcomplex c);
 };
 
 // LAPACK propagation
@@ -79,9 +75,7 @@ struct prop_lapack_t {
  prop_lapack_t(inst_h_t<HScalarType> && inst_h, sub_hilbert_space const& sp);
  prop_lapack_t(prop_lapack_t const&) = delete;
  void diag(double t, double dt);
- void operator()(state_on_subspace_t & st,
-                 time_it_t const& t_min, time_it_t const& t_max,
-                 dcomplex c);
+ void operator()(state_on_subspace_t & st, double t_min, double t_max, dcomplex c);
 };
 
 // Lanczos propagation
@@ -93,9 +87,7 @@ struct prop_lanczos_t {
  prop_lanczos_t(inst_h_t<HScalarType> && inst_h, sub_hilbert_space const& sp,
                 double gs_energy_convergence, int max_krylov_dim);
  prop_lanczos_t(prop_lanczos_t const&) = delete;
- void operator()(state_on_subspace_t & st,
-                 time_it_t const& t_min, time_it_t const& t_max,
-                 dcomplex c);
+ void operator()(state_on_subspace_t & st, double t_min, double t_max, dcomplex c);
 };
 
 template<typename HScalarType>
@@ -103,22 +95,23 @@ class propagator {
 
  const bool is_static_h;           // Is Hamiltonian static on sp
  const dcomplex h_coeff;           // Hamiltonian prefactor in the exponential
+ gf_mesh<retime> const& t_mesh;    // Time mesh
 
  // Choose the exact diagonaliztion solver
  enum {OneD, LAPACK, Lanczos} ed_solver;
 
  std::shared_ptr<void> prop_impl;
 
- void propagate(state_on_subspace_t & st, time_it_t const& t_min, time_it_t const& t_max, dcomplex c) const;
+ void propagate(state_on_subspace_t & st, int t_min_index, int t_max_index, dcomplex c) const;
 
 public:
 
  propagator(op_on_subspace_t<HScalarType> const& h, sub_hilbert_space const& sp,
+            gf_mesh<retime> const& t_mesh,
             double hbar, bool is_static_op, h_interpolation h_interpol,
             long lanczos_min_matrix_size, double gs_energy_convergence, int max_krylov_dim);
 
- void operator()(state_on_subspace_t & st,
-                 time_it_t const& t_start, time_it_t const& t_end) const;
+ void operator()(state_on_subspace_t & st, int t_start_index, int t_end_index) const;
 };
 
 extern template class propagator<time_expr>;
