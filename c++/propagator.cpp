@@ -189,11 +189,10 @@ void propagator<HScalarType>::operator()(state_on_subspace_t & st, int t_start_i
  if(t_end_index == t_start_index) return; // No propagation needed
 
  bool forward = t_end_index > t_start_index;
- dcomplex c = (forward ? 1 : -1) * h_coeff;
+ dcomplex c = h_coeff;
 
  if(is_static_h && ed_solver != Lanczos) {
-  if(forward) propagate(st, t_start_index, t_end_index, c); // Forward propagation (static)
-  else        propagate(st, t_end_index, t_start_index, c); // Backward propagation (static)
+  propagate(st, t_start_index, t_end_index, c); // Forward or backward propagation (static)
  } else {
   if(forward) { // Forward propagation
    int t_next_index = t_start_index; ++t_next_index;
