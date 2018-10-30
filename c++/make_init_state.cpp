@@ -432,7 +432,9 @@ init_state make_equilibrium_init_state(OperatorType const& h,
 
  double beta, energy_window;
  if(temperature == 0)
-  energy_window = (params.arpack_tolerance != 0 ? params.arpack_tolerance : 1e-14);
+  // XXX If this is too low, n_relevant_ev is "0" for zero temperature with ARPACK and MPI.
+  // The minimum tolerance that worked on my machine was "1e-13", for "1e-14" there was this problem. mdanilov
+  energy_window = (params.arpack_tolerance != 0 ? params.arpack_tolerance : 1e-9);
  else {
   beta = 1 / temperature;
   energy_window = -temperature * std::log(params.min_rel_weight);
