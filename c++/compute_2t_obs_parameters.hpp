@@ -35,6 +35,15 @@ struct compute_2t_obs_parameters_t {
  /// default: 3 on MPI rank 0, 0 otherwise.
  int verbosity = ((triqs::mpi::communicator().rank() == 0) ? 3 : 0); // silence the slave nodes
 
+ /// Compute lesser Green's function
+ bool compute_g_l = true;
+
+ /// Compute greater Green's function
+ bool compute_g_g = true;
+
+ /// Compute susceptibility
+ bool compute_chi = true;
+
  /// Planck's constant
  double hbar = 1.0;
 
