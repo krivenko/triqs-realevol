@@ -225,6 +225,9 @@ void find_lowest_levels_on_subspace(sub_hilbert_space const& sp,
 
  // Partially diagonalize op within sp iteratively increasing
  // the number of eigenvalues to be found
+
+ // Temporary GS energy, reset after each call to the ARPACK worker
+ double gs_energy_tmp = gs_energy;
  while(true) {
   ++params.n_eigenvalues;
   if(verbosity >= 2)
@@ -241,7 +244,9 @@ void find_lowest_levels_on_subspace(sub_hilbert_space const& sp,
 
   auto const& eig = arpw.eigenvalues();
 
-   // ARPACK cannot calculate the last eigenvalue. Stopping ...
+  gs_energy_tmp = std::min(gs_energy, real(eig(params.n_eigenvalues-1)));
+
+  // ARPACK cannot calculate the last eigenvalue. Stopping ...
   if(params.n_eigenvalues == sp.size()-(is_complex_t::value ? 2 : 1)) {
    std::cout << "[Node " << rank << "] WARNING: ARPACK has found "
              << params.n_eigenvalues
@@ -252,11 +257,11 @@ void find_lowest_levels_on_subspace(sub_hilbert_space const& sp,
    break;
   }
 
-  gs_energy = std::min(gs_energy, real(eig(params.n_eigenvalues-1)));
-
   // The most recently found eigenvalue was too high
-  if(real(eig(0)) > gs_energy + energy_window) break;
+  if(real(eig(0)) > gs_energy_tmp + energy_window) break;
  }
+
+ gs_energy = std::min(gs_energy, gs_energy_tmp); // Use the GS energy from the last iteration
 
  if(params.n_eigenvalues == 1) return;
 
@@ -432,7 +437,9 @@ init_state make_equilibrium_init_state(OperatorType const& h,
 
  double beta, energy_window;
  if(temperature == 0)
-  energy_window = (params.arpack_tolerance != 0 ? params.arpack_tolerance : 1e-14);
+  // XXX If this is too low, n_relevant_ev is "0" for zero temperature with ARPACK and MPI.
+  // The minimum tolerance that worked on my machine was "1e-13", for "1e-14" there was this problem. mdanilov
+  energy_window = (params.arpack_tolerance != 0 ? params.arpack_tolerance : 1e-12);
  else {
   beta = 1 / temperature;
   energy_window = -temperature * std::log(params.min_rel_weight);
