@@ -24,6 +24,7 @@
 #include <set>
 #include <algorithm>
 #include <iterator>
+#include <limits>
 
 #include "time_expr.hpp"
 #include "time_interp.hpp"
@@ -76,13 +77,19 @@ solver::solver(gf_struct_t const& gf_struct, chi_indices_t const& chi_indices,
  g_l = make_block_gf(block_names, g_l_blocks);
  g_g = make_block_gf(block_names, g_g_blocks);
 
+ double nan = std::numeric_limits<double>::quiet_NaN();
+ g_l() = dcomplex(nan, nan);
+ g_g() = dcomplex(nan, nan);
+
  int chi_size = chi_indices.size();
  if(chi_size != std::set<std::pair<std::string,utility::variant_int_string>>
    (chi_indices.begin(), chi_indices.end()).size())
   TRIQS_RUNTIME_ERROR << "Repeated indices are met in chi_indices";
 
- if(chi_size > 0)
+ if(chi_size > 0) {
   chi = gf_2t_t{{t_mesh, t_mesh}, {chi_size, chi_size}};
+  chi() = dcomplex(nan, nan);
+ }
 }
 
 template<typename HamiltonianType>
@@ -97,14 +104,6 @@ HamiltonianType try_reduce_to_constant(HamiltonianType const& op, gf_mesh<retime
  }
  return res;
 }
-
-/*
-void solver::compute_2t_obs(compute_2t_obs_parameters_t const& params) {
-  if(params.h.index() == 0)
-    compute_2t_obs_impl<time_expr_operator_t>(params);
-  else
-    compute_2t_obs_impl<time_interp_operator_t>(params);
-}*/
 
 template<typename HamiltonianType>
 void solver::compute_2t_obs(HamiltonianType const& h_, compute_2t_obs_parameters_t const& params) {
@@ -265,9 +264,11 @@ void solver::compute_2t_obs(HamiltonianType const& h_, compute_2t_obs_parameters
 
  CHECK_SIGNALS;
 
- g_g() = 0;
- g_l() = 0;
- chi() = 0;
+ double nan = std::numeric_limits<double>::quiet_NaN();
+
+ g_g() = dcomplex(nan, nan);
+ g_l() = dcomplex(nan, nan);
+ chi() = dcomplex(nan, nan);
 
  while(true) {
   if((nwl = disp().value_or(-1)) == -1) break;
