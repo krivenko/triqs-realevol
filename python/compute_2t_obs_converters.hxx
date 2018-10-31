@@ -14,6 +14,9 @@ template <> struct py_converter<compute_2t_obs_parameters_t> {
  static PyObject *c2py(compute_2t_obs_parameters_t const & x) {
   PyObject * d = PyDict_New();
   PyDict_SetItemString( d, "verbosity"              , convert_to_python(x.verbosity));
+  PyDict_SetItemString( d, "compute_g_l"            , convert_to_python(x.compute_g_l));
+  PyDict_SetItemString( d, "compute_g_g"            , convert_to_python(x.compute_g_g));
+  PyDict_SetItemString( d, "compute_chi"            , convert_to_python(x.compute_chi));
   PyDict_SetItemString( d, "hbar"                   , convert_to_python(x.hbar));
   PyDict_SetItemString( d, "hamiltonian_interpol"   , convert_to_python(x.hamiltonian_interpol));
   PyDict_SetItemString( d, "lanczos_min_matrix_size", convert_to_python(x.lanczos_min_matrix_size));
@@ -39,6 +42,9 @@ template <> struct py_converter<compute_2t_obs_parameters_t> {
  static compute_2t_obs_parameters_t py2c(PyObject *dic) {
   compute_2t_obs_parameters_t res;
   _get_optional(dic, "verbosity"              , res.verbosity                 ,((triqs::mpi::communicator().rank()==0)?3:0));
+  _get_optional(dic, "compute_g_l"            , res.compute_g_l               ,true);
+  _get_optional(dic, "compute_g_g"            , res.compute_g_g               ,true);
+  _get_optional(dic, "compute_chi"            , res.compute_chi               ,true);
   _get_optional(dic, "hbar"                   , res.hbar                      ,1.0);
   _get_optional(dic, "hamiltonian_interpol"   , res.hamiltonian_interpol      ,Rectangle);
   _get_optional(dic, "lanczos_min_matrix_size", res.lanczos_min_matrix_size   ,11);
@@ -74,7 +80,7 @@ template <> struct py_converter<compute_2t_obs_parameters_t> {
   std::stringstream fs, fs2; int err=0;
 
 #ifndef TRIQS_ALLOW_UNUSED_PARAMETERS
-  std::vector<std::string> ks, all_keys = {"h","verbosity","hbar","hamiltonian_interpol","lanczos_min_matrix_size","lanczos_gs_energy_tol","lanczos_max_krylov_dim"};
+  std::vector<std::string> ks, all_keys = {"verbosity","compute_g_l","compute_g_g","compute_chi","hbar","hamiltonian_interpol","lanczos_min_matrix_size","lanczos_gs_energy_tol","lanczos_max_krylov_dim"};
   pyref keys = PyDict_Keys(dic);
   if (!convertible_from_python<std::vector<std::string>>(keys, true)) {
    fs << "\nThe dict keys are not strings";
@@ -87,6 +93,9 @@ template <> struct py_converter<compute_2t_obs_parameters_t> {
 #endif
 
   _check_optional <int                                    >(dic, fs, err, "verbosity"              , "int");
+  _check_optional <bool                                   >(dic, fs, err, "compute_g_l"            , "bool");
+  _check_optional <bool                                   >(dic, fs, err, "compute_g_g"            , "bool");
+  _check_optional <bool                                   >(dic, fs, err, "compute_chi"            , "bool");
   _check_optional <double                                 >(dic, fs, err, "hbar"                   , "double");
   _check_optional <realevol::h_interpolation              >(dic, fs, err, "hamiltonian_interpol"   , "realevol::h_interpolation");
   _check_optional <int                                    >(dic, fs, err, "lanczos_min_matrix_size", "int");
