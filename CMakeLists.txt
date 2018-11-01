@@ -46,6 +46,12 @@ set(CMAKE_INSTALL_PREFIX ${TRIQS_PATH})
 message(STATUS "TRIQS : Adding compilation flags detected by the library")
 add_definitions(${TRIQS_CXX_DEFINITIONS})
 
+option(USE_ANTIHERMITICITY "Use the antihermiticity of GFs/susceptibilities to skip computation of some (t,t') points" ON)
+mark_as_advanced(USE_ANTIHERMITICITY)
+if (USE_ANTIHERMITICITY)
+    add_definitions(-DUSE_ANTIHERMITICITY)
+endif(USE_ANTIHERMITICITY)
+
 option(Tests "Enable Tests" ON)
 
 #Check availability of <optional>

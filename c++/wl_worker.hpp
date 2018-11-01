@@ -165,7 +165,11 @@ public:
 
    ket_st = psi_0;
    int B_index_prev = 0;
-   for(auto B_index = 0; B_index < t_mesh.size(); B_index_prev = B_index++) {
+#ifdef USE_ANTIHERMITICITY
+   for(int B_index = 0; B_index <= A_index; B_index_prev = B_index++) {
+#else
+   for(int B_index = 0; B_index < t_mesh.size(); B_index_prev = B_index++) {
+#endif
     right_prop(ket_st, B_index_prev, B_index);
 
     B.apply(ket_st, middle_st);
