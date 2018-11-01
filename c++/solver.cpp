@@ -105,6 +105,17 @@ HamiltonianType try_reduce_to_constant(HamiltonianType const& op, gf_mesh<retime
  return res;
 }
 
+#ifdef USE_ANTIHERMITICITY
+void restore_antihermiticity(gf_2t_view f, bool fill_supdiagonals) {
+  gf_mesh<retime>::mesh_point_t t, tp;
+  for(auto ttp : f.mesh()) {
+   std::tie(t, tp) = ttp.components_tuple();
+   if((fill_supdiagonals && tp > t) || (!fill_supdiagonals && tp < t))
+     f[ttp] = -dagger(f(tp, t));
+  }
+}
+#endif
+
 template<typename HamiltonianType>
 void solver::compute_2t_obs(HamiltonianType const& h_, compute_2t_obs_parameters_t const& params) {
 
@@ -307,6 +318,15 @@ void solver::compute_2t_obs(HamiltonianType const& h_, compute_2t_obs_parameters
  if(params.compute_g_g) g_g = mpi_reduce(g_g, comm, 0, true);
  if(params.compute_g_l) g_l = mpi_reduce(g_l, comm, 0, true);
  if(params.compute_chi) chi = mpi_reduce(chi, comm, 0, true);
+
+#ifdef USE_ANTIHERMITICITY
+ if(params.compute_g_g)
+  for(auto & f : g_g) restore_antihermiticity(f, true);
+ if(params.compute_g_l)
+  for(auto & f : g_l) restore_antihermiticity(f, false);
+ if(params.compute_chi)
+  restore_antihermiticity(chi, true);
+#endif
 
  signal_handler::stop();
 
