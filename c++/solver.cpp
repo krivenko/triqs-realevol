@@ -35,6 +35,7 @@
 #include "mpi_dispatcher.hpp"
 #include "wl_worker.hpp"
 #include "mesh_utils.hpp"
+#include "time_point_selector.hpp"
 
 namespace signal_handler = triqs::signal_handler;
 
@@ -105,14 +106,24 @@ HamiltonianType try_reduce_to_constant(HamiltonianType const& op, gf_mesh<retime
  return res;
 }
 
+void init_observable(gf_2t_view f, time_point_selector const& t_selector) {
+ double nan = std::numeric_limits<double>::quiet_NaN();
+ gf_mesh<retime>::mesh_point_t t, tp;
+ for(auto ttp : f.mesh()) {
+  std::tie(t, tp) = ttp.components_tuple();
+  f[{t, tp}]() = t_selector(t, tp) ? .0 : dcomplex(nan, nan);
+ }
+}
+
 #ifdef USE_ANTIHERMITICITY
-void restore_antihermiticity(gf_2t_view f, bool fill_supdiagonals) {
-  gf_mesh<retime>::mesh_point_t t, tp;
-  for(auto ttp : f.mesh()) {
-   std::tie(t, tp) = ttp.components_tuple();
-   if((fill_supdiagonals && tp > t) || (!fill_supdiagonals && tp < t))
-     f[ttp] = -dagger(f(tp, t));
+void restore_antihermiticity(gf_2t_view f, time_point_selector const& t_selector) {
+ gf_mesh<retime>::mesh_point_t t, tp;
+ for(auto ttp : f.mesh()) {
+  std::tie(t, tp) = ttp.components_tuple();
+  if(t_selector(t, tp)) { // Have we computed this pair?
+   f[{tp, t}] = -dagger(f[{t, tp}]);
   }
+ }
 }
 #endif
 
@@ -262,7 +273,10 @@ void solver::compute_2t_obs(HamiltonianType const& h_, compute_2t_obs_parameters
 
  mpi_dispatcher<long> disp(comm, all_worldlines.size());
 
+ time_point_selector t_selector(params.t_range, params.tp_range, params.delta_t_max);
+
  wl_worker<HamiltonianType> worker(*initial_state, h, params.hbar, hs_struct, is_static_sp,
+                                   t_selector,
                                    params.lanczos_min_matrix_size,
                                    params.lanczos_gs_energy_tol,
                                    params.lanczos_max_krylov_dim
@@ -287,11 +301,12 @@ void solver::compute_2t_obs(HamiltonianType const& h_, compute_2t_obs_parameters
 
  CHECK_SIGNALS;
 
- double nan = std::numeric_limits<double>::quiet_NaN();
-
- g_g() = dcomplex(nan, nan);
- g_l() = dcomplex(nan, nan);
- chi() = dcomplex(nan, nan);
+ if(params.compute_g_g)
+  for(auto & f : g_g) init_observable(f, t_selector);
+ if(params.compute_g_l)
+  for(auto & f : g_l) init_observable(f, t_selector);
+ if(params.compute_chi)
+  init_observable(chi, t_selector);
 
  while(true) {
   if((nwl = disp().value_or(-1)) == -1) break;
@@ -321,11 +336,11 @@ void solver::compute_2t_obs(HamiltonianType const& h_, compute_2t_obs_parameters
 
 #ifdef USE_ANTIHERMITICITY
  if(params.compute_g_g)
-  for(auto & f : g_g) restore_antihermiticity(f, true);
+  for(auto & f : g_g) restore_antihermiticity(f, t_selector);
  if(params.compute_g_l)
-  for(auto & f : g_l) restore_antihermiticity(f, false);
+  for(auto & f : g_l) restore_antihermiticity(f, t_selector);
  if(params.compute_chi)
-  restore_antihermiticity(chi, true);
+  restore_antihermiticity(chi, t_selector);
 #endif
 
  signal_handler::stop();
