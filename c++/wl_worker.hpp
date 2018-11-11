@@ -27,6 +27,7 @@
 #include "init_state.hpp"
 #include "worldlines.hpp"
 #include "propagator.hpp"
+#include "time_point_selector.hpp"
 
 namespace realevol {
 
@@ -47,6 +48,7 @@ class wl_worker {
 
  std::vector<sub_hilbert_space> const& subspaces;
  std::vector<bool> const& is_static_sp;
+ time_point_selector const& t_selector;
  std::vector<std::vector<int>> c_conn, cdag_conn, n_conn;
 
 public:
@@ -54,6 +56,7 @@ public:
  wl_worker(init_state const& initial_state, HamiltonianType const& h, double hbar,
            hilbert_space_structure<HamiltonianType> const& hss,
            std::vector<bool> const& is_static_sp,
+           time_point_selector const& t_selector,
            int lanczos_min_matrix_size,
            std::map<long,double> const& lanczos_gs_energy_tol,
            std::map<long,int> const& lanczos_max_krylov_dim
@@ -61,6 +64,7 @@ public:
  initial_state(initial_state), hss(hss), subspaces(hss.sub_hilbert_spaces),
  h(h, initial_state.get_fops(), initial_state.get_full_hs()), hbar(hbar),
  is_static_sp(is_static_sp),
+ t_selector(t_selector),
  lanczos_min_matrix_size(lanczos_min_matrix_size),
  lanczos_gs_energy_tol(lanczos_gs_energy_tol),
  lanczos_max_krylov_dim(lanczos_max_krylov_dim) {
@@ -165,11 +169,12 @@ public:
 
    ket_st = psi_0;
    int B_index_prev = 0;
-#ifdef USE_ANTIHERMITICITY
-   for(int B_index = 0; B_index <= A_index; B_index_prev = B_index++) {
-#else
-   for(int B_index = 0; B_index < t_mesh.size(); B_index_prev = B_index++) {
-#endif
+   for(int B_index = 0; B_index < t_mesh.size(); B_index++) {
+    if(!(wl.observable == worldline_desc_t::LesserGf ?
+      t_selector(t_mesh[B_index], t_mesh[A_index]) :
+      t_selector(t_mesh[A_index], t_mesh[B_index])))
+      continue;
+
     right_prop(ket_st, B_index_prev, B_index);
 
     B.apply(ket_st, middle_st);
@@ -179,6 +184,8 @@ public:
     (wl.observable == worldline_desc_t::LesserGf ?
      obs[{B_index, A_index}] : obs[{A_index, B_index}])
      (wl.inner_index1, wl.inner_index2) += coeff * dot_product(bra_st, a_st);
+
+     B_index_prev = B_index;
    }
   }
  }
