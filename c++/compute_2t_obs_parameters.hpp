@@ -35,6 +35,24 @@ struct compute_2t_obs_parameters_t {
  /// default: 3 on MPI rank 0, 0 otherwise.
  int verbosity = ((triqs::mpi::communicator().rank() == 0) ? 3 : 0); // silence the slave nodes
 
+ /// Compute lesser Green's function
+ bool compute_g_l = true;
+
+ /// Compute greater Green's function
+ bool compute_g_g = true;
+
+ /// Compute susceptibility
+ bool compute_chi = true;
+
+ /// Compute components of observables with the first time argument within this range
+ std::pair<double, double> t_range = {-INFINITY, INFINITY};
+
+ /// Compute components of observables with the second time argument within this range
+ std::pair<double, double> tp_range = {-INFINITY, INFINITY};
+
+ /// Compute components of observables with time arguments satisfying |t-t'|<=delta_t_max
+ double delta_t_max = INFINITY;
+
  /// Planck's constant
  double hbar = 1.0;
 
