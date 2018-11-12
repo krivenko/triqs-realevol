@@ -48,6 +48,8 @@ if(signal_handler::received()) {                \
 
 namespace realevol {
 
+const double nan = std::numeric_limits<double>::quiet_NaN();
+
 solver::solver(gf_struct_t const& gf_struct, chi_indices_t const& chi_indices,
                double t_max, int n_t) :
  gf_struct(gf_struct), chi_indices(chi_indices),
@@ -78,7 +80,6 @@ solver::solver(gf_struct_t const& gf_struct, chi_indices_t const& chi_indices,
  g_l = make_block_gf(block_names, g_l_blocks);
  g_g = make_block_gf(block_names, g_g_blocks);
 
- double nan = std::numeric_limits<double>::quiet_NaN();
  g_l() = dcomplex(nan, nan);
  g_g() = dcomplex(nan, nan);
 
@@ -107,7 +108,6 @@ HamiltonianType try_reduce_to_constant(HamiltonianType const& op, gf_mesh<retime
 }
 
 void init_observable(gf_2t_view f, time_point_selector const& t_selector) {
- double nan = std::numeric_limits<double>::quiet_NaN();
  gf_mesh<retime>::mesh_point_t t, tp;
  for(auto ttp : f.mesh()) {
   std::tie(t, tp) = ttp.components_tuple();
@@ -301,12 +301,22 @@ void solver::compute_2t_obs(HamiltonianType const& h_, compute_2t_obs_parameters
 
  CHECK_SIGNALS;
 
- if(params.compute_g_g)
-  for(auto & f : g_g) init_observable(f, t_selector);
- if(params.compute_g_l)
-  for(auto & f : g_l) init_observable(f, t_selector);
+ for(auto & f : g_g) {
+  if(params.compute_g_g)
+   init_observable(f, t_selector);
+  else
+   f() = dcomplex(nan, nan);
+ }
+ for(auto & f : g_l) {
+  if(params.compute_g_l)
+   init_observable(f, t_selector);
+  else
+   f() = dcomplex(nan, nan);
+ }
  if(params.compute_chi)
   init_observable(chi, t_selector);
+ else
+  chi() = dcomplex(nan, nan);
 
  while(true) {
   if((nwl = disp().value_or(-1)) == -1) break;
