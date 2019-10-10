@@ -31,8 +31,7 @@ find_package(Boost 1.53 REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 # Detect ARPACK-NG
-set(arpack-ng_DIR ${ARPACK_DIR}/lib/cmake)
-find_package(arpack-ng REQUIRED)
+find_package(ARPACK REQUIRED)
 
 # Get hash
 triqs_get_git_hash(${CMAKE_SOURCE_DIR} "REALEVOL")
