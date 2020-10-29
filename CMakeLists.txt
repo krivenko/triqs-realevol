@@ -30,7 +30,7 @@ endif()
 
 # ############
 # Define Project
-project(triqs_realevol VERSION 0.6 LANGUAGES CXX)
+project(realevol VERSION 0.6 LANGUAGES CXX)
 get_directory_property(IS_SUBPROJECT PARENT_DIRECTORY)
 
 # ############
@@ -84,8 +84,7 @@ endif(Use_Antihermiticity)
 option(Build_Benchmarks "Compile C++ benchmarks (requires Google benchmark)" OFF)
 
 # Documentation
-# TODO
-# option(Build_Documentation "Build documentation" OFF)
+option(Build_Documentation "Build documentation" OFF)
 
 # Testing
 option(Build_Tests "Build tests" ON)
@@ -141,10 +140,9 @@ if(PythonSupport)
 endif()
 
 # Docs
-# TODO
-#if(Build_Documentation)
-#  add_subdirectory(doc)
-#endif()
+if(Build_Documentation)
+  add_subdirectory(doc)
+endif()
 
 # Benchmarks
 if(Build_Benchmarks)
