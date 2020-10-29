@@ -172,16 +172,3 @@ if(BUILD_DEBIAN_PACKAGE AND NOT IS_SUBPROJECT)
   set(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS ON)
   include(CPack)
 endif()
-
-# TODO
-# Detect MPI
-#find_package(MPI)
-
-# Detect Boost
-#find_package(Boost 1.53 REQUIRED)
-#include_directories(${Boost_INCLUDE_DIRS})
-
-# Detect ARPACK-NG
-#find_package(ARPACK REQUIRED)
-
-
