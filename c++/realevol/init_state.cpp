@@ -59,7 +59,7 @@ std::ostream & operator<<(std::ostream & os, init_state const& st) {
 
 void h5_write(h5::group fg, std::string const &name, init_state const& st) {
  auto gr = fg.create_group(name);
- gr.write_triqs_hdf5_data_scheme(st);
+ write_hdf5_format(gr, st);
 
  h5_write_attribute(gr, "fops", st.fops);
  h5_write(gr, "full_hs", st.full_hs);

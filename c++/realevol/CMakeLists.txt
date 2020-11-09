@@ -104,17 +104,22 @@ endmacro()
 add_realevol_cpp_lib(realevol_time_expr_c time_expr.cpp)
 add_realevol_cpp_lib(realevol_time_interp_c time_interp.cpp)
 
-# Install headers
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        DESTINATION include
-        FILES_MATCHING PATTERN "*.hpp")
+# Build main solver library
+add_realevol_cpp_lib(realevol_c init_state.cpp make_init_state.cpp
+                     operators/many_body_operator.cpp
+                     hilbert_space/fundamental_operator_set.cpp)
 
 # TODO
-## Build main solver library
 #add_library(realevol_c solver.cpp init_state.cpp make_init_state.cpp
             #propagator.cpp utility.cpp
             #triqs/operators/many_body_operator.cpp
             #triqs/hilbert_space/fundamental_operator_set.cpp)
-#target_link_libraries(realevol_c time_expr_c time_interp_c ${TRIQS_LIBRARY_ALL} ${ARPACK_LIB})
-#triqs_set_rpath_for_target(realevol_c)
-#add_dependencies(realevol_c time_expr_c time_interp_c)
+
+target_link_libraries(realevol_c PUBLIC time_expr_c time_interp_c)
+target_link_libraries(realevol_c PRIVATE ezarpack)
+add_dependencies(realevol_c time_expr_c time_interp_c)
+
+# Install headers
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        DESTINATION include
+        FILES_MATCHING PATTERN "*.hpp")

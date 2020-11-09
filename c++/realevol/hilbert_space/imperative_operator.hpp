@@ -19,14 +19,15 @@
  *
  ******************************************************************************/
 #pragma once
-#include "./fundamental_operator_set.hpp"
-#include "../operators/many_body_operator.hpp"
-#include "./hilbert_space.hpp"
 
 #include <vector>
 #include <utility>
 #include <algorithm>
 #include <cmath>
+
+#include "./fundamental_operator_set.hpp"
+#include "../operators/many_body_operator.hpp"
+#include "./hilbert_space.hpp"
 
 namespace realevol {
 namespace hilbert_space {
@@ -196,20 +197,20 @@ template <typename HilbertType, typename ScalarType = double, bool UseMap = fals
  private:
 
  template <typename StateType>
- inline int get_target_hilbert(StateType const &st, std::true_type use_map) const {
+ inline int get_target_hilbert(StateType const &st, std::true_type /* use_map */) const {
   return hilbert_map[st.get_hilbert().get_index()];
  }
  template <typename StateType>
- inline int get_target_hilbert(StateType const &st, std::false_type use_map) const {
+ inline int get_target_hilbert(StateType const &st, std::false_type /* use_map */) const {
   return st.get_hilbert().get_index();
  }
 
- template <typename StateType> StateType get_target_st(StateType const &st, std::true_type use_map) const {
+ template <typename StateType> StateType get_target_st(StateType const &st, std::true_type /* use_map */) const {
   auto n = hilbert_map[st.get_hilbert().get_index()];
   if (n == -1) return StateType{};
   return StateType{(*sub_spaces)[n]};
  }
- template <typename StateType> StateType get_target_st(StateType const &st, std::false_type use_map) const {
+ template <typename StateType> StateType get_target_st(StateType const &st, std::false_type /* use_map */) const {
   return StateType(st.get_hilbert());
  }
 

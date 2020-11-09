@@ -19,31 +19,24 @@
  *
  ******************************************************************************/
 #pragma once
-#include <triqs/utility/variant_int_string.hpp>
-#include <triqs/utility/dressed_iterator.hpp>
-#include <triqs/utility/exceptions.hpp>
-#include <triqs/h5/base_public.hpp>
+
+#include <string>
 #include <vector>
 #include <set>
 #include <map>
 #include <utility>
+#include <variant>
 
-namespace std {
-inline std::ostream & operator<<(std::ostream & os, std::vector<triqs::utility::variant_int_string> const& fs) {
- int u = 0;
- for(auto const& i : fs) { if (u++) os << ","; os << i; }
- return os;
-}
-}
+#include <triqs/utility/dressed_iterator.hpp>
+#include <triqs/utility/exceptions.hpp>
 
-namespace utility = triqs::utility; // FIXME
-namespace h5 = triqs::h5;           // FIXME
+#include <h5/h5.hpp>
 
 namespace realevol {
 namespace hilbert_space {
 
  /// Structure of the Green's function
- using gf_struct_t = std::map<std::string,std::vector<utility::variant_int_string>>;
+ using gf_struct_t = std::map<std::string,std::vector<std::variant<int, std::string>>>;
 
  /// The statistics: Boson or Fermion
  enum statistic_enum {Boson, Fermion};
@@ -58,7 +51,7 @@ class fundamental_operator_set {
  public:
 
  /// Sequence of indices (`std::vector` of int/string variant objects)
- using indices_t = std::vector<utility::variant_int_string>;
+ using indices_t = std::vector<std::variant<int, std::string>>;
 
  /// The set represented as a pair of plain `std::vector` (for fermions and bosons)
  using reduction_t = std::pair<std::vector<indices_t>,std::vector<indices_t>>;
@@ -139,10 +132,6 @@ class fundamental_operator_set {
   for (auto const& p : map_index_n) m.insert({p.first, i++});
   std::swap(m, map_index_n);
  }
-
- /// Insert a new index sequence for fermions given as multiple `int`/`std::string` arguments
- template <typename... IndexType> TRIQS_DEPRECATED("Use insert_fermion() instead.")
- void insert(IndexType const&... ind) { insert_fermion(ind...); }
 
  /// Insert a new index sequence for fermions given as multiple `int`/`std::string` arguments
  template <typename... IndexType> void insert_fermion(IndexType const&... ind) {
@@ -263,19 +252,19 @@ class fundamental_operator_set {
 
  /// Write this set as an HDF5 attribute
  /**
-   @param id ID of an HDF5 object to attach the attribute to
+   @param obj The HDF5 object the attribute is attached to
    @param name Name of the attribute
    @param f Fundamental set to write
   */
 
- friend void h5_write_attribute(hid_t id, std::string const& name, fundamental_operator_set const& f);
+ friend void h5_write_attribute(h5::object obj, std::string const& name, fundamental_operator_set const& f);
  /// Read a set from an HDF5 attribute
  /**
-   @param id ID of an HDF5 object the attribute is attached to
+   @param obj The HDF5 object the attribute is attached to
    @param name Name of the attribute
    @param f Reference to a fundamental set to be read
   */
- friend void h5_read_attribute(hid_t id, std::string const& name, fundamental_operator_set& f);
+ friend void h5_read_attribute(h5::object obj, std::string const& name, fundamental_operator_set& f);
 
 };
 }}

@@ -26,7 +26,7 @@
 #include <functional>
 #include <exception>
 
-#include <triqs/mpi/base.hpp>
+#include <mpi/mpi.hpp>
 #include <triqs/utility/tuple_tools.hpp>
 #include <triqs/utility/exceptions.hpp>
 
@@ -42,9 +42,9 @@ class mpi_dispatcher {
  // Job index to be sent next
  long next_job_index = 0;
  // MPI datatype for Job
- MPI_Datatype job_datatype = triqs::mpi::mpi_datatype<Job>();
+ MPI_Datatype job_datatype = mpi::mpi_type<Job>::get();
 
- triqs::mpi::communicator comm;
+ mpi::communicator comm;
 
  enum tags : int {request_job_tag = 1024,
                   send_job_tag,
@@ -66,10 +66,9 @@ class mpi_dispatcher {
    MPI_Start(&recv_r);
    MPI_Wait(&recv_r, &stat);
 
-   auto args = std::tuple<GeneratorArgs...>();
-   triqs::tuple::for_each(args, [this,&stat](auto & arg) {
-    using triqs::mpi::mpi_datatype;
-    auto arg_datatype = mpi_datatype<std14::decay_t<decltype(arg)>>();
+   auto args_tuple = std::make_tuple(args...);
+   triqs::tuple::for_each(args_tuple, [this,&stat](auto & arg) {
+    auto arg_datatype = mpi::mpi_type<std::decay_t<decltype(arg)>>::get();
     MPI_Recv(&arg, 1, arg_datatype, stat.MPI_SOURCE, generator_arg_tag, comm.get(),
              MPI_STATUS_IGNORE);
    });
@@ -77,7 +76,7 @@ class mpi_dispatcher {
    MPI_Request send_r;
    if(next_job_index < n_jobs) { // Still have jobs to send
     auto job = triqs::tuple::apply(job_generator,
-                                   std::tuple_cat(std::make_tuple(next_job_index), args));
+                                   std::tuple_cat(std::make_tuple(next_job_index), args_tuple));
     MPI_Isend(&job, 1, job_datatype, stat.MPI_SOURCE, send_job_tag, comm.get(), &send_r);
    } else {                      // Sending empty message
     MPI_Isend(nullptr, 0, job_datatype, stat.MPI_SOURCE, send_job_tag, comm.get(), &send_r);
@@ -97,9 +96,8 @@ class mpi_dispatcher {
   MPI_Wait(&send_r,MPI_STATUS_IGNORE);
 
   // Send arguments of the job generator
-  using triqs::mpi::mpi_datatype;
   triqs::tuple::for_each(std::make_tuple(args...), [this](auto arg) {
-   MPI_Send(&arg, 1, mpi_datatype<decltype(arg)>(), 0, generator_arg_tag, comm.get());
+   MPI_Send(&arg, 1, mpi::mpi_type<decltype(arg)>::get(), 0, generator_arg_tag, comm.get());
   });
 
   // Receive new job
@@ -122,20 +120,20 @@ public:
 
  /// Construct using a general job generator
  template<typename JobGenerator>
- mpi_dispatcher(triqs::mpi::communicator const& comm, JobGenerator job_generator, long n_jobs) :
+ mpi_dispatcher(mpi::communicator const& comm, JobGenerator job_generator, long n_jobs) :
   job_generator(job_generator), n_jobs(n_jobs), comm(comm) {
   TRIQS_ASSERT(n_jobs > 0);
  }
 
  /// Construct and generate jobs as Job::Job(i, args...), i = 0,..., n_jobs-1
- mpi_dispatcher(triqs::mpi::communicator const& comm, long n_jobs) :
+ mpi_dispatcher(mpi::communicator const& comm, long n_jobs) :
   job_generator([](long i, GeneratorArgs... args){ return job_t(i, args...); }),
   n_jobs(n_jobs), comm(comm) {
   TRIQS_ASSERT(n_jobs > 0);
  }
 
  /// Construct on a list of jobs
- mpi_dispatcher(triqs::mpi::communicator const& comm, std::vector<Job> const& jobs) :
+ mpi_dispatcher(mpi::communicator const& comm, std::vector<Job> const& jobs) :
   job_generator([jobs](long i, GeneratorArgs...){ return jobs[i]; }),
   n_jobs(jobs.size()), comm(comm) {
   TRIQS_ASSERT(jobs.size() > 0);

@@ -19,12 +19,15 @@
  *
  ******************************************************************************/
 #pragma once
+
 #include <algorithm>
 #include <cmath>
+
 #include <boost/operators.hpp>
 #include <triqs/utility/numeric_ops.hpp>
 #include <triqs/arrays.hpp>
 #include <triqs/arrays/blas_lapack/dot.hpp>
+
 #include "hilbert_space.hpp"
 #include "state.hpp"
 

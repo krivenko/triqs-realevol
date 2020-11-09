@@ -21,9 +21,11 @@
 #pragma once
 
 #include <set>
+
 #include <boost/container/flat_map.hpp>
 #include <triqs/utility/exceptions.hpp>
-#include <triqs/h5/vector.hpp>
+#include <h5/h5.hpp>
+
 #include "fundamental_operator_set.hpp"
 
 namespace realevol {
@@ -170,11 +172,11 @@ class hilbert_space {
 
  private:
 
- /// Return name of the HDF5 scheme
+ /// Return name of the HDF5 format
  /**
-   @return Name of the scheme
+   @return Name of the format
  */
- friend std::string get_triqs_hdf5_data_scheme(hilbert_space const&) { return "hilbert_space"; }
+ static std::string hdf5_format() { return "hilbert_space"; }
 
  /// Write a Hilbert space to an HDF5 group
  /**
@@ -310,11 +312,11 @@ class sub_hilbert_space {
  // hence it is slow to insert (we don't care) but fast to look up (we do it a lot)
  boost::container::flat_map<fock_state_t, int> fock_to_index;
 
- /// Return name of the HDF5 scheme
+ /// Return name of the HDF5 format
  /**
-   @return Name of the scheme
+   @return Name of the format
  */
- friend std::string get_triqs_hdf5_data_scheme(sub_hilbert_space const&) { return "sub_hilbert_space"; }
+ static std::string hdf5_format() { return "sub_hilbert_space"; }
 
  /// Write a Hilbert subspace to an HDF5 group
  /**

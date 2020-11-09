@@ -19,13 +19,16 @@
  *
  ******************************************************************************/
 #pragma once
+
 #include <algorithm>
 #include <unordered_map>
 #include <cmath>
+
 #include <boost/operators.hpp>
 #include <triqs/utility/numeric_ops.hpp>
 #include <triqs/arrays.hpp>
 #include <triqs/arrays/blas_lapack/dot.hpp>
+
 #include "hilbert_space.hpp"
 
 namespace realevol {

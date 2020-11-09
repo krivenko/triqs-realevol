@@ -26,8 +26,9 @@
 #include <iostream>
 #include <limits>
 #include <utility>
-#include <triqs/h5.hpp>
-#include <triqs/mpi/base.hpp>
+
+#include <h5/h5.hpp>
+#include <mpi/mpi.hpp>
 
 #include "common.hpp"
 
@@ -75,7 +76,7 @@ init_state make_equilibrium_init_state(OperatorType const& h,
                                        double temperature,
                                        eq_solver_parameters_t const& params,
                                        std::map<operators::indices_t, int> const& bits_per_boson = {},
-                                       triqs::mpi::communicator const& comm = {});
+                                       mpi::communicator const& comm = {});
 
 extern template
 init_state make_equilibrium_init_state(time_expr_operator_t const&,
@@ -83,7 +84,7 @@ init_state make_equilibrium_init_state(time_expr_operator_t const&,
                                        double,
                                        eq_solver_parameters_t const&,
                                        std::map<operators::indices_t, int> const&,
-                                       triqs::mpi::communicator const&);
+                                       mpi::communicator const&);
 
 extern template
 init_state make_equilibrium_init_state(time_interp_operator_t const&,
@@ -91,7 +92,7 @@ init_state make_equilibrium_init_state(time_interp_operator_t const&,
                                        double,
                                        eq_solver_parameters_t const&,
                                        std::map<operators::indices_t, int> const&,
-                                       triqs::mpi::communicator const&);
+                                       mpi::communicator const&);
 
 /// Initial state, including information about the Hilbert space structure
 class init_state {
@@ -179,7 +180,7 @@ public:
  friend std::ostream & operator<<(std::ostream & os, init_state const& st);
 
  /// HDF5 read/write
- friend std::string get_triqs_hdf5_data_scheme(init_state const&) { return "InitState"; }
+ static std::string hdf5_format() { return "InitState"; }
  friend void h5_write(h5::group gr, std::string const &name, init_state const& st);
  friend void h5_read(h5::group gr, std::string const &name, init_state & st);
 
@@ -200,13 +201,13 @@ private:
                                                double,
                                                eq_solver_parameters_t const&,
                                                std::map<operators::indices_t, int> const&,
-                                               triqs::mpi::communicator const&);
+                                               mpi::communicator const&);
  friend init_state make_equilibrium_init_state<time_interp_operator_t>(time_interp_operator_t const&,
                                                fundamental_operator_set const&,
                                                double,
                                                eq_solver_parameters_t const&,
                                                std::map<operators::indices_t, int> const&,
-                                               triqs::mpi::communicator const&);
+                                               mpi::communicator const&);
 
 };
 

@@ -19,32 +19,33 @@
  *
  ******************************************************************************/
 #pragma once
-#include <triqs/hilbert_space/fundamental_operator_set.hpp>
 
 #include <ostream>
 #include <cmath>
 #include <algorithm>
+
 #include <boost/operators.hpp>
 #include <triqs/utility/real_or_complex.hpp>
 #include <triqs/utility/numeric_ops.hpp>
-#include <triqs/h5.hpp>
+#include <h5/h5.hpp>
+
+#include "../hilbert_space/fundamental_operator_set.hpp"
 
 namespace realevol {
 namespace operators {
 
- using utility::real_or_complex;
+ using triqs::utility::real_or_complex;
 
  /// The generic class
  template <typename ScalarType> class many_body_operator_generic;
 
  /// The indices of the C, C^+, A, A^+ operators are a vector of int/string
- using indices_t = hilbert_space::fundamental_operator_set::indices_t;
+ using indices_t = realevol::hilbert_space::fundamental_operator_set::indices_t;
 
  /// The user class
  using many_body_operator = many_body_operator_generic<real_or_complex>;
  using many_body_operator_real = many_body_operator_generic<double>;
  using many_body_operator_complex = many_body_operator_generic<std::complex<double>>;
- inline std::string get_triqs_hdf5_data_scheme(many_body_operator const&) { return "Operator"; }
 
  //-----------------------------------------------------------------------------------------
 
@@ -143,7 +144,7 @@ namespace operators {
    hilbert_space::fundamental_operator_set fops;
    for (auto const& m : monomials)        // for all monomials of the operator
     for (auto const& c_cdag_op : m.first) // loop over the C C^+ operators of the monomial
-     fops.insert_from_indices_t(c_cdag_op.indices, c_cdag_op.stat);
+//      fops.insert_from_indices_t(c_cdag_op.indices, c_cdag_op.stat);
    return fops;
   }
 
@@ -168,7 +169,7 @@ namespace operators {
     return {tmp_monomial,coef};
    }
   };
-  using const_iterator = utility::dressed_iterator<typename monomials_map_t::const_iterator, _cdress>;
+  using const_iterator = triqs::utility::dressed_iterator<typename monomials_map_t::const_iterator, _cdress>;
 
   public:
   // Iterators (only const!)
@@ -251,8 +252,8 @@ namespace operators {
      // prepare an unnormalized product
      monomial_t product_m;
      product_m.reserve(m.first.size() + op_m.first.size());
-     for (auto const& op : m.first) product_m.push_back(op);
-     for (auto const& op : op_m.first) product_m.push_back(op);
+     for (auto const& o : m.first) product_m.push_back(o);
+     for (auto const& o : op_m.first) product_m.push_back(o);
      normalize_and_insert(product_m, m.second * op_m.second, tmp_map);
     }
    std::swap(monomials, tmp_map);
@@ -307,6 +308,9 @@ namespace operators {
    }
    return res;
   }
+
+  // HDF5
+  static std::string hdf5_format() { return "Operator"; }
 
   private:
   // Normalize a monomial and insert into a map

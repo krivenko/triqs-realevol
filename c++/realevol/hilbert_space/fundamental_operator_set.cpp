@@ -18,14 +18,23 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "./fundamental_operator_set.hpp"
-#include <triqs/h5/base.hpp>
-#include <triqs/h5/vector.hpp>
+
+#include "hdf5_hl.h"
+
+// Code in <triqs/utility/variant_extensions.hpp> depends on these headers but
+// does not include them.
+#include <iostream>
+#include <sstream>
+#include <vector>
+
+#include <triqs/utility/variant_extensions.hpp>
+#include <h5/h5.hpp>
+
+#include "fundamental_operator_set.hpp"
 
 namespace realevol {
 namespace hilbert_space {
 
- using utility::variant_int_string;
 
  namespace { // auxiliary functions
 
@@ -36,7 +45,7 @@ namespace hilbert_space {
   };
 
   // decode the string
-  variant_int_string string_to_variant(std::string const& s) {
+  std::variant<int, std::string> string_to_variant(std::string const& s) {
    switch (s[0]) {
     case 'i':
      return std::stoi(s.c_str() + 1); // the variant is an int. Skip the first char and recover the int
@@ -52,7 +61,7 @@ namespace hilbert_space {
    std::vector<std::vector<std::string>> v(fops.size(stat));
    for (auto it = fops.begin(stat); it != fops.end(stat); ++it) { // loop over the couple (indices list, number)
     if (it->linear_index >= fops.size()) TRIQS_RUNTIME_ERROR << " Internal error fundamental_operator_set to vec vec string";
-    for (auto& x : it->index) v[it->linear_index].push_back(apply_visitor(variant_visitor{}, x));
+    for (auto& x : it->index) v[it->linear_index].push_back(visit(variant_visitor{}, x));
     // variants x are transformed to a string, add 'i' or 's' in front of the string
    }
    return v;
@@ -77,19 +86,19 @@ namespace hilbert_space {
 
  // --- h5
 
- void h5_write_attribute(hid_t id, std::string const& name, fundamental_operator_set const& fops) {
-  h5::h5_write_attribute(id, name, to_vec_vec_string(fops, Fermion));
+ void h5_write_attribute(h5::object obj, std::string const& name, fundamental_operator_set const& fops) {
+  h5::h5_write_attribute(obj, name, to_vec_vec_string(fops, Fermion));
   if(fops.size(Boson) != 0)
-   h5::h5_write_attribute(id, name + "_boson", to_vec_vec_string(fops, Boson));
+   h5::h5_write_attribute(obj, name + "_boson", to_vec_vec_string(fops, Boson));
  }
 
- void h5_read_attribute(hid_t id, std::string const& name, fundamental_operator_set & fops) {
+ void h5_read_attribute(h5::object obj, std::string const& name, fundamental_operator_set & fops) {
   std::vector<std::vector<std::string>> v_f;
-  h5::h5_read_attribute(id, name, v_f);
+  h5::h5_read_attribute(obj, name, v_f);
   std::string name_boson = name + "_boson";
-  if(H5LTfind_attribute(id, name_boson.c_str()) != 0) {
+  if(H5LTfind_attribute(obj, name_boson.c_str()) != 0) {
    std::vector<std::vector<std::string>> v_b;
-   h5::h5_read_attribute(id, name_boson, v_b);
+   h5::h5_read_attribute(obj, name_boson, v_b);
    fops = fundamental_operator_set(v_f, v_b);
   } else
    fops = fundamental_operator_set(v_f);

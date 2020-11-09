@@ -24,6 +24,7 @@
 #include <set>
 #include <map>
 #include <utility>
+
 #include <triqs/utility/numeric_ops.hpp>
 #include <boost/pending/disjoint_sets.hpp>
 

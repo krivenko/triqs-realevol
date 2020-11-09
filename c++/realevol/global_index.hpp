@@ -20,7 +20,7 @@
  ******************************************************************************/
 #pragma once
 
-#include <triqs/mpi/base.hpp>
+#include <mpi/mpi.hpp>
 
 namespace realevol {
 
@@ -42,20 +42,22 @@ struct global_index {
 
 } // namespace realevol
 
-namespace triqs { namespace mpi {
+namespace mpi {
 
-template<> inline MPI_Datatype mpi_datatype<realevol::global_index>() {
- static bool type_committed = false;
- static MPI_Datatype dt;
- if(!type_committed) {
-  int blocklengths[] = {1,1,1};
-  MPI_Aint displacements[] = {0,sizeof(long),sizeof(long)+sizeof(int)};
-  MPI_Datatype types[] = {MPI_LONG,MPI_INT,MPI_LONG};
-  MPI_Type_create_struct(3, blocklengths, displacements, types, &dt);
-  MPI_Type_commit(&dt);
-  type_committed = true;
+template<> struct mpi_type<realevol::global_index> {
+ static MPI_Datatype get() noexcept {
+  static bool type_committed = false;
+  static MPI_Datatype dt;
+  if(!type_committed) {
+   int blocklengths[] = {1,1,1};
+   MPI_Aint displacements[] = {0,sizeof(long),sizeof(long)+sizeof(int)};
+   MPI_Datatype types[] = {MPI_LONG,MPI_INT,MPI_LONG};
+   MPI_Type_create_struct(3, blocklengths, displacements, types, &dt);
+   MPI_Type_commit(&dt);
+   type_committed = true;
+  }
+  return dt;
  }
- return dt;
-}
+};
 
-}}
+} // namespace mpi

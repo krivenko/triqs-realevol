@@ -19,8 +19,9 @@
  *
  ******************************************************************************/
 #include "./many_body_operator.hpp"
-#include <triqs/h5.hpp>
-#include <triqs/h5/base.hpp>
+
+#include <h5/h5.hpp>
+#include <triqs/utility/variant_extensions.hpp>
 
 namespace realevol {
 namespace operators {

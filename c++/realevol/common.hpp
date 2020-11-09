@@ -20,19 +20,17 @@
  ******************************************************************************/
 #pragma once
 
-#include <complex>
-#include <type_traits>
+#include <triqs/gfs.hpp>
+#include <triqs/utility/numeric_ops.hpp>
+
+#include "operators/many_body_operator.hpp"
+#include "hilbert_space/fundamental_operator_set.hpp"
+#include "hilbert_space/hilbert_space.hpp"
+#include "hilbert_space/imperative_operator.hpp"
+#include "hilbert_space/state.hpp"
 
 #include "time_expr.hpp"
 #include "time_interp.hpp"
-
-#include <triqs/gfs.hpp>
-#include <triqs/operators/many_body_operator.hpp>
-#include <triqs/hilbert_space/fundamental_operator_set.hpp>
-#include <triqs/hilbert_space/hilbert_space.hpp>
-#include <triqs/hilbert_space/imperative_operator.hpp>
-#include <triqs/hilbert_space/state.hpp>
-#include <triqs/utility/numeric_ops.hpp>
 
 namespace realevol {
 
@@ -41,9 +39,9 @@ using namespace realevol::operators;
 using namespace realevol::hilbert_space;
 
 using gf_2t_t = gf<cartesian_product<retime, retime>>;
-using block_gf_2t_t = block_gf<cartesian_product<retime,retime>>;
+using block_gf_2t_t = block_gf<cartesian_product<retime, retime>>;
 using gf_2t_view = gf_view<cartesian_product<retime, retime>>;
-using block_gf_2t_view = block_gf_view<cartesian_product<retime,retime>>;
+using block_gf_2t_view = block_gf_view<cartesian_product<retime, retime>>;
 
 using time_expr_operator_t = realevol::operators::many_body_operator_generic<time_expr>;
 using time_interp_operator_t = realevol::operators::many_body_operator_generic<time_interp>;

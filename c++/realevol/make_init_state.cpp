@@ -33,14 +33,21 @@
 #include <iterator>
 #include <numeric>
 #include <type_traits>
-#include <triqs/hilbert_space/space_partition.hpp>
-#include <triqs/hilbert_space/state_view.hpp>
+
+#include <signal.h>
+
 #include <triqs/arrays/vector.hpp>
 #include <triqs/arrays/linalg/eigenelements.hpp>
-#include <triqs/mpi/vector.hpp>
 #include <triqs/utility/signal_handler.hpp>
+#include <mpi/mpi.hpp>
 
-#include <triqs/arrays/arpack/arpack_worker.hpp>
+#include <realevol/hilbert_space/space_partition.hpp>
+#include <realevol/hilbert_space/state_view.hpp>
+
+#include <ezarpack/storages/triqs.hpp>
+#include <ezarpack/arpack_solver.hpp>
+#include <ezarpack/version.hpp>
+
 #include "init_state.hpp"
 #include "mpi_dispatcher.hpp"
 #include "global_index.hpp"
@@ -129,7 +136,6 @@ init_state make_pure_init_state(time_interp_operator_t const&,
 // -----------------------------------------------------------------
 
 using namespace triqs::arrays;
-using namespace triqs::arrays::arpack;
 using sp_levels_t = std::pair<int,vector<double>>;
 using eigensystem_t = std::pair<vector<double>,matrix<dcomplex>>;
 using real_state_on_subspace_t = state<sub_hilbert_space,double,false>;
@@ -139,13 +145,15 @@ using real_static_op_on_subspace_t = imperative_operator<sub_hilbert_space,doubl
 /// Solver procedures for make_equilibrium_init_state ///
 /////////////////////////////////////////////////////////
 
-auto make_arpack_worker_params(int nev, bool eigenvectors, std::true_type) {
- using params_t = arpack_worker<Complex>::params_t;
+auto make_arpack_solver_params(int nev, bool eigenvectors, std::true_type) {
+ using namespace ezarpack;
+ using params_t = arpack_solver<Complex, triqs_storage>::params_t;
  return params_t(nev, params_t::SmallestReal, eigenvectors ? params_t::Ritz : params_t::None);
 }
 
-auto make_arpack_worker_params(int nev, bool eigenvectors, std::false_type) {
- using params_t = arpack_worker<Symmetric>::params_t;
+auto make_arpack_solver_params(int nev, bool eigenvectors, std::false_type) {
+ using namespace ezarpack;
+ using params_t = arpack_solver<Symmetric, triqs_storage>::params_t;
  return params_t(nev, params_t::Smallest, eigenvectors);
 }
 
@@ -209,24 +217,26 @@ void find_lowest_levels_on_subspace(sub_hilbert_space const& sp,
   std::cout << "[Node " << rank << "] Using ARPACK on subspace "
             << sp_n << std::endl;
 
- // Set up ARPACK worker
- arpack_worker<is_complex_t::value ? Complex : Symmetric> arpw(sp.size());
+ // Set up ARPACK solver
+ using namespace ezarpack;
+ arpack_solver<is_complex_t::value ? Complex : Symmetric,
+               triqs_storage> arps(sp.size());
 
  using state_view_t = state_view<sub_hilbert_space,T>;
  std::array<state_view_t,3> state_views = {
-  state_view_t{arpw.workspace_vector(0), sp},
-  state_view_t{arpw.workspace_vector(1), sp},
-  state_view_t{arpw.workspace_vector(2), sp}
+  state_view_t{arps.workspace_vector(0), sp},
+  state_view_t{arps.workspace_vector(1), sp},
+  state_view_t{arps.workspace_vector(2), sp}
  };
 
- auto params = make_arpack_worker_params(0, false, is_complex_t());
+ auto params = make_arpack_solver_params(0, false, is_complex_t());
  params.tolerance = arpack_tol;
  params.ncv = arpack_ncv;
 
  // Partially diagonalize op within sp iteratively increasing
  // the number of eigenvalues to be found
 
- // Temporary GS energy, reset after each call to the ARPACK worker
+ // Temporary GS energy, reset after each call to the ARPACK solver
  double gs_energy_tmp = gs_energy;
  while(true) {
   ++params.n_eigenvalues;
@@ -234,15 +244,16 @@ void find_lowest_levels_on_subspace(sub_hilbert_space const& sp,
   std::cout << "[Node " << rank << "] Calling ARPACK to find the lowest "
             << params.n_eigenvalues << " eigenvalues" << std::endl;
 
-  auto apply_h = [&h,&state_views](vector_view<T>, int from_n,
-                                   vector_view<T>, int to_n) {
-   h.apply(state_views[from_n], state_views[to_n]);
+  auto apply_h = [&h,&state_views,&arps](auto, auto) {
+   auto in_n = arps.in_vector_n();
+   auto out_n = arps.out_vector_n();
+   h.apply(state_views[in_n], state_views[out_n]);
   };
 
   // Run ARPACK solver
-  arpw(apply_h, params);
+  arps(apply_h, params);
 
-  auto const& eig = arpw.eigenvalues();
+  auto const& eig = arps.eigenvalues();
 
   gs_energy_tmp = std::min(gs_energy, real(eig(params.n_eigenvalues-1)));
 
@@ -265,7 +276,7 @@ void find_lowest_levels_on_subspace(sub_hilbert_space const& sp,
 
  if(params.n_eigenvalues == 1) return;
 
- auto const& eig = arpw.eigenvalues();
+ auto const& eig = arps.eigenvalues();
  vector<double> ev(eig.size()-1);
  for(int i : range(ev.size())) ev(i) = real(eig(ev.size()-i));
  lowest_levels.emplace_back(sp_levels_t{sp_n, std::move(ev)});
@@ -352,30 +363,32 @@ void compute_eigenvectors(sub_hilbert_space const& sp,
             << sp_n << " (" << n_vectors_to_compute
             << " eigenpairs to compute)" << std::endl;
 
- // Set up ARPACK worker
- arpack_worker<is_complex_t::value ? Complex : Symmetric> arpw(sp.size());
+ // Set up ARPACK solver
+ using namespace ezarpack;
+ arpack_solver<is_complex_t::value ? Complex : Symmetric, triqs_storage> arps(sp.size());
 
  using state_view_t = state_view<sub_hilbert_space,T>;
  std::array<state_view_t,3> state_views = {
-  state_view_t{arpw.workspace_vector(0), sp},
-  state_view_t{arpw.workspace_vector(1), sp},
-  state_view_t{arpw.workspace_vector(2), sp}
+  state_view_t{arps.workspace_vector(0), sp},
+  state_view_t{arps.workspace_vector(1), sp},
+  state_view_t{arps.workspace_vector(2), sp}
  };
 
- auto params = make_arpack_worker_params(n_vectors_to_compute, true, is_complex_t());
+ auto params = make_arpack_solver_params(n_vectors_to_compute, true, is_complex_t());
  params.tolerance = arpack_tol;
  params.ncv = arpack_ncv;
 
- auto apply_h = [&h,&state_views](vector_view<T>, int from_n,
-                                  vector_view<T>, int to_n) {
-  h.apply(state_views[from_n], state_views[to_n]);
+ auto apply_h = [&h,&state_views,&arps](auto, auto) {
+  auto in_n = arps.in_vector_n();
+  auto out_n = arps.out_vector_n();
+  h.apply(state_views[in_n], state_views[out_n]);
  };
 
  // Run ARPACK solver
- arpw(apply_h, params);
+ arps(apply_h, params);
 
- eigensystems.emplace_back(real(arpw.eigenvalues()),
-                           arpw.eigenvectors()(range(),range(n_vectors_to_compute)));
+ eigensystems.emplace_back(real(arps.eigenvalues()),
+                           arps.eigenvectors()(range(),range(n_vectors_to_compute)));
 
  // Sort eigenvalues and eigenvectors as complex ARPACK is not trustworthy in this respect...
  if(is_complex_t::value) {
@@ -393,25 +406,27 @@ struct JobWithGsEnergy {
  double gs_energy;
 };
 
-} // namespace realevol
+} //namespace realevol
 
-namespace triqs { namespace mpi {
+namespace mpi {
 
-template<> inline MPI_Datatype mpi_datatype<realevol::JobWithGsEnergy>() {
- static bool type_committed = false;
- static MPI_Datatype dt;
- if(!type_committed) {
-  int blocklengths[] = {1,1};
-  MPI_Aint displacements[] = {0,sizeof(long)};
-  MPI_Datatype types[] = {MPI_LONG,MPI_DOUBLE};
-  MPI_Type_create_struct(2, blocklengths, displacements, types, &dt);
-  MPI_Type_commit(&dt);
-  type_committed = true;
+template<> struct mpi_type<realevol::JobWithGsEnergy> {
+ static MPI_Datatype get() noexcept {
+  static bool type_committed = false;
+  static MPI_Datatype dt;
+  if(!type_committed) {
+    int blocklengths[] = {1,1};
+    MPI_Aint displacements[] = {0,sizeof(long)};
+    MPI_Datatype types[] = {MPI_LONG,MPI_DOUBLE};
+    MPI_Type_create_struct(2, blocklengths, displacements, types, &dt);
+    MPI_Type_commit(&dt);
+    type_committed = true;
+  }
+  return dt;
  }
- return dt;
-}
+};
 
-}}
+} // namespace mpi
 
 // -----------------------------------------------------------------
 
@@ -423,7 +438,7 @@ init_state make_equilibrium_init_state(OperatorType const& h,
                                        double temperature,
                                        eq_solver_parameters_t const& params,
                                        std::map<operators::indices_t, int> const& bits_per_boson,
-                                       triqs::mpi::communicator const& comm) {
+                                       mpi::communicator const& comm) {
 
  // Static version the equilibrium Hamiltonian
  auto h_ = make_static_op(h, "Initial Hamiltonian must be time-independent!");
@@ -484,8 +499,8 @@ init_state make_equilibrium_init_state(OperatorType const& h,
  // Distribute subspaces between MPI ranks, and find the lowest energy levels
  // in each subspace without computing the corresponding eigenvectors (to save memory).
 
- // For workers: ground state energy on this MPI rank
- // For master: current ground state energy reported by the workers
+ // For solvers: ground state energy on this MPI rank
+ // For master: current ground state energy reported by the solvers
  double gs_energy = std::numeric_limits<double>::infinity();
 
  // Will be called only on master
@@ -541,7 +556,7 @@ init_state make_equilibrium_init_state(OperatorType const& h,
  }
 
  // Find the global energy minimum
- gs_energy = mpi_all_reduce(gs_energy, comm, 0, MPI_MIN);
+ gs_energy = mpi::all_reduce(gs_energy, comm, 0, MPI_MIN);
 
  if(params.verbosity >= 1 && comm.rank() == 0)
   std::cout << "Ground state energy: " << gs_energy << std::endl;
@@ -617,14 +632,14 @@ init_state make_equilibrium_init_state(OperatorType const& h,
  sp_lowest_levels.clear();
 
  // Complete partition function
- Z = mpi_all_reduce(Z, comm, 0, MPI_SUM);
+ Z = mpi::all_reduce(Z, comm, 0, MPI_SUM);
 
  // Gather relevant eigenpairs
  if(params.verbosity >= 1 && comm.rank() == 0)
   std::cout << "Gathering eigensystems ..." << std::endl;
 
  // Collect information about relevant subspaces from all ranks
- auto tmp = mpi_gather(rel_sp_i, comm, 0, true, std::true_type());
+ auto tmp = mpi::all_gather(rel_sp_i, comm, 0);
  std::set<global_index> all_relevant_sp_i(tmp.begin(), tmp.end());
 
  auto & shs = ist.sub_hilbert_spaces;
@@ -673,7 +688,7 @@ init_state make_equilibrium_init_state(time_expr_operator_t const&,
                                        double,
                                        eq_solver_parameters_t const&,
                                        std::map<operators::indices_t, int> const&,
-                                       triqs::mpi::communicator const&);
+                                       mpi::communicator const&);
 
 template
 init_state make_equilibrium_init_state(time_interp_operator_t const&,
@@ -681,5 +696,5 @@ init_state make_equilibrium_init_state(time_interp_operator_t const&,
                                        double,
                                        eq_solver_parameters_t const&,
                                        std::map<operators::indices_t, int> const&,
-                                       triqs::mpi::communicator const&);
+                                       mpi::communicator const&);
 }
