@@ -1,7 +1,42 @@
+# Build C++ libraries
+
+foreach(NAME time_expr)
+
+  set(CPPLIBNAME ${PROJECT_NAME}_${NAME}_c)
+
+  # Add library target
+  add_library(${CPPLIBNAME} time_expr.cpp)
+  add_library(${PROJECT_NAME}::${CPPLIBNAME} ALIAS ${CPPLIBNAME})
+
+  # Link against triqs and enable warnings
+  target_link_libraries(${CPPLIBNAME} PUBLIC triqs
+                        PRIVATE $<BUILD_INTERFACE:${PROJECT_NAME}_warnings>)
+
+  # Configure target and compilation
+  set_property(TARGET ${CPPLIBNAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
+  target_include_directories(${CPPLIBNAME} PUBLIC
+                             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/c++>)
+  target_include_directories(${CPPLIBNAME} SYSTEM INTERFACE
+                             $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>)
+  target_compile_definitions(${CPPLIBNAME} PUBLIC
+                             REALEVOL_GIT_HASH=${PROJECT_GIT_HASH}
+                             TRIQS_GIT_HASH=${TRIQS_GIT_HASH}
+                             $<$<CONFIG:Debug>:REALEVOL_DEBUG>
+                             $<$<CONFIG:Debug>:TRIQS_DEBUG>
+                             $<$<CONFIG:Debug>:TRIQS_ARRAYS_ENFORCE_BOUNDCHECK>
+  )
+
+  # Install library
+  install(TARGETS ${CPPLIBNAME} EXPORT ${PROJECT_NAME}-targets DESTINATION lib)
+
+endforeach()
+
+# Install headers
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        DESTINATION include
+        FILES_MATCHING PATTERN "*.hpp")
+
 # TODO
-## Build time_expr C++ library
-#add_library(time_expr_c time_expr.cpp)
-#target_link_libraries(time_expr_c ${TRIQS_LIBRARY_ALL})
 
 ## Build time_interp C++ library
 #add_library(time_interp_c time_interp.cpp)
@@ -15,17 +50,3 @@
 #target_link_libraries(realevol_c time_expr_c time_interp_c ${TRIQS_LIBRARY_ALL} ${ARPACK_LIB})
 #triqs_set_rpath_for_target(realevol_c)
 #add_dependencies(realevol_c time_expr_c time_interp_c)
-
-#include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${TRIQS_INCLUDE_ALL})
-
-## Install library
-#install(TARGETS realevol_c time_expr_c time_interp_c DESTINATION lib)
-
-## Install headers
-#set(HEADERS include/realevol)
-#install(FILES common.hpp time_expr.hpp time_interp.hpp solver.hpp utility.hpp
-              #compute_2t_obs_parameters.hpp init_state.hpp
-        #DESTINATION ${HEADERS})
-#install(DIRECTORY exprtk DESTINATION ${HEADERS}/exprtk FILES_MATCHING PATTERN *.hpp)
-#install(DIRECTORY triqs/operators DESTINATION ${HEADERS}/triqs FILES_MATCHING PATTERN *.hpp)
-#install(DIRECTORY triqs/hilbert_space DESTINATION ${HEADERS}/triqs)

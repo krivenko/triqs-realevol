@@ -23,6 +23,7 @@
 #include <complex>
 #include <string>
 #include <ostream>
+
 #include <boost/operators.hpp>
 
 #include <triqs/utility/numeric_ops.hpp>
@@ -36,7 +37,14 @@
 #define exprtk_disable_rtl_io_file
 #define exprtk_disable_rtl_vecops
 #define exprtk_disable_caseinsensitivity
-#include "exprtk/exprtk.hpp"
+
+// Silence some annoying GCC warnings from ExprTk
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wshadow"
+#pragma GCC diagnostic ignored "-Wmisleading-indentation"
+#include <exprtk/exprtk.hpp>
+#pragma GCC diagnostic pop
 
 namespace realevol {
 
@@ -91,10 +99,14 @@ public:
   time_expr real() const { return time_expr(re_str); }
 
   // Imaginary part
-  time_expr imag() const { return _is_real ? time_expr() : time_expr(im_str); }
+  time_expr imag() const {
+    return _is_real ? time_expr() : time_expr(im_str);
+  }
 
   // Complex conjugate
-  time_expr conj() const { return _is_real ? *this : time_expr(re_str,"-(" + im_str + ")"); }
+  time_expr conj() const {
+    return _is_real ? *this : time_expr(re_str,"-(" + im_str + ")");
+  }
 
   // Evaluation of the expression
   std::complex<double> operator()(double t) const;
@@ -129,7 +141,7 @@ inline time_expr operator ""_te(const char* expr, std::size_t) { return time_exp
 
 namespace triqs { namespace utility {
 
-inline bool is_zero(realevol::time_expr const& te, double = 0 /* neglected */) { return te.is_zero(); }
+inline bool is_zero(realevol::time_expr const& te, double /* neglected */) { return te.is_zero(); }
 inline realevol::time_expr conj(realevol::time_expr const& te) { return te.conj(); }
 
 }}

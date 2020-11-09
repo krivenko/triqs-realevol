@@ -126,6 +126,10 @@ target_compile_options(${PROJECT_NAME}_warnings
 # Find / Build dependencies
 add_subdirectory(deps)
 
+# Install additional headers provided by realevol
+add_subdirectory(c++/triqs)
+add_subdirectory(c++/exprtk)
+
 # Build and install the library
 add_subdirectory(c++/${PROJECT_NAME})
 

@@ -18,8 +18,12 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+
 #include "time_expr.hpp"
+
 #include <sstream>
+
+#include <triqs/utility/exceptions.hpp>
 
 namespace realevol {
 
@@ -44,7 +48,9 @@ exprtk::symbol_table<double> time_expr::create_sym_table() const {
 
 void time_expr::recompile_re_expr() {
   bool res = parser.compile(re_str,re);
-  if(!res) TRIQS_RUNTIME_ERROR << "ExprTk error in the real part '" << re_str << "': " << parser.error();
+  if(!res)
+    TRIQS_RUNTIME_ERROR << "ExprTk error in the real part '" << re_str
+                        << "': " << parser.error();
   if(exprtk::expression_helper<double>::is_constant(re)) {
     re_str = to_string(re());
     if(re_str == "-0") re_str = "0";
@@ -52,7 +58,9 @@ void time_expr::recompile_re_expr() {
 }
 void time_expr::recompile_im_expr() {
   bool res = parser.compile(im_str,im);
-  if(!res) TRIQS_RUNTIME_ERROR << "ExprTk error in the imaginary part '" << im_str << "': " << parser.error();
+  if(!res)
+    TRIQS_RUNTIME_ERROR << "ExprTk error in the imaginary part '" << im_str
+                        << "': " << parser.error();
   if(exprtk::expression_helper<double>::is_constant(im)) {
     im_str = to_string(im());
     if(im_str == "-0") im_str = "0";
@@ -88,29 +96,29 @@ time_expr::time_expr(const char* re_str, double i) : time_expr(std::string(re_st
 time_expr::time_expr(double r, const char* im_str) : time_expr(to_string(r),std::string(im_str)) {}
 
 time_expr::time_expr(std::string const& str) :
-  _is_real(true), re_str(str) {
+  re_str(str), _is_real(true) {
   auto symt = create_sym_table();
   init_re_expr(symt);
 }
 
 time_expr::time_expr(std::string const& re_str, std::string const& im_str) :
-  _is_real(false), re_str(re_str), im_str(im_str) {
+  re_str(re_str), im_str(im_str), _is_real(false) {
   auto symt = create_sym_table();
   init_re_expr(symt);
   init_im_expr(symt);
 }
 
 time_expr::time_expr(time_expr const& te) :
-  _is_real(te._is_real), re_str(te.re_str), im_str(te.im_str) {
+  re_str(te.re_str), im_str(te.im_str), _is_real(te._is_real) {
   auto symt = create_sym_table();
   init_re_expr(symt);
   if(!_is_real) init_im_expr(symt);
 }
 
 time_expr::time_expr(time_expr && te) :
-  _is_real(std::move(te._is_real)),
   re_str(std::move(te.re_str)),
-  im_str(std::move(te.im_str)) {
+  im_str(std::move(te.im_str)),
+  _is_real(std::move(te._is_real)) {
   auto symt = create_sym_table();
   init_re_expr(symt);
   if(!_is_real) init_im_expr(symt);
