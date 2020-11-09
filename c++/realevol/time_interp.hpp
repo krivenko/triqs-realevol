@@ -96,13 +96,19 @@ public:
   friend time_interp operator/(std::complex<double> const& z, time_interp const& ti);
 
   // Real part
-  time_interp real() const { return time_interp(mesh, (real_data_type)triqs::arrays::real(data)); }
+  time_interp real() const {
+    return time_interp(mesh, (real_data_type)triqs::arrays::real(data));
+  }
 
   // Imaginary part
-  time_interp imag() const { return time_interp(mesh, (real_data_type)triqs::arrays::imag(data)); }
+  time_interp imag() const {
+    return time_interp(mesh, (real_data_type)triqs::arrays::imag(data));
+  }
 
   // Complex conjugate
-  time_interp conj() const { return time_interp(mesh, (data_type)triqs::arrays::conj(data)); }
+  time_interp conj() const {
+    return time_interp(mesh, (data_type)triqs::arrays::conj(data));
+  }
 };
 
 }

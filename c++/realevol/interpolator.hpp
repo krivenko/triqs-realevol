@@ -50,15 +50,23 @@ public:
   // Construct explicitly constant interpolator
   interpolator1d() : is_constant_(true), data{0} {};
   interpolator1d(value_type val) : is_constant_(true), data{val} {}
-  interpolator1d(mesh_type const& mesh, value_type val) : is_constant_(true), mesh(mesh), data{val} {}
+  interpolator1d(mesh_type const& mesh, value_type val) :
+    is_constant_(true),
+    mesh(mesh),
+    data{val}
+  {}
 
   // Construct an interpolator from a mesh and an array of values
   interpolator1d(mesh_type const& mesh, data_type const& data_) :
-    is_constant_(std::adjacent_find(data_.begin(), data_.end(), std::not_equal_to<value_type>()) == data_.end()),
+    is_constant_(std::adjacent_find(data_.begin(), data_.end(),
+                                    std::not_equal_to<value_type>()) == data_.end()),
     mesh(mesh),
-    data(is_constant_ ? data_type{data_(0)} : data_) { // Optionally save memory by storing only one data value
-    if(!is_constant_ && mesh.size() != data_.shape()[0]) TRIQS_RUNTIME_ERROR << "Inconsistent sizes of mesh and data";
-    if(mesh.size() < 2) TRIQS_RUNTIME_ERROR << "Too few data points, need at least 2";
+    data(is_constant_ ? data_type{data_(0)} : data_) {
+    // Optionally save memory by storing only one data value
+    if(!is_constant_ && mesh.size() != data_.shape()[0])
+      TRIQS_RUNTIME_ERROR << "Inconsistent sizes of mesh and data";
+    if(mesh.size() < 2)
+      TRIQS_RUNTIME_ERROR << "Too few data points, need at least 2";
   }
 
   value_type operator()(double x) const {
@@ -97,7 +105,8 @@ public:
       os << interp.data(0);
     else {
       os << "ti([" << interp.mesh.x_min() << "," << interp.mesh.x_max() << "]->[";
-      os << interp.data(0) << (interp.mesh.size() > 2 ? ",...," : ",") << interp.data(interp.mesh.size()-1) << "])";
+      os << interp.data(0) << (interp.mesh.size() > 2 ? ",...," : ",")
+         << interp.data(interp.mesh.size()-1) << "])";
     }
     return os;
   }

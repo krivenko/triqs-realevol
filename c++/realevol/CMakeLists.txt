@@ -1,11 +1,10 @@
-# Build C++ libraries
-
-foreach(NAME time_expr)
+# Build and install C++ libraries
+macro(add_realevol_cpp_lib NAME)
 
   set(CPPLIBNAME ${PROJECT_NAME}_${NAME}_c)
 
   # Add library target
-  add_library(${CPPLIBNAME} time_expr.cpp)
+  add_library(${CPPLIBNAME} ${ARGN})
   add_library(${PROJECT_NAME}::${CPPLIBNAME} ALIAS ${CPPLIBNAME})
 
   # Link against triqs and enable warnings
@@ -28,8 +27,10 @@ foreach(NAME time_expr)
 
   # Install library
   install(TARGETS ${CPPLIBNAME} EXPORT ${PROJECT_NAME}-targets DESTINATION lib)
+endmacro()
 
-endforeach()
+add_realevol_cpp_lib(time_expr time_expr.cpp)
+add_realevol_cpp_lib(time_interp time_interp.cpp)
 
 # Install headers
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -37,10 +38,6 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         FILES_MATCHING PATTERN "*.hpp")
 
 # TODO
-
-## Build time_interp C++ library
-#add_library(time_interp_c time_interp.cpp)
-#target_link_libraries(time_interp_c ${TRIQS_LIBRARY_ALL})
 
 ## Build main solver library
 #add_library(realevol_c solver.cpp init_state.cpp make_init_state.cpp

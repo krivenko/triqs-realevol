@@ -34,9 +34,9 @@ time_interp::time_interp(mesh_type const& mesh, double r) : interp_t(mesh, r) {}
 time_interp::time_interp(mesh_type const& mesh, double r, double i) : interp_t(mesh, std::complex<double>(r, i)) {}
 time_interp::time_interp(mesh_type const& mesh, std::complex<double> const& z) : interp_t(mesh, z) {}
 time_interp::time_interp(mesh_type const& mesh, real_data_type const& r) : interp_t(mesh, r) {}
-time_interp::time_interp(mesh_type const& mesh, real_data_type const& r, double i) : interp_t(mesh, r) { data += 1_j*i; }
-time_interp::time_interp(mesh_type const& mesh, double r, real_data_type const& i) : interp_t(mesh, 1_j*i) { data += r; }
-time_interp::time_interp(mesh_type const& mesh, real_data_type const& r, real_data_type const& i) : interp_t(mesh, r + 1_j*i) {}
+time_interp::time_interp(mesh_type const& mesh, real_data_type const& r, double i) : interp_t(mesh, r) { data += 1i*i; }
+time_interp::time_interp(mesh_type const& mesh, double r, real_data_type const& i) : interp_t(mesh, 1i*i) { data += r; }
+time_interp::time_interp(mesh_type const& mesh, real_data_type const& r, real_data_type const& i) : interp_t(mesh, r + 1i*i) {}
 time_interp::time_interp(mesh_type const& mesh, data_type const& z) : interp_t(mesh, z) {}
 
 //
