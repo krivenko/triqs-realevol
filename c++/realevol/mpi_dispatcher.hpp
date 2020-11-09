@@ -29,7 +29,6 @@
 #include <triqs/mpi/base.hpp>
 #include <triqs/utility/tuple_tools.hpp>
 #include <triqs/utility/exceptions.hpp>
-#include "triqs/utility/optional_compat.hpp"
 
 namespace realevol {
 
