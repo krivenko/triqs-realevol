@@ -141,7 +141,9 @@ inline time_expr operator ""_te(const char* expr, std::size_t) { return time_exp
 
 namespace triqs { namespace utility {
 
-inline bool is_zero(realevol::time_expr const& te, double /* neglected */) { return te.is_zero(); }
+inline bool is_zero(realevol::time_expr const& te, double /* neglected */ = 0) {
+  return te.is_zero();
+}
 inline realevol::time_expr conj(realevol::time_expr const& te) { return te.conj(); }
 
 }}

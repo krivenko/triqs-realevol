@@ -20,8 +20,10 @@
  ******************************************************************************/
 #pragma once
 
-#include <vector>
+#include <map>
+#include <tuple>
 #include <type_traits>
+#include <vector>
 
 #include "common.hpp"
 #include "init_state.hpp"
@@ -42,14 +44,14 @@ class wl_worker {
  op_on_subspace_t<HScalarType> h;
  double hbar;
 
- int lanczos_min_matrix_size;
- std::map<long,double> const& lanczos_gs_energy_tol;
- std::map<long,int> const& lanczos_max_krylov_dim;
-
  std::vector<sub_hilbert_space> const& subspaces;
  std::vector<bool> const& is_static_sp;
  time_point_selector const& t_selector;
  std::vector<std::vector<int>> c_conn, cdag_conn, n_conn;
+
+ int lanczos_min_matrix_size;
+ std::map<long,double> const& lanczos_gs_energy_tol;
+ std::map<long,int> const& lanczos_max_krylov_dim;
 
 public:
 
@@ -61,8 +63,9 @@ public:
            std::map<long,double> const& lanczos_gs_energy_tol,
            std::map<long,int> const& lanczos_max_krylov_dim
           ) :
- initial_state(initial_state), hss(hss), subspaces(hss.sub_hilbert_spaces),
+ initial_state(initial_state), hss(hss),
  h(h, initial_state.get_fops(), initial_state.get_full_hs()), hbar(hbar),
+ subspaces(hss.sub_hilbert_spaces),
  is_static_sp(is_static_sp),
  t_selector(t_selector),
  lanczos_min_matrix_size(lanczos_min_matrix_size),
@@ -134,17 +137,17 @@ public:
    case worldline_desc_t::GreaterGf:
     A = op_with_map_t(c(wl.index1), fops, full_hs, c_conn[fops[wl.index1]], &subspaces);
     B = op_with_map_t(c_dag(wl.index2), fops, full_hs, cdag_conn[fops[wl.index2]], &subspaces);
-    coeff *= -1_j / hbar;
+    coeff *= -1i / hbar;
     break;
    case worldline_desc_t::LesserGf:
     A = op_with_map_t(c_dag(wl.index2), fops, full_hs, cdag_conn[fops[wl.index2]], &subspaces);
     B = op_with_map_t(c(wl.index1), fops, full_hs, c_conn[fops[wl.index1]], &subspaces);
-    coeff *= 1_j / hbar;
+    coeff *= 1i / hbar;
     break;
    case worldline_desc_t::Susceptibility:
     A = op_with_map_t(n(wl.index1), fops, full_hs, n_conn[fops[wl.index1]], &subspaces);
     B = op_with_map_t(n(wl.index2), fops, full_hs, n_conn[fops[wl.index2]], &subspaces);
-    coeff *= -1_j / hbar;
+    coeff *= -1i / hbar;
     break;
   }
 

@@ -19,12 +19,15 @@
  *
  ******************************************************************************/
 #include <triqs/utility/first_include.hpp>
-#include <triqs/utility/signal_handler.hpp>
 
 #include <set>
 #include <algorithm>
 #include <iterator>
 #include <limits>
+
+#include <signal.h>
+
+#include <triqs/utility/signal_handler.hpp>
 
 #include "time_expr.hpp"
 #include "time_interp.hpp"
@@ -70,11 +73,11 @@ solver::solver(gf_struct_t const& gf_struct, chi_indices_t const& chi_indices,
   int n = bl.second.size();
 
   index_visitor iv;
-  for (auto & ind: bl.second) { apply_visitor(iv, ind); }
+  for (auto & ind: bl.second) { std::visit(iv, ind); }
   std::vector<std::vector<std::string>> indices{{iv.indices,iv.indices}};
 
-  g_l_blocks.push_back(gf_2t_t{{t_mesh, t_mesh}, {n, n}, indices});
-  g_g_blocks.push_back(gf_2t_t{{t_mesh, t_mesh}, {n, n}, indices});
+  g_l_blocks.push_back(gf_2t_t{{t_mesh, t_mesh}, make_shape(n, n), indices});
+  g_g_blocks.push_back(gf_2t_t{{t_mesh, t_mesh}, make_shape(n, n), indices});
  }
 
  g_l = make_block_gf(block_names, g_l_blocks);
@@ -84,7 +87,7 @@ solver::solver(gf_struct_t const& gf_struct, chi_indices_t const& chi_indices,
  g_g() = dcomplex(nan, nan);
 
  int chi_size = chi_indices.size();
- if(chi_size != std::set<std::pair<std::string,utility::variant_int_string>>
+ if(chi_size != std::set<std::pair<std::string, std::variant<int, std::string>>>
    (chi_indices.begin(), chi_indices.end()).size())
   TRIQS_RUNTIME_ERROR << "Repeated indices are met in chi_indices";
 
@@ -118,10 +121,13 @@ void init_observable(gf_2t_view f, time_point_selector const& t_selector) {
 #ifdef USE_ANTIHERMITICITY
 void restore_antihermiticity(gf_2t_view f, time_point_selector const& t_selector) {
  gf_mesh<retime>::mesh_point_t t, tp;
+
+ matrix<dcomplex> mat(f.mesh().size(), f.mesh().size()); // Workaround for TRIQS issue #798
  for(auto ttp : f.mesh()) {
   std::tie(t, tp) = ttp.components_tuple();
   if(t_selector(t, tp)) { // Have we computed this pair?
-   f[{tp, t}] = -dagger(f[{t, tp}]);
+   mat = f[{t, tp}];
+   f[{tp, t}] = -dagger(mat);
   }
  }
 }

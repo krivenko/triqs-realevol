@@ -20,13 +20,15 @@
  ******************************************************************************/
 #pragma once
 
-#include "common.hpp"
-
-#include <vector>
 #include <set>
-#include <triqs/hilbert_space/space_partition.hpp>
+#include <vector>
+
 #include <triqs/arrays/matrix.hpp>
 #include <triqs/gfs.hpp>
+
+#include "hilbert_space/space_partition.hpp"
+
+#include "common.hpp"
 
 namespace realevol {
 

@@ -25,7 +25,7 @@
 #include <map>
 #include <utility>
 
-#include <triqs/mpi/base.hpp>
+#include <mpi/mpi.hpp>
 
 #include "triqs/operators/many_body_operator.hpp"
 #include "compute_2t_obs_parameters.hpp"
@@ -35,7 +35,7 @@ namespace realevol {
 using namespace triqs::gfs;
 
 using indices_type = operators::indices_t;
-using chi_indices_t = std::vector<std::pair<std::string,utility::variant_int_string>>;
+using chi_indices_t = std::vector<std::pair<std::string, std::variant<int, std::string>>>;
 
 class solver {
 
@@ -44,7 +44,7 @@ class solver {
  block_gf_2t_t g_l, g_g;                             // Lesser and greater GF's to be calculated
  gf_2t_t chi;                                        // Susceptibility to be calculated
  init_state const * initial_state = nullptr;         // Initial state at t=0
- triqs::mpi::communicator comm;                      // MPI communicator
+ mpi::communicator comm;                             // MPI communicator
  compute_2t_obs_parameters_t compute_2t_obs_params;  // Parameters of the last call to solve
  gf_mesh<retime> t_mesh;                             // 1D time mesh to use in calculations
 
@@ -63,10 +63,12 @@ public:
  }
 
  /// Set the initial state
- void set_initial_state(init_state const& initial_state) { this->initial_state = &initial_state; }
+ void set_initial_state(init_state const& state) { this->initial_state = &state; }
 
  /// Set of parameters used in the last call to compute_2t_obs()
- compute_2t_obs_parameters_t get_last_compute_2t_obs_parameters() const { return compute_2t_obs_params; }
+ compute_2t_obs_parameters_t get_last_compute_2t_obs_parameters() const {
+   return compute_2t_obs_params;
+ }
 
  /// Lesser GF in real time
  block_gf_2t_view get_g_l() { return g_l; }

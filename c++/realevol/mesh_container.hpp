@@ -25,6 +25,7 @@
 #include <type_traits>
 
 #include <boost/iterator/iterator_facade.hpp>
+
 #include <triqs/utility/exceptions.hpp>
 
 namespace realevol {
@@ -108,14 +109,14 @@ private:
  mesh_t mesh;
 
  /// Write into HDF5
- friend void h5_write(triqs::h5::group fg, std::string subgroup_name, mesh_container const &c) {
-  triqs::h5::group gr = fg.create_group(subgroup_name);
+ friend void h5_write(h5::group fg, std::string subgroup_name, mesh_container const &c) {
+  h5::group gr = fg.create_group(subgroup_name);
   h5_write(gr, "vector", static_cast<base_t const&>(c));
   h5_write(gr, "mesh", c.mesh);
  }
  /// Read from HDF5
- friend void h5_read(triqs::h5::group fg, std::string subgroup_name, mesh_container &c) {
-  triqs::h5::group gr = fg.open_group(subgroup_name);
+ friend void h5_read(h5::group fg, std::string subgroup_name, mesh_container &c) {
+  h5::group gr = fg.open_group(subgroup_name);
   h5_read(gr, "vector", static_cast<base_t&>(c));
   h5_read(gr, "mesh", c.mesh);
   if(c.size() != c.mesh.size())

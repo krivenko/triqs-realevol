@@ -20,7 +20,11 @@
  ******************************************************************************/
 #pragma once
 
-#include <triqs/utility/variant.hpp>
+#include <cmath>
+#include <map>
+#include <utility>
+
+#include <mpi/mpi.hpp>
 
 #include "common.hpp"
 #include "init_state.hpp"
@@ -33,7 +37,7 @@ struct compute_2t_obs_parameters_t {
 
  /// Verbosity level
  /// default: 3 on MPI rank 0, 0 otherwise.
- int verbosity = ((triqs::mpi::communicator().rank() == 0) ? 3 : 0); // silence the slave nodes
+ int verbosity = ((mpi::communicator().rank() == 0) ? 3 : 0); // silence the slave nodes
 
  /// Compute lesser Green's function
  bool compute_g_l = true;

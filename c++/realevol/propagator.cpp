@@ -24,6 +24,7 @@
 #endif
 
 #include <cmath>
+
 #include <triqs/arrays/linalg/eigenelements.hpp>
 
 #include "common.hpp"

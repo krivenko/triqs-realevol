@@ -20,9 +20,10 @@
  ******************************************************************************/
 #pragma once
 
-#include <vector>
 #include <iostream>
-#include <triqs/hilbert_space/fundamental_operator_set.hpp>
+#include <vector>
+
+#include "hilbert_space/fundamental_operator_set.hpp"
 
 #include "init_state.hpp"
 #include "hs_structure.hpp"

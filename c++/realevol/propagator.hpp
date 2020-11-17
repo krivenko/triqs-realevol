@@ -20,9 +20,10 @@
  ******************************************************************************/
 #pragma once
 
-#include <type_traits>
-#include <memory>
 #include <functional>
+#include <memory>
+#include <type_traits>
+#include <utility>
 
 #include "hilbert_space/hilbert_space.hpp"
 #include "hilbert_space/state.hpp"

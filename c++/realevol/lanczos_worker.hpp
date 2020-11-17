@@ -20,8 +20,9 @@
  ******************************************************************************/
 #pragma once
 
-#include <vector>
+#include <complex>
 #include <type_traits>
+#include <vector>
 
 #include <triqs/arrays.hpp>
 #include <triqs/arrays/blas_lapack/stev.hpp>

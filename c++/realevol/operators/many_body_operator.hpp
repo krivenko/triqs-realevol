@@ -144,7 +144,7 @@ namespace operators {
    hilbert_space::fundamental_operator_set fops;
    for (auto const& m : monomials)        // for all monomials of the operator
     for (auto const& c_cdag_op : m.first) // loop over the C C^+ operators of the monomial
-//      fops.insert_from_indices_t(c_cdag_op.indices, c_cdag_op.stat);
+     fops.insert_from_indices_t(c_cdag_op.indices, c_cdag_op.stat);
    return fops;
   }
 
