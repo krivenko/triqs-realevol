@@ -24,10 +24,9 @@
 #include <memory>
 #include <functional>
 
-#include <triqs/hilbert_space/hilbert_space.hpp>
-#include <triqs/hilbert_space/state.hpp>
-#include <triqs/hilbert_space/imperative_operator.hpp>
-#include <triqs/utility/variant.hpp>
+#include "hilbert_space/hilbert_space.hpp"
+#include "hilbert_space/state.hpp"
+#include "hilbert_space/imperative_operator.hpp"
 
 #include "common.hpp"
 #include "lanczos_worker.hpp"

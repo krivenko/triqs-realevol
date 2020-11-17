@@ -158,7 +158,7 @@ propagator<HScalarType>::propagator(op_on_subspace_t<HScalarType> const& h, sub_
                                     double gs_energy_convergence,
                                     int max_krylov_dim
                                     ) :
- is_static_h(is_static_h), h_coeff(-1_j / hbar), t_mesh(t_mesh),
+ is_static_h(is_static_h), h_coeff(-1i / hbar), t_mesh(t_mesh),
  ed_solver(sp.size() == 1 ? OneD : (sp.size() < lanczos_min_matrix_size ? LAPACK : Lanczos)) {
  switch(ed_solver) {
   case OneD:

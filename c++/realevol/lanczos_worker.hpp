@@ -22,6 +22,7 @@
 
 #include <vector>
 #include <type_traits>
+
 #include <triqs/arrays.hpp>
 #include <triqs/arrays/blas_lapack/stev.hpp>
 #include <triqs/utility/is_complex.hpp>
@@ -29,7 +30,7 @@
 #include <triqs/utility/exceptions.hpp>
 
 using namespace triqs::arrays;
-using triqs::arrays::blas::tridiag_worker;
+using triqs::arrays::lapack::tridiag_worker;
 using triqs::is_complex;
 using triqs::utility::is_zero;
 
@@ -70,12 +71,14 @@ template <typename OperatorType, typename StateType> struct lanczos_worker {
  // For complex numbers: extract the real part and make sure that the imaginary part is negligible
  // For real numbers: returns the argument
  template<bool IsComplex = is_complex<scalar_t>::value>
- inline real_scalar_t checked_real(scalar_t const& x, typename std::enable_if<IsComplex,void*>::type = 0) {
+ inline real_scalar_t checked_real(scalar_t const& x,
+                                   std::enable_if_t<IsComplex,void*> = 0) {
   TRIQS_ASSERT(is_zero(std::imag(x)));
   return std::real(x);
  }
  template<bool IsComplex = is_complex<scalar_t>::value>
- inline real_scalar_t checked_real(scalar_t x, typename std::enable_if<!IsComplex,void*>::type = 0) {
+ inline real_scalar_t checked_real(scalar_t x,
+                                   std::enable_if_t<!IsComplex,void*> = 0) {
   return x;
  }
 
