@@ -27,29 +27,29 @@ namespace realevol {
 
 std::pair<block_gf_2t_t,block_gf_2t_t>
 make_gf_ret_adv(block_gf_2t_t const& g_l, block_gf_2t_t const& g_g) {
- if(g_l.mesh() != g_g.mesh()) TRIQS_RUNTIME_ERROR
-  << "g_l and g_g have different blocks.";
+ if(g_l.block_names() != g_g.block_names())
+   TRIQS_RUNTIME_ERROR << "g_l and g_g have different blocks.";
 
  std::vector<gf_2t_t> blocks;
- for(auto bl : g_l.mesh()) {
+ for(auto bl : range(g_l.size())) {
   auto const& mesh = g_l[bl].mesh();
   if(mesh != g_g[bl].mesh()) TRIQS_RUNTIME_ERROR
    << "Block " << g_l.name[bl]
    << " has different meshes within g_l and g_g.";
-  auto shape = get_target_shape(g_l[bl]);
-  if(shape != get_target_shape(g_g[bl])) TRIQS_RUNTIME_ERROR
+  auto shape = g_l[bl].target_shape();
+  if(shape != g_g[bl].target_shape()) TRIQS_RUNTIME_ERROR
    << "Block " << g_l.name[bl]
    << " has different target shapes within g_l and g_g.";
   auto indices = g_l[bl].indices();
 
-  blocks.push_back(gf_2t_t{mesh, shape, indices, g_l.name});
+  blocks.push_back(gf_2t_t{mesh, shape, indices});
  }
 
- auto res = std::make_pair(make_block_gf(g_l.domain().names(), blocks),
-                           make_block_gf(g_l.domain().names(), blocks));
+ auto res = std::make_pair(make_block_gf(g_l.block_names(), blocks),
+                           make_block_gf(g_l.block_names(), blocks));
 
  gf_mesh<retime>::mesh_point_t t, tp;
- for(auto bl : g_l.mesh()) {
+ for(auto bl : range(g_l.size())) {
   auto const& g_l_block = g_l[bl];
   auto const& g_g_block = g_g[bl];
   auto & g_ret_block = res.first[bl];

@@ -32,7 +32,8 @@ namespace realevol {
    @param g_g Greater Green's function
    @return Retarded and advanced Green's functions
  */
-std::pair<block_gf_2t_t,block_gf_2t_t> make_gf_ret_adv(block_gf_2t_t const& g_l, block_gf_2t_t const& g_g);
+std::pair<block_gf_2t_t,block_gf_2t_t> make_gf_ret_adv(block_gf_2t_t const& g_l,
+                                                       block_gf_2t_t const& g_g);
 
 }
 
