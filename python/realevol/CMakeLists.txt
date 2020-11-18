@@ -1,3 +1,13 @@
+# Configure the version
+configure_file(version.py.in version.py)
+
+# Install python files to proper location
+set(PYTHON_LIB_DEST ${TRIQS_PYTHON_LIB_DEST_ROOT}/${PROJECT_NAME})
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/version.py DESTINATION ${PYTHON_LIB_DEST})
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        DESTINATION ${TRIQS_PYTHON_LIB_DEST_ROOT}
+        FILES_MATCHING PATTERN "*.py" PATTERN "*_desc.py" EXCLUDE)
+
 ## make a local pytriqs copy
 #triqs_prepare_local_pytriqs(${CMAKE_PROJECT_NAME})
 
