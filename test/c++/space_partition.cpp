@@ -1,26 +1,32 @@
-#include <triqs/test_tools/arrays.hpp>
-
 #include <set>
 #include <vector>
 #include <algorithm>
+
+// FIXME: Code in <triqs/utility/variant_extensions.hpp> depends on these
+// headers but does not include them.
+//
+// https://github.com/TRIQS/triqs/pull/799
+#include <ostream>
 #include <sstream>
 
-#include <time_expr.hpp>
-#include <triqs/operators/many_body_operator.hpp>
-#include <triqs/hilbert_space/space_partition.hpp>
-#include <triqs/hilbert_space/fundamental_operator_set.hpp>
-#include <triqs/hilbert_space/hilbert_space.hpp>
-#include <triqs/hilbert_space/imperative_operator.hpp>
-#include <triqs/hilbert_space/state.hpp>
-#include <triqs/utility/numeric_ops.hpp>
+#include <triqs/utility/variant_extensions.hpp>
+#include <triqs/test_tools/arrays.hpp>
+
+#include <realevol/time_expr.hpp>
+
+#include <realevol/operators/many_body_operator.hpp>
+#include <realevol/hilbert_space/space_partition.hpp>
+#include <realevol/hilbert_space/fundamental_operator_set.hpp>
+#include <realevol/hilbert_space/hilbert_space.hpp>
+#include <realevol/hilbert_space/imperative_operator.hpp>
+#include <realevol/hilbert_space/state.hpp>
 
 using namespace realevol;
 using namespace triqs;
 using namespace operators;
 using triqs::utility::is_zero;
 
-//namespace hsns = triqs::hilbert_space;
-namespace hsns = realevol::hilbert_space;      // FIXME
+namespace hsns = realevol::hilbert_space;
 
 // 3 bands Kanamori
 
@@ -36,7 +42,7 @@ hsns::fundamental_operator_set fops;
 many_body_operator_generic<time_expr> H;
 
 int main(int argc, char **argv) {
- triqs::mpi::environment env(argc, argv);
+ mpi::environment env(argc, argv);
  ::testing::InitGoogleTest(&argc, argv);
 
  for (int o = 0; o < 3; ++o) {

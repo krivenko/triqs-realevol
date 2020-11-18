@@ -1,16 +1,26 @@
-#include <triqs/test_tools/arrays.hpp>
 #include <map>
+#include <vector>
+
+// FIXME: Code in <triqs/utility/variant_extensions.hpp> depends on these
+// headers but does not include them.
+//
+// https://github.com/TRIQS/triqs/pull/799
+#include <ostream>
 #include <sstream>
 
-#include <time_expr.hpp>
-#include <triqs/operators/many_body_operator.hpp>
-#include <triqs/hilbert_space/hilbert_space.hpp>
-#include <triqs/hilbert_space/imperative_operator.hpp>
-#include <triqs/hilbert_space/state.hpp>
-#include <triqs/hilbert_space/state_view.hpp>
+#include <triqs/utility/variant_extensions.hpp>
+#include <triqs/test_tools/arrays.hpp>
+
+#include <realevol/time_expr.hpp>
+
+#include <realevol/operators/many_body_operator.hpp>
+#include <realevol/hilbert_space/hilbert_space.hpp>
+#include <realevol/hilbert_space/imperative_operator.hpp>
+#include <realevol/hilbert_space/state.hpp>
+#include <realevol/hilbert_space/state_view.hpp>
 
 using namespace realevol;
-namespace hs = realevol::hilbert_space; // FIXME
+namespace hs = realevol::hilbert_space;
 
 template<typename T> std::string as_string(T x) {
  std::stringstream ss; ss << x;
@@ -63,7 +73,7 @@ TEST(hilbert_space, fundamental_operator_set) {
  EXPECT_EQ(2, fop4.size(Boson));
  EXPECT_EQ(6, fop4.size());
 
- h5::file fops_file("fops.h5", H5F_ACC_TRUNC);
+ h5::file fops_file("fops.h5", 'w');
  h5_write_attribute(fops_file, "fop", fop4);
  hs::fundamental_operator_set fop5;
  h5_read_attribute(fops_file, "fop", fop5);
@@ -365,8 +375,8 @@ TEST(hilbert_space, time_expr_complex) {
          *a_dag<time_expr>("B",0)*a<time_expr>("B",1);
 
  // Spin-flips
- op += 1_j*("2*t^2"*c_dag<time_expr>("down",0)*c<time_expr>("up",1));
- op += 1_j*("2*t^2"*c_dag<time_expr>("up",0)*c<time_expr>("down",1));
+ op += 1i*("2*t^2"*c_dag<time_expr>("down",0)*c<time_expr>("up",1));
+ op += 1i*("2*t^2"*c_dag<time_expr>("up",0)*c<time_expr>("down",1));
 
  double t = 0.2;
 
@@ -377,12 +387,12 @@ TEST(hilbert_space, time_expr_complex) {
            as_string(op));
  auto imp_op = hs::imperative_operator<hs::hilbert_space,time_expr>(op,fops,hs);
 
- check_state(imp_op(st1,t), {{172, std::sqrt(6.0)},{211,-0.08_j},{220,0.08_j}});
+ check_state(imp_op(st1,t), {{172, std::sqrt(6.0)},{211,-0.08i},{220,0.08i}});
 
  // precompute imp_op at t=0.3
  t = 0.3;
  imp_op.update_coeffs([t](time_expr & M){ M = M(t);});
- check_state(imp_op(st1,t), {{172, std::sqrt(6.0)},{211,-0.18_j},{220,0.18_j}});
+ check_state(imp_op(st1,t), {{172, std::sqrt(6.0)},{211,-0.18i},{220,0.18i}});
 }
 
 MAKE_MAIN;

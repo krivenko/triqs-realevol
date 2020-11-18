@@ -1,14 +1,13 @@
-#include <triqs/test_tools/arrays.hpp>
-
 #include <cmath>
 
-#include "init_state.hpp"
+#include <triqs/test_tools/arrays.hpp>
+
+#include <realevol/time_expr.hpp>
+#include <realevol/init_state.hpp>
 
 using namespace realevol;
-//using namespace triqs::operators;
-//using namespace triqs::hilbert_space;
-using namespace realevol::operators;       // FIXME
-using namespace realevol::hilbert_space;   // FIXME
+using namespace realevol::operators;
+using namespace realevol::hilbert_space;
 
 TEST(init_state_equilibrium, real) {
  double U = 3.0;
@@ -36,9 +35,9 @@ TEST(init_state_equilibrium, real) {
 
  auto ist = make_equilibrium_init_state(h0, fops, T, params, {{{"B"},8}});
 
- //h5::file f("init_state_equilibrium.ref.h5", H5F_ACC_TRUNC);
+ //h5::file f("init_state_equilibrium.ref.h5", 'r');
  //h5_write(f, "real", ist);
- h5::file f("init_state_equilibrium.ref.h5", H5F_ACC_RDONLY);
+ h5::file f("init_state_equilibrium.ref.h5", 'r');
  init_state ist_ref;
  h5_read(f, "real", ist_ref);
 
@@ -80,10 +79,10 @@ TEST(init_state_equilibrium, complex) {
  fops.insert_boson("B");
 
  auto h0 = -mu*(n<time_expr>("up") + n<time_expr>("dn"));
- h0 += eta*1_j*(c_dag<time_expr>("up")*c<time_expr>("dn") - c_dag<time_expr>("dn")*c<time_expr>("up"));
+ h0 += eta*1i*(c_dag<time_expr>("up")*c<time_expr>("dn") - c_dag<time_expr>("dn")*c<time_expr>("up"));
  h0 += U*n<time_expr>("up")*n<time_expr>("dn");
  h0 += Omega*a_dag<time_expr>("B")*a<time_expr>("B");
- h0 += lambda*1_j*(n<time_expr>("up") + n<time_expr>("dn"))
+ h0 += lambda*1i*(n<time_expr>("up") + n<time_expr>("dn"))
              *(a_dag<time_expr>("B") - a<time_expr>("B"));
 
  eq_solver_parameters_t params;
@@ -92,9 +91,9 @@ TEST(init_state_equilibrium, complex) {
 
  auto ist = make_equilibrium_init_state(h0, fops, T, params, {{{"B"},7}});
 
- //h5::file f("init_state_equilibrium.ref.h5", H5F_ACC_RDWR);
+ //h5::file f("init_state_equilibrium.ref.h5", 'w');
  //h5_write(f, "complex", ist);
- h5::file f("init_state_equilibrium.ref.h5", H5F_ACC_RDONLY);
+ h5::file f("init_state_equilibrium.ref.h5", 'r');
  init_state ist_ref;
  h5_read(f, "complex", ist_ref);
 

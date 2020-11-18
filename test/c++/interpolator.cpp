@@ -3,7 +3,7 @@
 #include <triqs/test_tools/arrays.hpp>
 #include <triqs/gfs.hpp>
 
-#include "interpolator.hpp"
+#include <realevol/interpolator.hpp>
 
 using namespace realevol;
 

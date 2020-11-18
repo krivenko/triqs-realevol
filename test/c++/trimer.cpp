@@ -1,6 +1,6 @@
 #include <triqs/test_tools/arrays.hpp>
 
-#include "solver.hpp"
+#include <realevol/solver.hpp>
 
 TEST(trimer, runge_kutta) {
 }

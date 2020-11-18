@@ -1,8 +1,9 @@
-#include <triqs/test_tools/arrays.hpp>
-
 #include <cmath>
 
-#include "init_state.hpp"
+#include <triqs/test_tools/arrays.hpp>
+
+#include <realevol/time_expr.hpp>
+#include <realevol/init_state.hpp>
 
 using namespace realevol;
 using namespace realevol::operators;
@@ -44,11 +45,11 @@ TEST(init_state, pure) {
  }
 
  {
-  h5::file ff("init_state_pure.h5", H5F_ACC_TRUNC);
+  h5::file ff("init_state_pure.h5", 'w');
   h5_write(ff, "init_state", st);
  }
  {
-  h5::file ff("init_state_pure.h5", H5F_ACC_RDONLY);
+  h5::file ff("init_state_pure.h5", 'r');
   init_state st_new;
   h5_read(ff, "init_state", st_new);
 

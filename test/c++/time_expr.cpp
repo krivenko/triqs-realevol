@@ -18,25 +18,26 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include <triqs/test_tools/arrays.hpp>
-
 #include <cstdlib>
 #include <cmath>
 #include <complex>
 #include <sstream>
+
 #include <triqs/gfs.hpp>
 #include <triqs/gfs/meshes/segment.hpp>
-#include <triqs/utility/complex_ops.hpp>
+#include <triqs/utility/numeric_ops.hpp>
 
-#include "time_expr.hpp"
-#include "mesh_utils.hpp"
+#include <triqs/test_tools/arrays.hpp>
+
+#include <realevol/time_expr.hpp>
+#include <realevol/mesh_utils.hpp>
 
 using namespace realevol;
 using triqs::gfs::segment_mesh;
 
 time_expr te1("t^2"), te2("t + sin(pi/2)"), te3("sqrt(9.0) + 1.5");
 time_expr te4("t^2",1.0), te5("t + sin(pi/2)","t^3");
-time_expr te6("sqrt(9.0) + 1.5","2.9"), te7(1.9+2.8_j);
+time_expr te6("sqrt(9.0) + 1.5","2.9"), te7(1.9+2.8i);
 
 double T[] = {0, 0.1, 10, 55};
 dcomplex TE1_res[] = {0, 0.01, 100, 3025};
@@ -119,16 +120,16 @@ TEST(time_expr,Addition) {
   time_expr te1pte2 = te1 + te2;
   time_expr te1phalf = te1 + 0.5;
   time_expr halfpte2 = 0.5 + te2;
-  time_expr te1pihalf = te1 + 0.5_j;
-  time_expr ihalfpte2 = 0.5_j + te2;
+  time_expr te1pihalf = te1 + 0.5i;
+  time_expr ihalfpte2 = 0.5i + te2;
 
   for(int i = 0; i < 4; ++i){
     double t = T[i];
     EXPECT_CLOSE(TE1_res[i]+TE2_res[i],te1pte2(t));
     EXPECT_CLOSE(TE1_res[i]+0.5,te1phalf(t));
     EXPECT_CLOSE(0.5+TE2_res[i],halfpte2(t));
-    EXPECT_CLOSE(TE1_res[i]+0.5_j,te1pihalf(t));
-    EXPECT_CLOSE(0.5_j+TE2_res[i],ihalfpte2(t));
+    EXPECT_CLOSE(TE1_res[i]+0.5i,te1pihalf(t));
+    EXPECT_CLOSE(0.5i+TE2_res[i],ihalfpte2(t));
   }
 }
 
@@ -136,16 +137,16 @@ TEST(time_expr,Subtraction) {
   time_expr te1mte2 = te1 - te2;
   time_expr te1mhalf = te1 - 0.5;
   time_expr halfmte2 = 0.5 - te2;
-  time_expr te1mihalf = te1 - 0.5_j;
-  time_expr ihalfmte2 = 0.5_j - te2;
+  time_expr te1mihalf = te1 - 0.5i;
+  time_expr ihalfmte2 = 0.5i - te2;
 
   for(int i = 0; i < 4; ++i){
     double t = T[i];
     EXPECT_CLOSE(TE1_res[i]-TE2_res[i],te1mte2(t));
     EXPECT_CLOSE(TE1_res[i]-0.5,te1mhalf(t));
     EXPECT_CLOSE(0.5-TE2_res[i],halfmte2(t));
-    EXPECT_CLOSE(TE1_res[i]-0.5_j,te1mihalf(t));
-    EXPECT_CLOSE(0.5_j-TE2_res[i],ihalfmte2(t));
+    EXPECT_CLOSE(TE1_res[i]-0.5i,te1mihalf(t));
+    EXPECT_CLOSE(0.5i-TE2_res[i],ihalfmte2(t));
   }
 }
 
@@ -154,8 +155,8 @@ TEST(time_expr,Multiplication) {
   time_expr te5ppte6 = te5 * te6;
   time_expr te1pphalf = te1 * 0.5;
   time_expr halfppte2 = 0.5 * te2;
-  time_expr te1ppihalf = te1 * 0.5_j;
-  time_expr ihalfppte2 = 0.5_j * te2;
+  time_expr te1ppihalf = te1 * 0.5i;
+  time_expr ihalfppte2 = 0.5i * te2;
 
   for(long i = 0; i < 4; ++i){
     double t = T[i];
@@ -163,8 +164,8 @@ TEST(time_expr,Multiplication) {
     EXPECT_CLOSE(TE5_res[i]*TE6_res[i],te5ppte6(t));
     EXPECT_CLOSE(TE1_res[i]*0.5,te1pphalf(t));
     EXPECT_CLOSE(0.5*TE2_res[i],halfppte2(t));
-    EXPECT_CLOSE(TE1_res[i]*0.5_j,te1ppihalf(t));
-    EXPECT_CLOSE(0.5_j*TE2_res[i],ihalfppte2(t));
+    EXPECT_CLOSE(TE1_res[i]*0.5i,te1ppihalf(t));
+    EXPECT_CLOSE(0.5i*TE2_res[i],ihalfppte2(t));
   }
 }
 
@@ -173,8 +174,8 @@ TEST(time_expr,Division) {
   time_expr te5dte6 = te5 / te6;
   time_expr te1dhalf = te1 / 0.5;
   time_expr halfdte2 = 0.5 / te2;
-  time_expr te1dihalf = te1 / 0.5_j;
-  time_expr ihalfdte2 = 0.5_j / te2;
+  time_expr te1dihalf = te1 / 0.5i;
+  time_expr ihalfdte2 = 0.5i / te2;
 
   for(int i = 0; i < 4; ++i){
     double t = T[i];
@@ -182,8 +183,8 @@ TEST(time_expr,Division) {
     EXPECT_CLOSE(TE5_res[i]/TE6_res[i],te5dte6(t));
     EXPECT_CLOSE(TE1_res[i]/0.5,te1dhalf(t));
     EXPECT_CLOSE(0.5/TE2_res[i],halfdte2(t));
-    EXPECT_CLOSE(TE1_res[i]/0.5_j,te1dihalf(t));
-    EXPECT_CLOSE(0.5_j/TE2_res[i],ihalfdte2(t));
+    EXPECT_CLOSE(TE1_res[i]/0.5i,te1dihalf(t));
+    EXPECT_CLOSE(0.5i/TE2_res[i],ihalfdte2(t));
   }
 }
 

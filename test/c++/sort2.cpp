@@ -22,7 +22,7 @@
 
 #include <random>
 
-#include "sort2.hpp"
+#include <realevol/sort2.hpp>
 
 using namespace realevol;
 

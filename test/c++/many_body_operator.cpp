@@ -1,22 +1,20 @@
 #include <triqs/utility/first_include.hpp>
-#include <triqs/test_tools/arrays.hpp>
-#include <triqs/gfs.hpp>
+
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/serialization/complex.hpp>
 
-#include <time_expr.hpp>
-#include <time_interp.hpp>
-#include <triqs/operators/many_body_operator.hpp>
+#include <triqs/gfs.hpp>
+#include <triqs/test_tools/arrays.hpp>
+
+#include <realevol/time_expr.hpp>
+#include <realevol/time_interp.hpp>
+#include <realevol/operators/many_body_operator.hpp>
 
 using namespace realevol;
-//using namespace triqs::operators;
-using namespace realevol::operators;    // FIXME
+using namespace realevol::operators;
 
 using std::to_string;
-
-#define EXPECT_PRINT(X, Y) {std::stringstream ss; ss << Y; EXPECT_EQ(X,ss.str()); }
-#define ASSERT_PRINT(X, Y) {std::stringstream ss; ss << Y; ASSERT_EQ(X,ss.str()); }
 
 auto I = dcomplex(0,1.0);
 
@@ -64,19 +62,19 @@ TEST(operator, real_or_complex) {
  EXPECT_PRINT("2 + 1*C^+(1)",     Cd + 2.0);
  EXPECT_PRINT("2 + 1*A(0)",       A + 2.0);
  EXPECT_PRINT("2 + 1*A^+(1)",     Ad + 2.0);
- EXPECT_PRINT("(0,2) + 1*C(0)",   C + 2.0*I);
- EXPECT_PRINT("(0,2) + 1*C^+(1)", Cd + 2.0*I);
- EXPECT_PRINT("(0,2) + 1*A(0)",   A + 2.0*I);
- EXPECT_PRINT("(0,2) + 1*A^+(1)", Ad + 2.0*I);
+ EXPECT_PRINT("(0+2j) + 1*C(0)",   C + 2.0*I);
+ EXPECT_PRINT("(0+2j) + 1*C^+(1)", Cd + 2.0*I);
+ EXPECT_PRINT("(0+2j) + 1*A(0)",   A + 2.0*I);
+ EXPECT_PRINT("(0+2j) + 1*A^+(1)", Ad + 2.0*I);
 
  EXPECT_PRINT("2 + 1*C(0)",       2.0 + C);
  EXPECT_PRINT("2 + 1*C^+(1)",     2.0 + Cd);
  EXPECT_PRINT("2 + 1*A(0)",       2.0 + A);
  EXPECT_PRINT("2 + 1*A^+(1)",     2.0 + Ad);
- EXPECT_PRINT("(0,2) + 1*C(0)",   2.0*I + C);
- EXPECT_PRINT("(0,2) + 1*C^+(1)", 2.0*I + Cd);
- EXPECT_PRINT("(0,2) + 1*A(0)",   2.0*I + A);
- EXPECT_PRINT("(0,2) + 1*A^+(1)", 2.0*I + Ad);
+ EXPECT_PRINT("(0+2j) + 1*C(0)",   2.0*I + C);
+ EXPECT_PRINT("(0+2j) + 1*C^+(1)", 2.0*I + Cd);
+ EXPECT_PRINT("(0+2j) + 1*A(0)",   2.0*I + A);
+ EXPECT_PRINT("(0+2j) + 1*A^+(1)", 2.0*I + Ad);
 
  EXPECT_PRINT("1*C^+(1) + 1*C(0) + 1*A^+(1) + 1*A(0)", C + Cd + A + Ad);
 
@@ -85,19 +83,19 @@ TEST(operator, real_or_complex) {
  EXPECT_PRINT("-2 + 1*C^+(1)",     Cd - 2.0);
  EXPECT_PRINT("-2 + 1*A(0)",       A - 2.0);
  EXPECT_PRINT("-2 + 1*A^+(1)",     Ad - 2.0);
- EXPECT_PRINT("(-0,-2) + 1*C(0)",   C - 2.0*I);
- EXPECT_PRINT("(-0,-2) + 1*C^+(1)", Cd - 2.0*I);
- EXPECT_PRINT("(-0,-2) + 1*A(0)",   A - 2.0*I);
- EXPECT_PRINT("(-0,-2) + 1*A^+(1)", Ad - 2.0*I);
+ EXPECT_PRINT("(-0-2j) + 1*C(0)",   C - 2.0*I);
+ EXPECT_PRINT("(-0-2j) + 1*C^+(1)", Cd - 2.0*I);
+ EXPECT_PRINT("(-0-2j) + 1*A(0)",   A - 2.0*I);
+ EXPECT_PRINT("(-0-2j) + 1*A^+(1)", Ad - 2.0*I);
 
  EXPECT_PRINT("2 + -1*C(0)",       2.0 - C);
  EXPECT_PRINT("2 + -1*C^+(1)",     2.0 - Cd);
  EXPECT_PRINT("2 + -1*A(0)",       2.0 - A);
  EXPECT_PRINT("2 + -1*A^+(1)",     2.0 - Ad);
- EXPECT_PRINT("(0,2) + -1*C(0)",   2.0*I - C);
- EXPECT_PRINT("(0,2) + -1*C^+(1)", 2.0*I - Cd);
- EXPECT_PRINT("(0,2) + -1*A(0)",   2.0*I - A);
- EXPECT_PRINT("(0,2) + -1*A^+(1)", 2.0*I - Ad);
+ EXPECT_PRINT("(0+2j) + -1*C(0)",   2.0*I - C);
+ EXPECT_PRINT("(0+2j) + -1*C^+(1)", 2.0*I - Cd);
+ EXPECT_PRINT("(0+2j) + -1*A(0)",   2.0*I - A);
+ EXPECT_PRINT("(0+2j) + -1*A^+(1)", 2.0*I - Ad);
 
  EXPECT_PRINT("-1*C^+(1) + 1*C(0) + -1*A^+(1) + -1*A(0)", C - Cd - A - Ad);
 
@@ -106,19 +104,19 @@ TEST(operator, real_or_complex) {
  EXPECT_PRINT("3*C^+(1)",     Cd * 3.0);
  EXPECT_PRINT("3*A(0)",       A * 3.0);
  EXPECT_PRINT("3*A^+(1)",     Ad * 3.0);
- EXPECT_PRINT("(0,3)*C(0)",   C * 3.0*I);
- EXPECT_PRINT("(0,3)*C^+(1)", Cd * 3.0*I);
- EXPECT_PRINT("(0,3)*A(0)",   A * 3.0*I);
- EXPECT_PRINT("(0,3)*A^+(1)", Ad * 3.0*I);
+ EXPECT_PRINT("(0+3j)*C(0)",   C * 3.0*I);
+ EXPECT_PRINT("(0+3j)*C^+(1)", Cd * 3.0*I);
+ EXPECT_PRINT("(0+3j)*A(0)",   A * 3.0*I);
+ EXPECT_PRINT("(0+3j)*A^+(1)", Ad * 3.0*I);
 
  EXPECT_PRINT("3*C(0)",       3.0 * C);
  EXPECT_PRINT("3*C^+(1)",     3.0 * Cd);
  EXPECT_PRINT("3*A(0)",       3.0 * A);
  EXPECT_PRINT("3*A^+(1)",     3.0 * Ad);
- EXPECT_PRINT("(0,3)*C(0)",   3.0*I * C);
- EXPECT_PRINT("(0,3)*C^+(1)", 3.0*I * Cd);
- EXPECT_PRINT("(0,3)*A(0)",   3.0*I * A);
- EXPECT_PRINT("(0,3)*A^+(1)", 3.0*I * Ad);
+ EXPECT_PRINT("(0+3j)*C(0)",   3.0*I * C);
+ EXPECT_PRINT("(0+3j)*C^+(1)", 3.0*I * Cd);
+ EXPECT_PRINT("(0+3j)*A(0)",   3.0*I * A);
+ EXPECT_PRINT("(0+3j)*A^+(1)", 3.0*I * Ad);
 
  EXPECT_PRINT("-2 + 2*C^+(2)C(2) + -2*C^+(2)A^+(2) + 2*C(2)A(2) + -1*[A^+(2)]^2 + 1*[A(2)]^2",
               (c(2) + c_dag(2) + a(2) + a_dag(2))*(c(2) - c_dag(2) + a(2) - a_dag(2)));
@@ -134,8 +132,8 @@ TEST(operator, real_or_complex) {
 
  // Dagger
  auto X = I*c_dag(1) * c_dag(2) * c(3) * c(4) * a_dag(5) * a(6);
- EXPECT_PRINT("(0,-1)*C^+(1)C^+(2)C(4)C(3)A^+(5)A(6)", X);
- EXPECT_PRINT("(0,1)*C^+(3)C^+(4)C(2)C(1)A^+(6)A(5)", dagger(X));
+ EXPECT_PRINT("(0-1j)*C^+(1)C^+(2)C(4)C(3)A^+(5)A(6)", X);
+ EXPECT_PRINT("(0+1j)*C^+(3)C^+(4)C(2)C(1)A^+(6)A(5)", dagger(X));
 }
 
 TEST(operator, time_expr) {
@@ -493,7 +491,7 @@ TEST(operator, time_interp) {
               expr);
 
  // Dagger
- auto X = (ti1 + 1_j*ti2)*c_dag<ti>(1) * c_dag<ti>(2) * c<ti>(3) * c<ti>(4) * a_dag<ti>(5) * a<ti>(6);
+ auto X = (ti1 + 1i*ti2)*c_dag<ti>(1) * c_dag<ti>(2) * c<ti>(3) * c<ti>(4) * a_dag<ti>(5) * a<ti>(6);
  EXPECT_PRINT("ti([0,1]->[(0,0),...,(-1,-0.9)])*C^+(1)C^+(2)C(4)C(3)A^+(5)A(6)", X);
  EXPECT_PRINT("ti([0,1]->[(0,-0),...,(-1,0.9)])*C^+(3)C^+(4)C(2)C(1)A^+(6)A(5)", dagger(X));
 }

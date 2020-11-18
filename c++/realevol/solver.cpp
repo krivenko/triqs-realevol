@@ -122,7 +122,8 @@ void init_observable(gf_2t_view f, time_point_selector const& t_selector) {
 void restore_antihermiticity(gf_2t_view f, time_point_selector const& t_selector) {
  gf_mesh<retime>::mesh_point_t t, tp;
 
- matrix<dcomplex> mat(f.mesh().size(), f.mesh().size()); // Workaround for TRIQS issue #798
+ // FIXME: Workaround for TRIQS issue #798
+ matrix<dcomplex> mat(f.mesh().size(), f.mesh().size());
  for(auto ttp : f.mesh()) {
   std::tie(t, tp) = ttp.components_tuple();
   if(t_selector(t, tp)) { // Have we computed this pair?

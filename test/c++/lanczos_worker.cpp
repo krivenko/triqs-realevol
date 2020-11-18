@@ -21,7 +21,7 @@ vector<double> make_zero_state(vector<double> const& st) {
 template<typename VT>
 auto dot_product(VT const& a, VT const& b) -> typename VT::value_type { return dotc(a,b);}
 
-#include "lanczos_worker.hpp"
+#include <realevol/lanczos_worker.hpp>
 
 using realevol::lanczos_worker;
 

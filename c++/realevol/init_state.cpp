@@ -92,7 +92,7 @@ void h5_read(h5::group fg, std::string const &name, init_state & st) {
 
   double weight;
   h5_read(wst_gr, "weight", weight);
-  unsigned long sp_index;
+  int sp_index;
   h5_read(wst_gr, "sp_index", sp_index);
   st.weighted_states.emplace_back(state_on_subspace_t(st.sub_hilbert_spaces[sp_index]), weight);
   h5_read(wst_gr, "amplitudes", st.weighted_states.back().state.amplitudes());

@@ -21,9 +21,11 @@
 
 #include "hdf5_hl.h"
 
-// Code in <triqs/utility/variant_extensions.hpp> depends on these headers but
-// does not include them.
-#include <iostream>
+// FIXME: Code in <triqs/utility/variant_extensions.hpp> depends on these
+// headers but does not include them.
+//
+// https://github.com/TRIQS/triqs/pull/799
+#include <ostream>
 #include <sstream>
 #include <vector>
 
