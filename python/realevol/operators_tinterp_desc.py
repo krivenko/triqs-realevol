@@ -1,16 +1,16 @@
-from wrap_generator import *
+from cpp2py.wrap_generator import *
 
 module = module_(full_name = "operators_tinterp", app_name = "realevol", doc = "Many-body operator with TInterp coefficients")
 
-module.use_module("tinterp", "realevol")
+module.add_imports('realevol.tinterp')
 
-module.add_include("<triqs/operators/many_body_operator.hpp>")
-module.add_include("<triqs/python_tools/converters/pair.hpp>")
-module.add_include("<triqs/python_tools/converters/vector.hpp>")
-module.add_include("<triqs/python_tools/converters/variant_int_string.hpp>")
-module.add_include("<triqs/python_tools/converters/h5.hpp>")
-module.add_using("namespace realevol::operators")
-module.add_using("namespace realevol")
+module.add_include("realevol/time_interp.hpp")
+module.add_include("realevol/operators/many_body_operator.hpp")
+
+module.add_preamble("""
+using namespace realevol::operators;
+using namespace realevol;
+""")
 
 # The operator class
 op = class_(

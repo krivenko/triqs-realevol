@@ -1,16 +1,17 @@
-from wrap_generator import *
+from cpp2py.wrap_generator import *
 
 module = module_(full_name = "operators_texpr", app_name = "realevol", doc = "Many-body operator with TExpr coefficients")
 
-module.use_module("texpr", "realevol")
+module.add_imports('realevol.texpr')
 
-module.add_include("<triqs/operators/many_body_operator.hpp>")
-module.add_include("<triqs/python_tools/converters/pair.hpp>")
-module.add_include("<triqs/python_tools/converters/vector.hpp>")
-module.add_include("<triqs/python_tools/converters/variant_int_string.hpp>")
-module.add_include("<triqs/python_tools/converters/h5.hpp>")
-module.add_using("namespace realevol::operators")
-module.add_using("namespace realevol")
+module.add_include("triqs/utility/variant_extensions.hpp")
+module.add_include("realevol/time_expr.hpp")
+module.add_include("realevol/operators/many_body_operator.hpp")
+
+module.add_preamble("""
+using namespace realevol::operators;
+using namespace realevol;
+""")
 
 # The operator class
 op = class_(
@@ -50,4 +51,3 @@ module.add_function("many_body_operator_generic<time_expr> dagger(many_body_oper
                     doc = "Return the Hermitian conjugate of the operator")
 
 module.generate_code()
-
