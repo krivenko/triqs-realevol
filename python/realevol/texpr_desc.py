@@ -1,11 +1,15 @@
-from wrap_generator import *
+from cpp2py.wrap_generator import *
 
+# The module
 module = module_(full_name = "texpr", app_name = "realevol", doc = "Time-dependent expression")
 
-module.add_include("time_expr.hpp")
-module.add_using("namespace realevol")
-module.add_using("triqs::utility::is_zero")
-module.add_using("triqs::utility::conj")
+module.add_include("realevol/time_expr.hpp")
+
+module.add_preamble("""
+using namespace realevol;
+using triqs::utility::is_zero;
+using triqs::utility::conj;
+""")
 
 c = class_(
     py_type = "TExpr",
