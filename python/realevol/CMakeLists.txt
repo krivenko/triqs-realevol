@@ -6,7 +6,7 @@ file(GLOB_RECURSE python_sources RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.py)
 # FIXME
 #file(GLOB_RECURSE wrap_generators RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *_desc.py)
 file(GLOB_RECURSE wrap_generators RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-     texpr_desc.py tinterp_desc.py operators_texpr_desc.py operators_tinterp_desc.py)
+     texpr_desc.py tinterp_desc.py operators_texpr_desc.py operators_tinterp_desc.py init_state_desc.py)
 list(REMOVE_ITEM python_sources "${wrap_generators}")
 foreach(file ${python_sources})
   configure_file(${file} ${file} COPYONLY)
@@ -34,14 +34,11 @@ target_link_libraries(texpr realevol_time_expr_c)
 target_link_libraries(tinterp realevol_time_interp_c)
 target_link_libraries(operators_texpr realevol_c)
 target_link_libraries(operators_tinterp realevol_c)
+target_link_libraries(init_state realevol_c)
 
 #triqs_python_extension_and_install(gf_retime)
 #target_link_libraries(gf_retime realevol_c ${TRIQS_LIBRARY_ALL})
 #triqs_set_rpath_for_target(gf_retime)
-
-#triqs_python_extension_and_install(init_state)
-#target_link_libraries(init_state realevol_c ${TRIQS_LIBRARY_ALL})
-#triqs_set_rpath_for_target(init_state)
 
 #triqs_python_extension_and_install(realevol)
 #target_link_libraries(realevol realevol_c ${TRIQS_LIBRARY_ALL})

@@ -1,19 +1,16 @@
-from wrap_generator import *
+from cpp2py.wrap_generator import *
 
 # The module
-module = module_(full_name = "init_state", app_name = "realevol", doc = "Functions to produce initial states for real-time evolution")
+module = module_(full_name = "init_state", app_name = "realevol",
+                 doc = "Functions to produce initial states for real-time evolution")
 
-module.use_module('operators_texpr', 'realevol')
-module.use_module('operators_tinterp', 'realevol')
+module.add_imports('realevol.operators_texpr', 'realevol.operators_tinterp')
 
-module.add_include("<init_state.hpp>")
+module.add_include("realevol/init_state.hpp")
 
-module.add_include("<triqs/python_tools/converters/set.hpp>")
-module.add_include("<triqs/python_tools/converters/map.hpp>")
-module.add_using("namespace realevol::hilbert_space")
 module.add_preamble("""
 using namespace realevol;
-#include "./init_state_converters.hxx"
+using namespace realevol::hilbert_space;
 """)
 
 # The class solver
@@ -96,5 +93,37 @@ for cpp_t, py_t in operator_types:
                         calling_pattern = "auto result = make_equilibrium_init_state(h, fundamental_operator_set(fermion_indices,boson_indices),"
                                           "temperature, params, bits_per_boson)",
                         doc = make_equilibrium_init_state_doc % py_t)
+
+conv = converter_(
+    c_type = "realevol::eq_solver_parameters_t",
+    doc = r"""Parameters of make_equilibrium_init_state()""",
+)
+
+conv.add_member(c_name = "verbosity",
+                c_type = "int",
+                initializer = "0",
+                doc = r"""Verbosity level for the equilibrium solver""")
+
+conv.add_member(c_name = "min_rel_weight",
+                c_type = "double",
+                initializer = "std::numeric_limits<double>::epsilon()",
+                doc = r"""Discard states with relative statistical weight below this threshold""")
+
+conv.add_member(c_name = "arpack_min_matrix_size",
+                c_type = "int",
+                initializer = "101",
+                doc = r"""Call ARPACK to diagonalize matrices of this size or bigger (must be >=4)""")
+
+conv.add_member(c_name = "arpack_tolerance",
+                c_type = "double",
+                initializer = "0",
+                doc = r"""Eigenvalue convergence tolerance for ARPACK""")
+
+conv.add_member(c_name = "arpack_ncv",
+                c_type = "std::map<long, int>",
+                initializer = "{}",
+                doc = r"""ARPACK parameter NCV (number of Lanczos vectors) for each invariant subspace""")
+
+module.add_converter(conv)
 
 module.generate_code()
