@@ -5,7 +5,7 @@ configure_file(version.py.in version.py)
 file(GLOB_RECURSE python_sources RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.py)
 # FIXME
 #file(GLOB_RECURSE wrap_generators RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *_desc.py)
-file(GLOB_RECURSE wrap_generators RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} texpr_desc.py)
+file(GLOB_RECURSE wrap_generators RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} tinterp_desc.py texpr_desc.py)
 list(REMOVE_ITEM python_sources "${wrap_generators}")
 foreach(file ${python_sources})
   configure_file(${file} ${file} COPYONLY)
@@ -30,10 +30,7 @@ endforeach()
 
 # Link compiled Python modules to C++ libraries
 target_link_libraries(texpr realevol_time_expr_c)
-
-#triqs_python_extension_and_install(tinterp)
-#target_link_libraries(tinterp realevol_c ${TRIQS_LIBRARY_ALL})
-#triqs_set_rpath_for_target(tinterp)
+target_link_libraries(tinterp realevol_time_interp_c)
 
 #triqs_python_extension_and_install(operators_texpr)
 #target_link_libraries(operators_texpr realevol_c ${TRIQS_LIBRARY_ALL})

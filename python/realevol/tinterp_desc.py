@@ -1,18 +1,17 @@
-from wrap_generator import *
+from cpp2py.wrap_generator import *
 
 module = module_(full_name = "tinterp", app_name = "realevol", doc = "Linear interpolator on time mesh")
 
-module.use_module('gf', 'triqs')
+module.add_imports('triqs.gf')
 
-module.add_include("time_interp.hpp")
-module.add_include("<triqs/python_tools/converters/vector.hpp>")
-module.add_include("<triqs/python_tools/converters/arrays.hpp>")
-module.add_include("<triqs/python_tools/converters/gf.hpp>")
+module.add_include("realevol/time_interp.hpp")
 
-module.add_using("namespace realevol")
-module.add_using("triqs::utility::is_zero")
-module.add_using("triqs::utility::conj")
-module.add_using("namespace triqs::gfs")
+module.add_preamble("""
+using namespace realevol;
+using namespace triqs::gfs;
+using triqs::utility::is_zero;
+using triqs::utility::conj;
+""")
 
 c = class_(
     py_type = "TInterp",
