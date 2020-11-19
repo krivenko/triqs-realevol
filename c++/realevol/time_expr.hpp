@@ -48,6 +48,9 @@
 
 namespace realevol {
 
+// Global exprtk::parser object
+inline exprtk::parser<double> parser;
+
 // Time-dependent expressions;
 class time_expr : public boost::operators<time_expr>
 {

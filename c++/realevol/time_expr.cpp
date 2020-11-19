@@ -35,9 +35,6 @@ template<typename T> std::string to_string(T x) {
  return ss.str();
 }
 
-// Global exprtk::parser object
-exprtk::parser<double> parser;
-
 // Helper methods
 exprtk::symbol_table<double> time_expr::create_sym_table() const {
   exprtk::symbol_table<double> symt;

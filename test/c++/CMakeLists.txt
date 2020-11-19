@@ -10,8 +10,6 @@ macro(add_realevol_test test)
   get_filename_component(test_dir ${test} DIRECTORY)
   add_executable(${test_name} ${test})
   target_link_libraries(${test_name}
-                        ${PROJECT_NAME}::realevol_time_expr_c
-                        ${PROJECT_NAME}::realevol_time_interp_c
                         ${PROJECT_NAME}::realevol_c
                         ${PROJECT_NAME}_warnings
                         gtest_main)
