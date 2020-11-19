@@ -111,7 +111,7 @@ add_realevol_cpp_lib(realevol_c solver.cpp init_state.cpp make_init_state.cpp
                      hilbert_space/fundamental_operator_set.cpp)
 
 target_link_libraries(realevol_c PUBLIC realevol_time_expr_c realevol_time_interp_c)
-target_link_libraries(realevol_c PUBLIC ezarpack ${arpack_ng_LIBRARIES})
+target_link_libraries(realevol_c PUBLIC h5::hdf5 ezarpack ${arpack_ng_LIBRARIES})
 add_dependencies(realevol_c realevol_time_expr_c realevol_time_interp_c)
 
 # Install headers
