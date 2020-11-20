@@ -8,6 +8,10 @@ module.add_include("<triqs/utility/variant_extensions.hpp>")
 module.add_include("<realevol/time_expr.hpp>")
 module.add_include("<realevol/operators/many_body_operator.hpp>")
 
+# FIXME: This include makes a little sense here, but without it the module will
+# SEGFAULT in `cpp2py::py_converter<std::complex<double>>::py2c()` whenever
+# a complex value is passed from Python to a C++ function.
+module.add_include("<triqs/arrays.hpp>")
 module.add_include("<triqs/cpp2py_converters.hpp>")
 
 module.add_preamble("""
