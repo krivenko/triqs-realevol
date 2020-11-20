@@ -6,7 +6,13 @@ module = module_(full_name = "init_state", app_name = "realevol",
 
 module.add_imports('realevol.operators_texpr', 'realevol.operators_tinterp')
 
-module.add_include("realevol/init_state.hpp")
+module.add_include("<realevol/init_state.hpp>")
+
+module.add_include("<triqs/cpp2py_converters.hpp>")
+module.add_include("<cpp2py/converters/set.hpp>")
+module.add_include("<cpp2py/converters/map.hpp>")
+module.add_include("<cpp2py/converters/vector.hpp>")
+module.add_include("<cpp2py/converters/variant.hpp>")
 
 module.add_preamble("""
 using namespace realevol;

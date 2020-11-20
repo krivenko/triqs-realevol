@@ -67,10 +67,10 @@ struct compute_2t_obs_parameters_t {
  int lanczos_min_matrix_size = 11;
 
  /// Lanczos convergence threshold for the GS energy, for each invariant subspace
- std::map<long,double> lanczos_gs_energy_tol = std::map<long,double>({});
+ std::map<long,double> lanczos_gs_energy_tol = {};
 
  /// Maximal dimension of the Krylov space, for each invariant subspace
- std::map<long,int> lanczos_max_krylov_dim = std::map<long,int>({});
+ std::map<long,int> lanczos_max_krylov_dim = {};
 
  compute_2t_obs_parameters_t() = default;
 };

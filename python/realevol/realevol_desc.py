@@ -1,35 +1,26 @@
-# Generated automatically using the command :
-# c++2py.py ../c++/solver.hpp -p -m realevol -o realevol --appname realevol --moduledoc "The Real-time evolution solver"
-from wrap_generator import *
+from cpp2py.wrap_generator import *
 
-# The module
 module = module_(full_name = "realevol", doc = "The Real-time evolution solver", app_name = "realevol")
 
-# All the triqs C++/Python modules
-module.use_module('texpr', 'realevol')
-module.use_module('tinterp', 'realevol')
-module.use_module('operators_texpr', 'realevol')
-module.use_module('operators_tinterp', 'realevol')
-module.use_module('gf_retime', 'realevol')
-module.use_module('init_state', 'realevol')
+module.add_imports('triqs.gf',
+                   'realevol.texpr', 'realevol.interp',
+                   'realevol.operators_texpr', 'realevol.operators_tinterp',
+                   'realevol.init_state')
 
-# Add here all includes beyond what is automatically included by the triqs modules
-module.add_include("solver.hpp")
-module.add_include("utility.hpp")
-module.add_include("<triqs/gfs/functions/gf_tests.hpp>")
+module.add_include("<realevol/solver.hpp>")
+module.add_include("<realevol/utility.hpp>")
+module.add_include("<triqs/gfs/gf_tests.hpp>")
 
-# Add here anything to add in the C++ code at the start, e.g. namespace using
-module.add_include("<triqs/python_tools/converters/pair.hpp>")
-module.add_include("<triqs/python_tools/converters/map.hpp>")
-module.add_include("<triqs/python_tools/converters/vector.hpp>")
-module.add_include("<triqs/python_tools/converters/gf.hpp>")
-module.add_include("<triqs/python_tools/converters/variant.hpp>")
-module.add_using("realevol::operators::many_body_operator")
-module.add_using("namespace triqs::gfs")
+module.add_include("<triqs/cpp2py_converters.hpp>")
+module.add_include("<cpp2py/converters/pair.hpp>")
+module.add_include("<cpp2py/converters/map.hpp>")
+module.add_include("<cpp2py/converters/vector.hpp>")
+module.add_include("<cpp2py/converters/variant.hpp>")
+
 module.add_preamble("""
+using namespace triqs::gfs;
 using namespace realevol;
-#include "init_state_converters.hxx"
-#include "compute_2t_obs_converters.hxx"
+using realevol::operators::many_body_operator;
 """)
 
 module.add_enum("h_interpolation", ["Rectangle", "Trapezoid", "Simpson"], "realevol",
@@ -37,10 +28,10 @@ module.add_enum("h_interpolation", ["Rectangle", "Trapezoid", "Simpson"], "reale
 
 # The class solver
 c = class_(
-        py_type = "Solver",  # name of the python class
-        c_type = "solver",   # name of the C++ class
-        c_type_absolute = "realevol::solver",
-        doc = "The Real-time evolution solver",   # doc of the C++ class
+    py_type = "Solver",  # name of the python class
+    c_type = "solver",   # name of the C++ class
+    c_type_absolute = "realevol::solver",
+    doc = "The Real-time evolution solver"   # doc of the C++ class
 )
 
 c.add_constructor("""(gf_struct_t gf_struct, chi_indices_t chi_indices, double t_max, int n_t = 1000)""",
@@ -84,10 +75,74 @@ c.add_method("""void compute_2t_obs (time_expr_operator_t h, compute_2t_obs_para
 c.add_method("""void compute_2t_obs (time_interp_operator_t h, compute_2t_obs_parameters_t params)""",
              doc = compute_2t_obs_doc % "operators_tinterp.Operator")
 
-c.add_property(name = "initial_state",
-               getter = cfunction("init_state const& get_initial_state()"),
-               setter = cfunction("void set_initial_state(init_state initial_state)"),
-               doc = """Initial state at t=0""")
+conv = converter_(
+    c_type = "realevol::compute_2t_obs_parameters_t",
+    doc = r"""Parameters of compute_2t_obs()""",
+)
+
+conv.add_member(c_name = "verbosity",
+                c_type = "int",
+                initializer = "((mpi::communicator().rank() == 0) ? 3 : 0)",
+                doc = r"""Verbosity level""")
+
+conv.add_member(c_name = "compute_g_l",
+                c_type = "bool",
+                initializer = "true",
+                doc = r"""Compute lesser Green's function""")
+
+conv.add_member(c_name = "compute_g_g",
+                c_type = "bool",
+                initializer = "true",
+                doc = r"""Compute greater Green's function""")
+
+conv.add_member(c_name = "compute_chi",
+                c_type = "bool",
+                initializer = "true",
+                doc = r"""Compute susceptibility""")
+
+conv.add_member(c_name = "t_range",
+                c_type = "std::pair<double, double>",
+                initializer = "std::pair<double, double>{-INFINITY, INFINITY}",
+                doc = r"""Compute components of observables with the first time argument within this range""")
+
+conv.add_member(c_name = "tp_range",
+                c_type = "std::pair<double, double>",
+                initializer = "std::pair<double, double>{-INFINITY, INFINITY}",
+                doc = r"""Compute components of observables with the second time argument within this range""")
+
+conv.add_member(c_name = "delta_t_max",
+                c_type = "double",
+                initializer = "INFINITY",
+                doc = r"""Compute components of observables with time arguments satisfying |t-t'|<=delta_t_max""")
+
+conv.add_member(c_name = "hbar",
+                c_type = "double",
+                initializer = "1.0",
+                doc = r"""Planck's constant""")
+
+conv.add_member(c_name = "hamiltonian_interpol",
+                c_type = "h_interpolation",
+                initializer = "h_interpolation::Rectangle",
+                doc = r"""Hamiltonian interpolation between time slices""")
+
+conv.add_member(c_name = "lanczos_min_matrix_size",
+                c_type = "int",
+                initializer = "11",
+                doc = r"""Use Lanczos algorithm to exponentiate matrices of this size or bigger""")
+
+conv.add_member(c_name = "lanczos_gs_energy_tol",
+                c_type = "std::map<long, double>",
+                initializer = "{}",
+                doc = r"""Lanczos convergence threshold for the GS energy, for each invariant subspace""")
+
+conv.add_member(c_name = "lanczos_max_krylov_dim",
+                c_type = "std::map<long, int>",
+                initializer = "{}",
+                doc = r"""Maximal dimension of the Krylov space, for each invariant subspace""")
+
+module.add_converter(conv)
+
+c.add_method("void set_initial_state(init_state initial_state)", doc = """Set initial state at t=0""")
 
 c.add_property(name = "last_compute_2t_obs_parameters",
                getter = cfunction("compute_2t_obs_parameters_t get_last_compute_2t_obs_parameters ()"),
@@ -110,7 +165,7 @@ module.add_class(c)
 module.add_function("std::pair<block_gf_2t_view,block_gf_2t_view> make_gf_ret_adv(block_gf_2t_view g_l, block_gf_2t_view g_g)",
                     doc = """Compute retarded and advanced Green's functions out of the lesser and greater components""")
 
-# Comparison tests
+## Comparison tests
 module.add_function(name = "assert_gfs_are_close",
                     signature = "void(gf_2t_view x, gf_2t_view y, double precision=1.e-6)",
                     doc = """Compare two real time GFs""")
