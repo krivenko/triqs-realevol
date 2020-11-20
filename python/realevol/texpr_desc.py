@@ -1,9 +1,14 @@
 from cpp2py.wrap_generator import *
 
-# The module
 module = module_(full_name = "texpr", app_name = "realevol", doc = "Time-dependent expression")
 
-module.add_include("realevol/time_expr.hpp")
+module.add_include("<realevol/time_expr.hpp>")
+
+# FIXME: This include makes a little sense here, but without it the module will
+# SEGFAULT in `cpp2py::py_converter<std::complex<double>>::py2c()` whenever
+# a complex value is passed from Python to a C++ function.
+module.add_include("<triqs/arrays.hpp>")
+module.add_include("<triqs/cpp2py_converters.hpp>")
 
 module.add_preamble("""
 using namespace realevol;
@@ -30,6 +35,7 @@ c.add_constructor(signature="(double r, std::string im_str)", doc="Create comple
 c.add_constructor(signature="(std::string re_str, double i)", doc="Create complex expression with a constant imaginary part")
 
 c.add_call(signature="std::complex<double>(double t)", doc="Substitute a time value into the expression")
+
 module.add_class(c)
 
 module.add_function(signature="bool is_zero(time_expr te)", doc="Boolean : is zero expression?")

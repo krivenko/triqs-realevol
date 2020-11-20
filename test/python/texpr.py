@@ -1,85 +1,79 @@
+import unittest
+
 from realevol.texpr import TExpr, is_constant, is_zero, conj
 from math import sin, sqrt, pi
 from numpy import array
+from numpy.testing import assert_equal
 
-TE = [TExpr("t^2"),
-      TExpr("t + sin(pi/2)"),
-      TExpr("sqrt(9.0) + 1.5"),
-      TExpr("t^2",1.0),
-      TExpr("t + sin(pi/2)","t^3"),
-      TExpr("sqrt(9.0) + 1.5","2.9"),
-      TExpr(1.9+2.8j)]
+class test_texpr(unittest.TestCase):
 
-TE_ref = [lambda t: t**2,
-          lambda t: t+sin(pi/2),
-          lambda t: sqrt(9.0)+1.5,
-          lambda t: t**2+1j,
-          lambda t: t+sin(pi/2)+((t**3)*1j),
-          lambda t: sqrt(9.0)+1.5+2.9j,
-          lambda t: 1.9+2.8j]
+    @classmethod
+    def setUpClass(cls):
+        cls.T = [0, 0.25, 16, 64]
 
-def tab_print(title, A):
-  print ("%20s "*(A.shape[0] + 1)) % ((title,) + tuple(a for a in A))
+        cls.TE = [TExpr("t^2"),
+                  TExpr("t + sin(pi/2)"),
+                  TExpr("sqrt(9.0) + 1.5"),
+                  TExpr("t^2",1.0),
+                  TExpr("t + sin(pi/2)","t^3"),
+                  TExpr("sqrt(9.0) + 1.5","2.9"),
+                  TExpr(1.9+2.8j)]
 
-print "Check whether the expressions really depend on time"
-for n,te in enumerate(TE): print "te[%i]:" % n, is_constant(te)
+        cls.TE_ref = [lambda t: t**2,
+                      lambda t: t+sin(pi/2),
+                      lambda t: sqrt(9.0)+1.5,
+                      lambda t: t**2+1j,
+                      lambda t: t+sin(pi/2)+((t**3)*1j),
+                      lambda t: sqrt(9.0)+1.5+2.9j,
+                      lambda t: 1.9+2.8j]
 
-print "Check correctness of numerical expressions"
+    @classmethod
+    def vals(cls, f):
+        return array([f(t) for t in cls.T], dtype=complex)
 
-T = [0, 0.25, 16, 64]
-tab_print("t:", array(T))
+    @classmethod
+    def assertEvalAllEqual(cls, te, ref):
+        assert_equal(cls.vals(te), ref)
 
-vals = lambda f: array(map(f,T),dtype=complex)
+    def test_is_constant(self):
+        self.assertEqual([is_constant(t) for t in self.TE],
+                         [False, False, True, False, False, True, True])
 
-print "Evaluation"
-for n, (te, te_ref) in enumerate(zip(TE,TE_ref)):
-    tab_print("te[%i]" % n, vals(te))
-    tab_print("te_ref[%i]" % n, vals(te_ref))
+    def test_eval(self):
+        for te, te_ref in zip(self.TE, self.TE_ref):
+            self.assertEvalAllEqual(te, self.vals(te_ref))
 
-print "Unary minus"
-tab_print("-te[1]", vals(-TE[1]))
-tab_print("-te_ref[1]", -vals(TE_ref[1]))
-tab_print("-te[4]", vals(-TE[4]))
-tab_print("-te_ref[4]", -vals(TE_ref[4]))
+    def test_minus(self):
+        self.assertEvalAllEqual(-self.TE[1], -self.vals(self.TE_ref[1]))
+        self.assertEvalAllEqual(-self.TE[4], -self.vals(self.TE_ref[4]))
 
-print "Addition of expressions"
-tab_print("te[0]+te[1]", vals(TE[0]) + vals(TE[1]))
-tab_print("te_ref[0]+te_ref[1]", vals(TE_ref[0]) + vals(TE_ref[1]))
-tab_print("te[0]+0.5", vals(TE[0] + 0.5))
-tab_print("te_ref[0]+0.5", vals(TE_ref[0]) + 0.5)
-tab_print("0.5+te[1]", vals(0.5 + TE[1]))
-tab_print("0.5+te_ref[1]", 0.5 + vals(TE_ref[1]))
-tab_print("te[0]+0.5j", vals(TE[0] + 0.5j))
-tab_print("te_ref[0]+0.5j", vals(TE_ref[0]) + 0.5j)
-tab_print("0.5j+te[1]", vals(0.5j + TE[1]))
-tab_print("0.5j+te_ref[1]", 0.5j + vals(TE_ref[1]))
+    def test_addition(self):
+        self.assertEvalAllEqual(self.TE[0] + self.TE[1],
+                                self.vals(self.TE_ref[0]) + self.vals(self.TE_ref[1]))
+        self.assertEvalAllEqual(self.TE[0] + 0.5, self.vals(self.TE_ref[0]) + 0.5)
+        self.assertEvalAllEqual(0.5 + self.TE[1], 0.5 + self.vals(self.TE_ref[1]))
+        self.assertEvalAllEqual(self.TE[0] + 0.5j, self.vals(self.TE_ref[0]) + 0.5j)
+        self.assertEvalAllEqual(0.5j + self.TE[1], 0.5j + self.vals(self.TE_ref[1]))
 
-print "Subtraction of expressions"
-tab_print("te[0]-te[1]", vals(TE[0]) - vals(TE[1]))
-tab_print("te_ref[0]-te_ref[1]", vals(TE_ref[0]) - vals(TE_ref[1]))
-tab_print("te[0]-0.5", vals(TE[0] - 0.5))
-tab_print("te_ref[0]-0.5", vals(TE_ref[0]) - 0.5)
-tab_print("0.5-te[1]", vals(0.5 - TE[1]))
-tab_print("0.5-te_ref[1]", 0.5 - vals(TE_ref[1]))
-tab_print("te[0]-0.5j", vals(TE[0] - 0.5j))
-tab_print("te_ref[0]-0.5j", vals(TE_ref[0]) - 0.5j)
-tab_print("0.5j-te[1]", vals(0.5j - TE[1]))
-tab_print("0.5j-te_ref[1]", 0.5j - vals(TE_ref[1]))
+    def test_subtraction(self):
+        self.assertEvalAllEqual(self.TE[0] - self.TE[1],
+                                self.vals(self.TE_ref[0]) - self.vals(self.TE_ref[1]))
+        self.assertEvalAllEqual(self.TE[0] - 0.5, self.vals(self.TE_ref[0]) - 0.5)
+        self.assertEvalAllEqual(0.5 - self.TE[1], 0.5 - self.vals(self.TE_ref[1]))
+        self.assertEvalAllEqual(self.TE[0] - 0.5j, self.vals(self.TE_ref[0]) - 0.5j)
+        self.assertEvalAllEqual(0.5j - self.TE[1], 0.5j - self.vals(self.TE_ref[1]))
 
-print "Multiplication of expressions"
-tab_print("te[0]*te[1]", vals(TE[0]) * vals(TE[1]))
-tab_print("te_ref[0]*te_ref[1]", vals(TE_ref[0]) * vals(TE_ref[1]))
-tab_print("te[0]*0.5", vals(TE[0] * 0.5))
-tab_print("te_ref[0]*0.5", vals(TE_ref[0]) * 0.5)
-tab_print("0.5*te[1]", vals(0.5 * TE[1]))
-tab_print("0.5*te_ref[1]", 0.5 * vals(TE_ref[1]))
-tab_print("te[0]*0.5j", vals(TE[0] * 0.5j))
-tab_print("te_ref[0]*0.5j", vals(TE_ref[0]) * 0.5j)
-tab_print("0.5j*te[1]", vals(0.5j * TE[1]))
-tab_print("0.5j*te_ref[1]", 0.5j * vals(TE_ref[1]))
+    def test_multiplication(self):
+        self.assertEvalAllEqual(self.TE[0] * self.TE[1],
+                                self.vals(self.TE_ref[0]) * self.vals(self.TE_ref[1]))
+        self.assertEvalAllEqual(self.TE[0] * 0.5, self.vals(self.TE_ref[0]) * 0.5)
+        self.assertEvalAllEqual(0.5 * self.TE[1], 0.5 * self.vals(self.TE_ref[1]))
+        self.assertEvalAllEqual(self.TE[0] * 0.5j, self.vals(self.TE_ref[0]) * 0.5j)
+        self.assertEvalAllEqual(0.5j * self.TE[1], 0.5j * self.vals(self.TE_ref[1]))
 
-print "Division of expressions by a scalar"
-tab_print("te[4]/0.5", vals(TE[4]/0.5))
-tab_print("te_ref[4]/0.5", vals(TE_ref[4])/0.5)
-tab_print("te[4]/0.5j", vals(TE[4]/0.5j))
-tab_print("te_ref[4]/0.5j", vals(TE_ref[4])/0.5j)
+    def test_division(self):
+        self.assertEvalAllEqual(self.TE[4] / 0.5, self.vals(self.TE_ref[4]) / 0.5)
+        self.assertEvalAllEqual(self.TE[4] / 0.5j, self.vals(self.TE_ref[4]) / 0.5j)
+
+if __name__ == '__main__':
+    unittest.main()

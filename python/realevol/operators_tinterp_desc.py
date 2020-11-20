@@ -4,8 +4,10 @@ module = module_(full_name = "operators_tinterp", app_name = "realevol", doc = "
 
 module.add_imports('realevol.tinterp')
 
-module.add_include("realevol/time_interp.hpp")
-module.add_include("realevol/operators/many_body_operator.hpp")
+module.add_include("<realevol/time_interp.hpp>")
+module.add_include("<realevol/operators/many_body_operator.hpp>")
+
+module.add_include("<triqs/cpp2py_converters.hpp>")
 
 module.add_preamble("""
 using namespace realevol::operators;

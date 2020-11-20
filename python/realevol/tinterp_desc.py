@@ -4,7 +4,9 @@ module = module_(full_name = "tinterp", app_name = "realevol", doc = "Linear int
 
 module.add_imports('triqs.gf')
 
-module.add_include("realevol/time_interp.hpp")
+module.add_include("<realevol/time_interp.hpp>")
+
+module.add_include("<triqs/cpp2py_converters.hpp>")
 
 module.add_preamble("""
 using namespace realevol;

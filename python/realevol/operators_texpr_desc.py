@@ -4,9 +4,11 @@ module = module_(full_name = "operators_texpr", app_name = "realevol", doc = "Ma
 
 module.add_imports('realevol.texpr')
 
-module.add_include("triqs/utility/variant_extensions.hpp")
-module.add_include("realevol/time_expr.hpp")
-module.add_include("realevol/operators/many_body_operator.hpp")
+module.add_include("<triqs/utility/variant_extensions.hpp>")
+module.add_include("<realevol/time_expr.hpp>")
+module.add_include("<realevol/operators/many_body_operator.hpp>")
+
+module.add_include("<triqs/cpp2py_converters.hpp>")
 
 module.add_preamble("""
 using namespace realevol::operators;

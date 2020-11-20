@@ -5,7 +5,7 @@ foreach(f ${h5_files})
 endforeach()
 
 # Add a test
-macro(add_realevol_test test)
+macro(add_realevol_cpp_test test)
   get_filename_component(test_name ${test} NAME_WE)
   get_filename_component(test_dir ${test} DIRECTORY)
   add_executable(${test_name} ${test})
@@ -55,11 +55,11 @@ set(SIMPLE_TESTS time_expr time_interp many_body_operator hilbert_space space_pa
                  init_state_pure
                  trimer)
 foreach(test ${SIMPLE_TESTS})
-  add_realevol_test(${test})
+  add_realevol_cpp_test(${test})
 endforeach()
 
 # MPI tests
 set(MPI_TESTS mpi_dispatcher init_state_equilibrium)
 foreach(test ${MPI_TESTS})
-  add_realevol_test(${test} 1 2 4)
+  add_realevol_cpp_test(${test} 1 2 4)
 endforeach()
