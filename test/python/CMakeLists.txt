@@ -30,7 +30,7 @@ macro(add_realevol_python_test test)
 endmacro()
 
 # Simple tests
-set(SIMPLE_TESTS texpr tinterp)# operators_texpr operators_tinterp) #gf_retime
+set(SIMPLE_TESTS texpr tinterp operators_tinterp)# operators_texpr) #gf_retime
 foreach(test ${SIMPLE_TESTS})
   add_realevol_python_test(${test})
 endforeach()

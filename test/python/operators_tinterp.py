@@ -1,167 +1,220 @@
+import unittest
+
 from realevol.tinterp import TInterp as ti
 from realevol.operators_tinterp import *
-from pytriqs.gf.local import MeshReTime
+from triqs.gf import MeshReTime
 from itertools import product
 from numpy import array
 
-def check_str(ref_string, op):
-    assert str(op) == ref_string, str(op) + " != " + str(ref_string)
+class test_operators_tinterp(unittest.TestCase):
 
-# Operators without indices
-check_str("(1,0)*C^+() + (1,0)*C() + (-1,-0)*C^+()C()", c() + c_dag() - n())
+    @classmethod
+    def setUpClass(cls):
+        cls.m = MeshReTime(0, 1, 6)
 
-# Commutation relations
-for i,j in product(range(3),range(3)):
-    ref = "(1,0)" if i==j else "0"
-    check_str(ref, c_dag("x",i)*c("x",j) + c("x",j)*c_dag("x",i))
-    ref = "%s(2,0)*C^+(x,%i)C(x,%i)" % ("(-1,-0) + " if i==j else "",i,j)
-    check_str(ref, c_dag("x",i)*c("x",j) - c("x",j)*c_dag("x",i))
-    ref = "(1,0)" if i==j else "0"
-    check_str(ref, a("x",i)*a_dag("x",j) - a_dag("x",j)*a("x",i))
-    ref = "%s(2,0)*A^+(x,%i)A(x,%i)" % ("(1,0) + " if i==j else "",j,i)
-    check_str(ref, a("x",i)*a_dag("x",j) + a_dag("x",j)*a("x",i))
+        cls.ti1 = ti(cls.m, array([.0, 0.2, 0.4, 0.6, 0.8, 1.0]))
+        cls.ti2 = ti(cls.m, array([.0, 0.1, 0.3, 0.5, 0.7, 0.9]))
+        cls.ti3 = ti(cls.m, array([.0, 0.2, 0.4, 0.6, 0.4, 0.2]))
 
-# Algebra
-m = MeshReTime(0, 1, 6);
-ti1 = ti(m, array([.0, 0.2, 0.4, 0.6, 0.8, 1.0]))
-ti2 = ti(m, array([.0, 0.1, 0.3, 0.5, 0.7, 0.9]))
-ti3 = ti(m, array([.0, 0.2, 0.4, 0.6, 0.4, 0.2]))
+        cls.C = cls.ti1 * c("",0)
+        cls.Cd = c_dag("",1);
+        cls.A = a("",0)
+        cls.Ad = cls.ti2 * a_dag("",1)
 
-C = ti1 * c("",0)
-Cd = c_dag("",1);
-A = a("",0)
-Ad = ti2 * a_dag("",1)
+    def assertStrEqual(self, obj, s):
+        self.assertEqual(str(obj), s)
 
-check_table = [("ti([0,1]->[(0,0),...,(1,0)])*C(,0)",     C),
-               ("(1,0)*C^+(,1)",                          Cd),
-               ("(1,0)*A(,0)",                            A),
-               ("ti([0,1]->[(0,0),...,(0.9,0)])*A^+(,1)", Ad),
-               # Unary minus
-               ("ti([0,1]->[(-0,-0),...,(-1,-0)])*C(,0)",     -C),
-               ("(-1,-0)*C^+(,1)",                            -Cd),
-               ("(-1,-0)*A(,0)",                              -A),
-               ("ti([0,1]->[(-0,-0),...,(-0.9,-0)])*A^+(,1)", -Ad),
-               # Addition
-               ("(2,0) + ti([0,1]->[(0,0),...,(1,0)])*C(,0)",     C + 2.0),
-               ("(2,0) + (1,0)*C^+(,1)",                          Cd + 2.0),
-               ("(2,0) + (1,0)*A(,0)",                            A + 2.0),
-               ("(2,0) + ti([0,1]->[(0,0),...,(0.9,0)])*A^+(,1)", Ad + 2.0),
-               ("(0,2) + ti([0,1]->[(0,0),...,(1,0)])*C(,0)",     C + 2.0j),
-               ("(0,2) + (1,0)*C^+(,1)",                          Cd + 2.0j),
-               ("(0,2) + (1,0)*A(,0)",                            A + 2.0j),
-               ("(0,2) + ti([0,1]->[(0,0),...,(0.9,0)])*A^+(,1)", Ad + 2.0j),
-               ("ti([0,1]->[(0,0),...,(0.2,0)]) + ti([0,1]->[(0,0),...,(1,0)])*C(,0)",     C + ti3),
-               ("ti([0,1]->[(0,0),...,(0.2,0)]) + (1,0)*C^+(,1)",                          Cd + ti3),
-               ("ti([0,1]->[(0,0),...,(0.2,0)]) + (1,0)*A(,0)",                            A + ti3),
-               ("ti([0,1]->[(0,0),...,(0.2,0)]) + ti([0,1]->[(0,0),...,(0.9,0)])*A^+(,1)", Ad + ti3),
-               ("ti([0,1]->[(0,0),...,(0,0.2)]) + ti([0,1]->[(0,0),...,(1,0)])*C(,0)",     C + 1j*ti3),
-               ("ti([0,1]->[(0,0),...,(0,0.2)]) + (1,0)*C^+(,1)",                          Cd + 1j*ti3),
-               ("ti([0,1]->[(0,0),...,(0,0.2)]) + (1,0)*A(,0)",                            A + 1j*ti3),
-               ("ti([0,1]->[(0,0),...,(0,0.2)]) + ti([0,1]->[(0,0),...,(0.9,0)])*A^+(,1)", Ad + 1j*ti3),
-               ("(2,0) + ti([0,1]->[(0,0),...,(1,0)])*C(,0)",     2.0 + C),
-               ("(2,0) + (1,0)*C^+(,1)",                          2.0 + Cd),
-               ("(2,0) + (1,0)*A(,0)",                            2.0 + A),
-               ("(2,0) + ti([0,1]->[(0,0),...,(0.9,0)])*A^+(,1)", 2.0 + Ad),
-               ("(0,2) + ti([0,1]->[(0,0),...,(1,0)])*C(,0)",     2.0j + C),
-               ("(0,2) + (1,0)*C^+(,1)",                          2.0j + Cd),
-               ("(0,2) + (1,0)*A(,0)",                            2.0j + A),
-               ("(0,2) + ti([0,1]->[(0,0),...,(0.9,0)])*A^+(,1)", 2.0j + Ad),
-               ("ti([0,1]->[(0,0),...,(0.2,0)]) + ti([0,1]->[(0,0),...,(1,0)])*C(,0)",     ti3 + C),
-               ("ti([0,1]->[(0,0),...,(0.2,0)]) + (1,0)*C^+(,1)",                          ti3 + Cd),
-               ("ti([0,1]->[(0,0),...,(0.2,0)]) + (1,0)*A(,0)",                            ti3 + A),
-               ("ti([0,1]->[(0,0),...,(0.2,0)]) + ti([0,1]->[(0,0),...,(0.9,0)])*A^+(,1)", ti3 + Ad),
-               ("ti([0,1]->[(0,0),...,(0,0.2)]) + ti([0,1]->[(0,0),...,(1,0)])*C(,0)",     ti3*1j + C),
-               ("ti([0,1]->[(0,0),...,(0,0.2)]) + (1,0)*C^+(,1)",                          ti3*1j + Cd),
-               ("ti([0,1]->[(0,0),...,(0,0.2)]) + (1,0)*A(,0)",                            ti3*1j + A),
-               ("ti([0,1]->[(0,0),...,(0,0.2)]) + ti([0,1]->[(0,0),...,(0.9,0)])*A^+(,1)", ti3*1j + Ad),
-               ("(1,0)*C^+(,1) + ti([0,1]->[(0,0),...,(1,0)])*C(,0)"
-                " + ti([0,1]->[(0,0),...,(0.9,0)])*A^+(,1) + (1,0)*A(,0)", C + Cd + A + Ad),
-               # Subtraction
-               ("(-2,-0) + ti([0,1]->[(0,0),...,(1,0)])*C(,0)",     C - 2.0),
-               ("(-2,-0) + (1,0)*C^+(,1)",                          Cd - 2.0),
-               ("(-2,-0) + (1,0)*A(,0)",                            A - 2.0),
-               ("(-2,-0) + ti([0,1]->[(0,0),...,(0.9,0)])*A^+(,1)", Ad - 2.0),
-               ("(-0,-2) + ti([0,1]->[(0,0),...,(1,0)])*C(,0)",     C - 2.0j),
-               ("(-0,-2) + (1,0)*C^+(,1)",                          Cd - 2.0j),
-               ("(-0,-2) + (1,0)*A(,0)",                            A - 2.0j),
-               ("(-0,-2) + ti([0,1]->[(0,0),...,(0.9,0)])*A^+(,1)", Ad - 2.0j),
-               ("ti([0,1]->[(-0,-0),...,(-0.2,-0)]) + ti([0,1]->[(0,0),...,(1,0)])*C(,0)",     C - ti3),
-               ("ti([0,1]->[(-0,-0),...,(-0.2,-0)]) + (1,0)*C^+(,1)",                          Cd - ti3),
-               ("ti([0,1]->[(-0,-0),...,(-0.2,-0)]) + (1,0)*A(,0)",                            A - ti3),
-               ("ti([0,1]->[(-0,-0),...,(-0.2,-0)]) + ti([0,1]->[(0,0),...,(0.9,0)])*A^+(,1)", Ad - ti3),
-               ("ti([0,1]->[(-0,-0),...,(-0,-0.2)]) + ti([0,1]->[(0,0),...,(1,0)])*C(,0)",     C - ti3*1j),
-               ("ti([0,1]->[(-0,-0),...,(-0,-0.2)]) + (1,0)*C^+(,1)",                          Cd - ti3*1j),
-               ("ti([0,1]->[(-0,-0),...,(-0,-0.2)]) + (1,0)*A(,0)",                            A - ti3*1j),
-               ("ti([0,1]->[(-0,-0),...,(-0,-0.2)]) + ti([0,1]->[(0,0),...,(0.9,0)])*A^+(,1)", Ad - ti3*1j),
-               ("(2,0) + ti([0,1]->[(-0,-0),...,(-1,-0)])*C(,0)",     2.0 - C),
-               ("(2,0) + (-1,-0)*C^+(,1)",                            2.0 - Cd),
-               ("(2,0) + (-1,-0)*A(,0)",                              2.0 - A),
-               ("(2,0) + ti([0,1]->[(-0,-0),...,(-0.9,-0)])*A^+(,1)", 2.0 - Ad),
-               ("(0,2) + ti([0,1]->[(-0,-0),...,(-1,-0)])*C(,0)",     2.0j - C),
-               ("(0,2) + (-1,-0)*C^+(,1)",                            2.0j - Cd),
-               ("(0,2) + (-1,-0)*A(,0)",                              2.0j - A),
-               ("(0,2) + ti([0,1]->[(-0,-0),...,(-0.9,-0)])*A^+(,1)", 2.0j - Ad),
-               ("ti([0,1]->[(0,0),...,(0.2,0)]) + ti([0,1]->[(-0,-0),...,(-1,-0)])*C(,0)",     ti3 - C),
-               ("ti([0,1]->[(0,0),...,(0.2,0)]) + (-1,-0)*C^+(,1)",                            ti3 - Cd),
-               ("ti([0,1]->[(0,0),...,(0.2,0)]) + (-1,-0)*A(,0)",                              ti3 - A),
-               ("ti([0,1]->[(0,0),...,(0.2,0)]) + ti([0,1]->[(-0,-0),...,(-0.9,-0)])*A^+(,1)", ti3 - Ad),
-               ("ti([0,1]->[(0,0),...,(0,0.2)]) + ti([0,1]->[(-0,-0),...,(-1,-0)])*C(,0)",     ti3*1j - C),
-               ("ti([0,1]->[(0,0),...,(0,0.2)]) + (-1,-0)*C^+(,1)",                            ti3*1j - Cd),
-               ("ti([0,1]->[(0,0),...,(0,0.2)]) + (-1,-0)*A(,0)",                              ti3*1j - A),
-               ("ti([0,1]->[(0,0),...,(0,0.2)]) + ti([0,1]->[(-0,-0),...,(-0.9,-0)])*A^+(,1)", ti3*1j - Ad),
-               ("(-1,-0)*C^+(,1) + ti([0,1]->[(0,0),...,(1,0)])*C(,0)"
-                " + ti([0,1]->[(-0,-0),...,(-0.9,-0)])*A^+(,1) + (-1,-0)*A(,0)", C - Cd - A - Ad),
-               # Multiplication
-               ("ti([0,1]->[(0,0),...,(3,0)])*C(,0)",     C * 3.0),
-               ("(3,0)*C^+(,1)",                          Cd * 3.0),
-               ("(3,0)*A(,0)",                            A * 3.0),
-               ("ti([0,1]->[(0,0),...,(2.7,0)])*A^+(,1)", Ad * 3.0),
-               ("ti([0,1]->[(0,0),...,(0,3)])*C(,0)",     C * 3.0j),
-               ("(0,3)*C^+(,1)",                          Cd * 3.0j),
-               ("(0,3)*A(,0)",                            A * 3.0j),
-               ("ti([0,1]->[(0,0),...,(0,2.7)])*A^+(,1)", Ad * 3.0j),
-               ("ti([0,1]->[(0,0),...,(0.2,0)])*C(,0)",    C * ti3),
-               ("ti([0,1]->[(0,0),...,(0.2,0)])*C^+(,1)",  Cd * ti3),
-               ("ti([0,1]->[(0,0),...,(0.2,0)])*A(,0)",    A * ti3),
-               ("ti([0,1]->[(0,0),...,(0.18,0)])*A^+(,1)", Ad * ti3),
-               ("ti([0,1]->[(0,0),...,(0,0.2)])*C(,0)",    C * ti3*1j),
-               ("ti([0,1]->[(0,0),...,(0,0.2)])*C^+(,1)",  Cd * ti3*1j),
-               ("ti([0,1]->[(0,0),...,(0,0.2)])*A(,0)",    A * ti3*1j),
-               ("ti([0,1]->[(0,0),...,(0,0.18)])*A^+(,1)", Ad * ti3*1j),
-               ("ti([0,1]->[(0,0),...,(3,0)])*C(,0)",     3.0 * C),
-               ("(3,0)*C^+(,1)",                          3.0 * Cd),
-               ("(3,0)*A(,0)",                            3.0 * A),
-               ("ti([0,1]->[(0,0),...,(2.7,0)])*A^+(,1)", 3.0 * Ad),
-               ("ti([0,1]->[(0,0),...,(0,3)])*C(,0)",     3.0j * C),
-               ("(0,3)*C^+(,1)",                          3.0j * Cd),
-               ("(0,3)*A(,0)",                            3.0j * A),
-               ("ti([0,1]->[(0,0),...,(0,2.7)])*A^+(,1)", 3.0j * Ad),
-               ("ti([0,1]->[(0,0),...,(0.2,0)])*C(,0)",    ti3 * C),
-               ("ti([0,1]->[(0,0),...,(0.2,0)])*C^+(,1)",  ti3 * Cd),
-               ("ti([0,1]->[(0,0),...,(0.2,0)])*A(,0)",    ti3 * A),
-               ("ti([0,1]->[(0,0),...,(0.18,0)])*A^+(,1)", ti3 * Ad),
-               ("ti([0,1]->[(0,0),...,(0,0.2)])*C(,0)",    ti3*1j * C),
-               ("ti([0,1]->[(0,0),...,(0,0.2)])*C^+(,1)",  ti3*1j * Cd),
-               ("ti([0,1]->[(0,0),...,(0,0.2)])*A(,0)",    ti3*1j * A),
-               ("ti([0,1]->[(0,0),...,(0,0.18)])*A^+(,1)", ti3*1j * Ad),
-               ("(-2,-0) + (2,0)*C^+(,2)C(,2) + (-2,-0)*C^+(,2)A^+(,2)"
-                " + (2,0)*C(,2)A(,2) + (-1,-0)*[A^+(,2)]^2 + (1,0)*[A(,2)]^2",
-                    (c("",2) + c_dag("",2) + a("",2) + a_dag("",2))*
-                    (c("",2) - c_dag("",2) + a("",2) - a_dag("",2)))
-               ]
+    def test_no_indices(self):
+        self.assertStrEqual(c() + c_dag() - n(),
+                            "(1,0)*C^+() + (1,0)*C() + (-1,-0)*C^+()C()")
 
-for ref_string, op in check_table: check_str(ref_string, op)
+    def test_commutators(self):
+        for i,j in product(range(3), range(3)):
+            self.assertStrEqual(c_dag("x",i)*c("x",j) + c("x",j)*c_dag("x",i),
+                                "(1,0)" if i==j else "0")
+            self.assertStrEqual(c_dag("x",i)*c("x",j) - c("x",j)*c_dag("x",i),
+                                "%s(2,0)*C^+(x,%i)C(x,%i)" % ("(-1,-0) + " if i==j else "",i,j))
+            self.assertStrEqual(a("x",i)*a_dag("x",j) - a_dag("x",j)*a("x",i),
+                                "(1,0)" if i==j else "0")
+            self.assertStrEqual(a("x",i)*a_dag("x",j) + a_dag("x",j)*a("x",i),
+                                "%s(2,0)*A^+(x,%i)A(x,%i)" % ("(1,0) + " if i==j else "",j,i))
 
-# (n_up * a + n_dn * a^+)^3
-expr = n("up",0) * a(0,0) + n("dn",0) * a_dag(0,0);
-check_str("(1,0)*C^+(dn,0)C(dn,0)A^+(0,0) + (1,0)*C^+(up,0)C(up,0)A(0,0)", expr)
-expr = expr*expr*expr;
-check_str("(3,0)*C^+(dn,0)C^+(up,0)C(up,0)C(dn,0)A^+(0,0) + (3,0)*C^+(dn,0)C^+(up,0)C(up,0)C(dn,0)A(0,0) + "
-          "(1,0)*C^+(dn,0)C(dn,0)[A^+(0,0)]^3 + (1,0)*C^+(up,0)C(up,0)[A(0,0)]^3 + "
-          "(3,0)*C^+(dn,0)C^+(up,0)C(up,0)C(dn,0)[A^+(0,0)]^2A(0,0) + (3,0)*C^+(dn,0)C^+(up,0)C(up,0)C(dn,0)A^+(0,0)[A(0,0)]^2",
-          expr)
+    def test_canonical_ops(self):
+        self.assertStrEqual(self.C, "ti([0,1]->[(0,0),...,(1,0)])*C(,0)")
+        self.assertStrEqual(self.Cd, "(1,0)*C^+(,1)")
+        self.assertStrEqual(self.A, "(1,0)*A(,0)")
+        self.assertStrEqual(self.Ad, "ti([0,1]->[(0,0),...,(0.9,0)])*A^+(,1)")
 
-# Dagger
-X = (ti1 + 1j*ti2)*c_dag("",1) * c_dag("",2) * c("",3) * c("",4) * a_dag("",5) * a("",6);
-check_str("ti([0,1]->[(0,0),...,(-1,-0.9)])*C^+(,1)C^+(,2)C(,4)C(,3)A^+(,5)A(,6)", X);
-check_str("ti([0,1]->[(0,-0),...,(-1,0.9)])*C^+(,3)C^+(,4)C(,2)C(,1)A^+(,6)A(,5)", dagger(X));
+    def test_minus(self):
+        self.assertStrEqual(-self.C, "ti([0,1]->[(-0,-0),...,(-1,-0)])*C(,0)")
+        self.assertStrEqual(-self.Cd, "(-1,-0)*C^+(,1)")
+        self.assertStrEqual(-self.A, "(-1,-0)*A(,0)")
+        self.assertStrEqual(-self.Ad, "ti([0,1]->[(-0,-0),...,(-0.9,-0)])*A^+(,1)")
+
+    def test_addition(self):
+        self.assertStrEqual(self.C + 2.0, "(2,0) + ti([0,1]->[(0,0),...,(1,0)])*C(,0)")
+        self.assertStrEqual(self.Cd + 2.0, "(2,0) + (1,0)*C^+(,1)")
+        self.assertStrEqual(self.A + 2.0, "(2,0) + (1,0)*A(,0)")
+        self.assertStrEqual(self.Ad + 2.0, "(2,0) + ti([0,1]->[(0,0),...,(0.9,0)])*A^+(,1)")
+        self.assertStrEqual(self.C + 2.0j, "(0,2) + ti([0,1]->[(0,0),...,(1,0)])*C(,0)")
+        self.assertStrEqual(self.Cd + 2.0j, "(0,2) + (1,0)*C^+(,1)")
+        self.assertStrEqual(self.A + 2.0j, "(0,2) + (1,0)*A(,0)")
+        self.assertStrEqual(self.Ad + 2.0j, "(0,2) + ti([0,1]->[(0,0),...,(0.9,0)])*A^+(,1)")
+        self.assertStrEqual(self.C + self.ti3,
+                            "ti([0,1]->[(0,0),...,(0.2,0)]) + ti([0,1]->[(0,0),...,(1,0)])*C(,0)")
+        self.assertStrEqual(self.Cd + self.ti3,
+                            "ti([0,1]->[(0,0),...,(0.2,0)]) + (1,0)*C^+(,1)")
+        self.assertStrEqual(self.A + self.ti3,
+                            "ti([0,1]->[(0,0),...,(0.2,0)]) + (1,0)*A(,0)")
+        self.assertStrEqual(self.Ad + self.ti3,
+                            "ti([0,1]->[(0,0),...,(0.2,0)]) + ti([0,1]->[(0,0),...,(0.9,0)])*A^+(,1)")
+        self.assertStrEqual(self.C + 1j*self.ti3,
+                            "ti([0,1]->[(0,0),...,(0,0.2)]) + ti([0,1]->[(0,0),...,(1,0)])*C(,0)")
+        self.assertStrEqual(self.Cd + 1j*self.ti3,
+                            "ti([0,1]->[(0,0),...,(0,0.2)]) + (1,0)*C^+(,1)")
+        self.assertStrEqual(self.A + 1j*self.ti3,
+                            "ti([0,1]->[(0,0),...,(0,0.2)]) + (1,0)*A(,0)")
+        self.assertStrEqual(self.Ad + 1j*self.ti3,
+                            "ti([0,1]->[(0,0),...,(0,0.2)]) + ti([0,1]->[(0,0),...,(0.9,0)])*A^+(,1)")
+        self.assertStrEqual(2.0 + self.C, "(2,0) + ti([0,1]->[(0,0),...,(1,0)])*C(,0)")
+        self.assertStrEqual(2.0 + self.Cd, "(2,0) + (1,0)*C^+(,1)")
+        self.assertStrEqual(2.0 + self.A, "(2,0) + (1,0)*A(,0)")
+        self.assertStrEqual(2.0 + self.Ad, "(2,0) + ti([0,1]->[(0,0),...,(0.9,0)])*A^+(,1)")
+        self.assertStrEqual(2.0j + self.C, "(0,2) + ti([0,1]->[(0,0),...,(1,0)])*C(,0)")
+        self.assertStrEqual(2.0j + self.Cd, "(0,2) + (1,0)*C^+(,1)")
+        self.assertStrEqual(2.0j + self.A, "(0,2) + (1,0)*A(,0)")
+        self.assertStrEqual(2.0j + self.Ad, "(0,2) + ti([0,1]->[(0,0),...,(0.9,0)])*A^+(,1)")
+        self.assertStrEqual(self.ti3 + self.C,
+                            "ti([0,1]->[(0,0),...,(0.2,0)]) + ti([0,1]->[(0,0),...,(1,0)])*C(,0)")
+        self.assertStrEqual(self.ti3 + self.Cd,
+                            "ti([0,1]->[(0,0),...,(0.2,0)]) + (1,0)*C^+(,1)")
+        self.assertStrEqual(self.ti3 + self.A,
+                            "ti([0,1]->[(0,0),...,(0.2,0)]) + (1,0)*A(,0)")
+        self.assertStrEqual(self.ti3 + self.Ad,
+                            "ti([0,1]->[(0,0),...,(0.2,0)]) + ti([0,1]->[(0,0),...,(0.9,0)])*A^+(,1)")
+        self.assertStrEqual(1j*self.ti3 + self.C,
+                            "ti([0,1]->[(0,0),...,(0,0.2)]) + ti([0,1]->[(0,0),...,(1,0)])*C(,0)")
+        self.assertStrEqual(1j*self.ti3 + self.Cd,
+                            "ti([0,1]->[(0,0),...,(0,0.2)]) + (1,0)*C^+(,1)")
+        self.assertStrEqual(1j*self.ti3 + self.A,
+                            "ti([0,1]->[(0,0),...,(0,0.2)]) + (1,0)*A(,0)")
+        self.assertStrEqual(1j*self.ti3 + self.Ad,
+                            "ti([0,1]->[(0,0),...,(0,0.2)]) + ti([0,1]->[(0,0),...,(0.9,0)])*A^+(,1)")
+
+        self.assertStrEqual(self.C + self.Cd + self.A + self.Ad,
+                            "(1,0)*C^+(,1) + ti([0,1]->[(0,0),...,(1,0)])*C(,0)"
+                            " + ti([0,1]->[(0,0),...,(0.9,0)])*A^+(,1) + (1,0)*A(,0)")
+
+    def test_subtraction(self):
+        self.assertStrEqual(self.C - 2.0, "(-2,-0) + ti([0,1]->[(0,0),...,(1,0)])*C(,0)")
+        self.assertStrEqual(self.Cd - 2.0, "(-2,-0) + (1,0)*C^+(,1)")
+        self.assertStrEqual(self.A - 2.0, "(-2,-0) + (1,0)*A(,0)")
+        self.assertStrEqual(self.Ad - 2.0, "(-2,-0) + ti([0,1]->[(0,0),...,(0.9,0)])*A^+(,1)")
+        self.assertStrEqual(self.C - 2.0j, "(-0,-2) + ti([0,1]->[(0,0),...,(1,0)])*C(,0)")
+        self.assertStrEqual(self.Cd - 2.0j, "(-0,-2) + (1,0)*C^+(,1)")
+        self.assertStrEqual(self.A - 2.0j, "(-0,-2) + (1,0)*A(,0)")
+        self.assertStrEqual(self.Ad - 2.0j, "(-0,-2) + ti([0,1]->[(0,0),...,(0.9,0)])*A^+(,1)")
+        self.assertStrEqual(self.C - self.ti3,
+                            "ti([0,1]->[(-0,-0),...,(-0.2,-0)]) + ti([0,1]->[(0,0),...,(1,0)])*C(,0)",)
+        self.assertStrEqual(self.Cd - self.ti3,
+                            "ti([0,1]->[(-0,-0),...,(-0.2,-0)]) + (1,0)*C^+(,1)")
+        self.assertStrEqual(self.A - self.ti3,
+                            "ti([0,1]->[(-0,-0),...,(-0.2,-0)]) + (1,0)*A(,0)")
+        self.assertStrEqual(self.Ad - self.ti3,
+                            "ti([0,1]->[(-0,-0),...,(-0.2,-0)]) + ti([0,1]->[(0,0),...,(0.9,0)])*A^+(,1)")
+        self.assertStrEqual(self.C - 1j*self.ti3,
+                            "ti([0,1]->[(-0,-0),...,(-0,-0.2)]) + ti([0,1]->[(0,0),...,(1,0)])*C(,0)")
+        self.assertStrEqual(self.Cd - 1j*self.ti3,
+                            "ti([0,1]->[(-0,-0),...,(-0,-0.2)]) + (1,0)*C^+(,1)")
+        self.assertStrEqual(self.A - 1j*self.ti3,
+                            "ti([0,1]->[(-0,-0),...,(-0,-0.2)]) + (1,0)*A(,0)")
+        self.assertStrEqual(self.Ad - 1j*self.ti3,
+                            "ti([0,1]->[(-0,-0),...,(-0,-0.2)]) + ti([0,1]->[(0,0),...,(0.9,0)])*A^+(,1)")
+        self.assertStrEqual(2.0 - self.C, "(2,0) + ti([0,1]->[(-0,-0),...,(-1,-0)])*C(,0)")
+        self.assertStrEqual(2.0 - self.Cd, "(2,0) + (-1,-0)*C^+(,1)")
+        self.assertStrEqual(2.0 - self.A, "(2,0) + (-1,-0)*A(,0)")
+        self.assertStrEqual(2.0 - self.Ad, "(2,0) + ti([0,1]->[(-0,-0),...,(-0.9,-0)])*A^+(,1)")
+        self.assertStrEqual(2.0j - self.C, "(0,2) + ti([0,1]->[(-0,-0),...,(-1,-0)])*C(,0)")
+        self.assertStrEqual(2.0j - self.Cd, "(0,2) + (-1,-0)*C^+(,1)")
+        self.assertStrEqual(2.0j - self.A, "(0,2) + (-1,-0)*A(,0)")
+        self.assertStrEqual(2.0j - self.Ad, "(0,2) + ti([0,1]->[(-0,-0),...,(-0.9,-0)])*A^+(,1)")
+        self.assertStrEqual(self.ti3 - self.C,
+                            "ti([0,1]->[(0,0),...,(0.2,0)]) + ti([0,1]->[(-0,-0),...,(-1,-0)])*C(,0)")
+        self.assertStrEqual(self.ti3 - self.Cd,
+                            "ti([0,1]->[(0,0),...,(0.2,0)]) + (-1,-0)*C^+(,1)")
+        self.assertStrEqual(self.ti3 - self.A,
+                            "ti([0,1]->[(0,0),...,(0.2,0)]) + (-1,-0)*A(,0)")
+        self.assertStrEqual(self.ti3 - self.Ad,
+                            "ti([0,1]->[(0,0),...,(0.2,0)]) + ti([0,1]->[(-0,-0),...,(-0.9,-0)])*A^+(,1)")
+        self.assertStrEqual(1j*self.ti3 - self.C,
+                            "ti([0,1]->[(0,0),...,(0,0.2)]) + ti([0,1]->[(-0,-0),...,(-1,-0)])*C(,0)")
+        self.assertStrEqual(1j*self.ti3 - self.Cd,
+                            "ti([0,1]->[(0,0),...,(0,0.2)]) + (-1,-0)*C^+(,1)")
+        self.assertStrEqual(1j*self.ti3 - self.A,
+                            "ti([0,1]->[(0,0),...,(0,0.2)]) + (-1,-0)*A(,0)")
+        self.assertStrEqual(1j*self.ti3 - self.Ad,
+                            "ti([0,1]->[(0,0),...,(0,0.2)]) + ti([0,1]->[(-0,-0),...,(-0.9,-0)])*A^+(,1)")
+
+        self.assertStrEqual(self.C - self.Cd - self.A - self.Ad,
+                            "(-1,-0)*C^+(,1) + ti([0,1]->[(0,0),...,(1,0)])*C(,0)"
+                            " + ti([0,1]->[(-0,-0),...,(-0.9,-0)])*A^+(,1) + (-1,-0)*A(,0)")
+
+    def test_multiplication(self):
+        self.assertStrEqual(self.C * 3.0, "ti([0,1]->[(0,0),...,(3,0)])*C(,0)")
+        self.assertStrEqual(self.Cd * 3.0, "(3,0)*C^+(,1)")
+        self.assertStrEqual(self.A * 3.0, "(3,0)*A(,0)")
+        self.assertStrEqual(self.Ad * 3.0, "ti([0,1]->[(0,0),...,(2.7,0)])*A^+(,1)")
+        self.assertStrEqual(self.C * 3.0j, "ti([0,1]->[(0,0),...,(0,3)])*C(,0)")
+        self.assertStrEqual(self.Cd * 3.0j, "(0,3)*C^+(,1)")
+        self.assertStrEqual(self.A * 3.0j, "(0,3)*A(,0)")
+        self.assertStrEqual(self.Ad * 3.0j, "ti([0,1]->[(0,0),...,(0,2.7)])*A^+(,1)")
+        self.assertStrEqual(self.C * self.ti3, "ti([0,1]->[(0,0),...,(0.2,0)])*C(,0)")
+        self.assertStrEqual(self.Cd * self.ti3, "ti([0,1]->[(0,0),...,(0.2,0)])*C^+(,1)")
+        self.assertStrEqual(self.A * self.ti3, "ti([0,1]->[(0,0),...,(0.2,0)])*A(,0)")
+        self.assertStrEqual(self.Ad * self.ti3, "ti([0,1]->[(0,0),...,(0.18,0)])*A^+(,1)")
+        self.assertStrEqual(self.C * 1j*self.ti3, "ti([0,1]->[(0,0),...,(0,0.2)])*C(,0)")
+        self.assertStrEqual(self.Cd * 1j*self.ti3, "ti([0,1]->[(0,0),...,(0,0.2)])*C^+(,1)")
+        self.assertStrEqual(self.A * 1j*self.ti3, "ti([0,1]->[(0,0),...,(0,0.2)])*A(,0)")
+        self.assertStrEqual(self.Ad * 1j*self.ti3, "ti([0,1]->[(0,0),...,(0,0.18)])*A^+(,1)")
+        self.assertStrEqual(3.0 * self.C, "ti([0,1]->[(0,0),...,(3,0)])*C(,0)")
+        self.assertStrEqual(3.0 * self.Cd, "(3,0)*C^+(,1)")
+        self.assertStrEqual(3.0 * self.A, "(3,0)*A(,0)")
+        self.assertStrEqual(3.0 * self.Ad, "ti([0,1]->[(0,0),...,(2.7,0)])*A^+(,1)")
+        self.assertStrEqual(3.0j * self.C, "ti([0,1]->[(0,0),...,(0,3)])*C(,0)")
+        self.assertStrEqual(3.0j * self.Cd, "(0,3)*C^+(,1)")
+        self.assertStrEqual(3.0j * self.A, "(0,3)*A(,0)")
+        self.assertStrEqual(3.0j * self.Ad, "ti([0,1]->[(0,0),...,(0,2.7)])*A^+(,1)")
+        self.assertStrEqual(self.ti3 * self.C, "ti([0,1]->[(0,0),...,(0.2,0)])*C(,0)")
+        self.assertStrEqual(self.ti3 * self.Cd, "ti([0,1]->[(0,0),...,(0.2,0)])*C^+(,1)")
+        self.assertStrEqual(self.ti3 * self.A, "ti([0,1]->[(0,0),...,(0.2,0)])*A(,0)")
+        self.assertStrEqual(self.ti3 * self.Ad, "ti([0,1]->[(0,0),...,(0.18,0)])*A^+(,1)")
+        self.assertStrEqual(1j*self.ti3 * self.C, "ti([0,1]->[(0,0),...,(0,0.2)])*C(,0)")
+        self.assertStrEqual(1j*self.ti3 * self.Cd, "ti([0,1]->[(0,0),...,(0,0.2)])*C^+(,1)")
+        self.assertStrEqual(1j*self.ti3 * self.A, "ti([0,1]->[(0,0),...,(0,0.2)])*A(,0)")
+        self.assertStrEqual(1j*self.ti3 * self.Ad, "ti([0,1]->[(0,0),...,(0,0.18)])*A^+(,1)")
+
+        self.assertStrEqual((c("",2) + c_dag("",2) + a("",2) + a_dag("",2)) *
+                            (c("",2) - c_dag("",2) + a("",2) - a_dag("",2)),
+                            "(-2,-0) + (2,0)*C^+(,2)C(,2) + (-2,-0)*C^+(,2)A^+(,2)"
+                            " + (2,0)*C(,2)A(,2) + (-1,-0)*[A^+(,2)]^2 + (1,0)*[A(,2)]^2")
+
+    def test_N3(self):
+        expr = n("up",0) * a(0,0) + n("dn",0) * a_dag(0,0)
+        self.assertStrEqual(expr, "(1,0)*C^+(dn,0)C(dn,0)A^+(0,0) + (1,0)*C^+(up,0)C(up,0)A(0,0)")
+        expr = expr * expr * expr
+        self.assertStrEqual(expr,
+                            "(3,0)*C^+(dn,0)C^+(up,0)C(up,0)C(dn,0)A^+(0,0) + "
+                            "(3,0)*C^+(dn,0)C^+(up,0)C(up,0)C(dn,0)A(0,0) + "
+                            "(1,0)*C^+(dn,0)C(dn,0)[A^+(0,0)]^3 + "
+                            "(1,0)*C^+(up,0)C(up,0)[A(0,0)]^3 + "
+                            "(3,0)*C^+(dn,0)C^+(up,0)C(up,0)C(dn,0)[A^+(0,0)]^2A(0,0) + "
+                            "(3,0)*C^+(dn,0)C^+(up,0)C(up,0)C(dn,0)A^+(0,0)[A(0,0)]^2")
+
+    def test_dagger(self):
+        X = (self.ti1 + 1j*self.ti2)*c_dag("",1) * c_dag("",2) * c("",3) * c("",4) * a_dag("",5) * a("",6)
+        self.assertStrEqual(X, "ti([0,1]->[(0,0),...,(-1,-0.9)])*C^+(,1)C^+(,2)C(,4)C(,3)A^+(,5)A(,6)")
+        self.assertStrEqual(dagger(X),
+                            "ti([0,1]->[(0,-0),...,(-1,0.9)])*C^+(,3)C^+(,4)C(,2)C(,1)A^+(,6)A(,5)")
+
+if __name__ == '__main__':
+    unittest.main()
