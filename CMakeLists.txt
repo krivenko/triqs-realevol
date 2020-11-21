@@ -81,7 +81,7 @@ if(Use_Antihermiticity)
 endif(Use_Antihermiticity)
 
 # Compile C++ benchmarks
-option(Build_Benchmarks "Compile C++ benchmarks (requires Google benchmark)" OFF)
+option(Build_Benchmarks "Compile C++ benchmarks" OFF)
 
 # Documentation
 option(Build_Documentation "Build documentation" OFF)
