@@ -7,5 +7,5 @@ install(
   DESTINATION lib/cmake/${PROJECT_NAME}
 )
 
-# FIXME
-#install(EXPORT ${PROJECT_NAME}-targets NAMESPACE ${PROJECT_NAME}:: DESTINATION lib/cmake/${PROJECT_NAME})
+install(EXPORT ${PROJECT_NAME}-targets NAMESPACE ${PROJECT_NAME}::
+        DESTINATION lib/cmake/${PROJECT_NAME})
