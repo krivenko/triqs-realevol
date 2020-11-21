@@ -43,7 +43,7 @@
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wshadow"
 #pragma GCC diagnostic ignored "-Wmisleading-indentation"
-#include <exprtk/exprtk.hpp>
+#include <realevol/exprtk/exprtk.hpp>
 #pragma GCC diagnostic pop
 
 namespace realevol {

@@ -2,7 +2,7 @@
 
 #include <triqs/gfs.hpp>
 
-#include "time_expr.hpp"
+#include <realevol/time_expr.hpp>
 
 using namespace realevol;
 
@@ -26,7 +26,7 @@ static void time_expr_complex_const(benchmark::State &state) {
 
   time_expr expr(.0);
   for(int n = 0; n < n_terms; ++n)
-    expr += time_expr(2.0*n - 2.0_j*n);
+    expr += time_expr(2.0*n - 2.0i*n);
 
   for(auto _ : state) {
     for(auto t : mesh)

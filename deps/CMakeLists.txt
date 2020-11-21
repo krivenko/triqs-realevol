@@ -24,7 +24,7 @@ if(PythonSupport OR Build_Documentation)
   )
 endif()
 
-# -- GTest --
+# -- GoogleTest --
 external_dependency(GTest
   GIT_REPO https://github.com/google/googletest
   GIT_TAG release-1.10.0
@@ -45,3 +45,15 @@ external_dependency(ezARPACK
   BUILD_ALWAYS
   EXCLUDE_FROM_ALL
 )
+
+# -- Google Benchmark --
+if(Build_Benchmarks)
+  set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "")
+  set(BENCHMARK_ENABLE_INSTALL OFF CACHE BOOL "")
+  external_dependency(GBenchmark
+    GIT_REPO https://github.com/google/benchmark
+    GIT_TAG v1.5.0
+    BUILD_ALWAYS
+    EXCLUDE_FROM_ALL
+  )
+endif()

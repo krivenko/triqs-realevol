@@ -1,35 +1,40 @@
-2018-09-20 14:26:52
+2020-11-21 13:31:31
 Running benchmark/time_expr/time_expr_benchmark
-Run on (4 X 3100 MHz CPU s)
+Run on (12 X 4500 MHz CPU s)
 CPU Caches:
-  L1 Data 32K (x2)
-  L1 Instruction 32K (x2)
-  L2 Unified 256K (x2)
-  L3 Unified 4096K (x1)
---------------------------------------------------------------------
-Benchmark                             Time           CPU Iterations
---------------------------------------------------------------------
-time_expr_real_const/0              162 ns        162 ns    4378604
-time_expr_real_const/1              156 ns        156 ns    4368506
-time_expr_real_const/8              156 ns        156 ns    4394814
-time_expr_real_const/64             157 ns        157 ns    4405136
-time_expr_real_const/512            156 ns        156 ns    4454101
-time_expr_real_const/1024           157 ns        157 ns    4476478
-time_expr_complex_const/0           170 ns        170 ns    4038488
-time_expr_complex_const/1           228 ns        228 ns    3104143
-time_expr_complex_const/8           227 ns        226 ns    3090707
-time_expr_complex_const/64          230 ns        230 ns    3117518
-time_expr_complex_const/512         229 ns        229 ns    3122626
-time_expr_complex_const/1024        230 ns        230 ns    3091848
-time_expr_real/0                    158 ns        158 ns    4428613
-time_expr_real/1                    157 ns        157 ns    4391618
-time_expr_real/8                  13600 ns      13594 ns      51638
-time_expr_real/64                110560 ns     110560 ns       6280
-time_expr_real/512               953435 ns     953435 ns        731
-time_expr_real/1024             1980041 ns    1979891 ns        349
-time_expr_complex/0                 170 ns        170 ns    4104915
-time_expr_complex/1                 226 ns        226 ns    3127843
-time_expr_complex/8               31937 ns      31923 ns      22453
-time_expr_complex/64             317661 ns     317650 ns       2219
-time_expr_complex/512           2855340 ns    2855340 ns        253
-time_expr_complex/1024          5589612 ns    5589563 ns        125
+  L1 Data 32K (x6)
+  L1 Instruction 32K (x6)
+  L2 Unified 256K (x6)
+  L3 Unified 12288K (x1)
+Load Average: 1.45, 2.83, 2.68
+-----------------------------------------------------------------------
+Benchmark                             Time             CPU   Iterations
+-----------------------------------------------------------------------
+time_expr_real_const/0              145 ns          145 ns      4811253
+time_expr_real_const/0              148 ns          148 ns      4756669
+time_expr_real_const/1              145 ns          145 ns      4589028
+time_expr_real_const/8              146 ns          146 ns      4815891
+time_expr_real_const/64             149 ns          149 ns      4686265
+time_expr_real_const/512            147 ns          147 ns      4750954
+time_expr_real_const/1024           146 ns          146 ns      4851541
+time_expr_complex_const/0           138 ns          138 ns      5034309
+time_expr_complex_const/0           138 ns          138 ns      5102571
+time_expr_complex_const/1           189 ns          189 ns      3726451
+time_expr_complex_const/8           189 ns          189 ns      3669649
+time_expr_complex_const/64          192 ns          192 ns      3721418
+time_expr_complex_const/512         189 ns          189 ns      3656850
+time_expr_complex_const/1024        191 ns          191 ns      3677243
+time_expr_real/0                    139 ns          139 ns      4934841
+time_expr_real/0                    140 ns          140 ns      5046139
+time_expr_real/1                    139 ns          139 ns      5018167
+time_expr_real/8                   5015 ns         5015 ns       141777
+time_expr_real/64                 42586 ns        42586 ns        15883
+time_expr_real/512               494324 ns       494319 ns         1394
+time_expr_real/1024             1182677 ns      1182670 ns          549
+time_expr_complex/0                 141 ns          141 ns      5081630
+time_expr_complex/0                 141 ns          141 ns      4983811
+time_expr_complex/1                 173 ns          173 ns      4022704
+time_expr_complex/8                9410 ns         9410 ns        74859
+time_expr_complex/64              87326 ns        87325 ns         7986
+time_expr_complex/512            916819 ns       916812 ns          719
+time_expr_complex/1024          2159366 ns      2159355 ns          313
