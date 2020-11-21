@@ -1,10 +1,11 @@
-from pytriqs.gf.local import BlockGf
-from pytriqs.archive import HDFArchive
+import triqs.utility.mpi as mpi
+from h5 import HDFArchive
+from triqs.gf import BlockGf
 from realevol.texpr import TExpr as te
 from realevol.operators_texpr import *
 from realevol.init_state import *
 from realevol.realevol import *
-import pytriqs.utility.mpi as mpi
+
 import numpy as np
 from datetime import datetime
 from itertools import product
@@ -47,29 +48,29 @@ h = h0 + sum(dt*(c_dag(sn,0)*c(sn,1) + c_dag(sn,1)*c(sn,0)) for sn in spin_names
 S = Solver(gf_struct, chi_indices, t_max = t_max, n_t = n_t)
 
 # Set initial state
-S.initial_state = init_state
+S.set_initial_state(init_state)
 
 gf_params = {}
 gf_params['verbosity'] = 2
 gf_params['lanczos_min_matrix_size'] = 10000
 
-print "Computing with LAPACK ..."
+print("Computing with LAPACK ...")
 timing = datetime.now()
 S.compute_2t_obs(h = h, params = gf_params)
 timing = datetime.now() - timing
-print "Elapsed time:", timing
+print("Elapsed time:", timing)
 
 lapack = {'g_l' : S.g_l,
           'g_g' : S.g_g,
           'chi' : S.chi,
           'timing' : str(timing)}
 
-print "Computing with Lanczos algorithm ..."
+print("Computing with Lanczos algorithm ...")
 gf_params['lanczos_min_matrix_size'] = 9
 timing = datetime.now()
 S.compute_2t_obs(h = h, params = gf_params)
 timing = datetime.now() - timing
-print "Elapsed time:", timing
+print("Elapsed time:", timing)
 
 lanczos = {'g_l' : S.g_l,
            'g_g' : S.g_g,

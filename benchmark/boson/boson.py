@@ -1,7 +1,8 @@
+import triqs.utility.mpi as mpi
 from realevol.texpr import TExpr
 from realevol.operators_texpr import c, c_dag, n, a, a_dag
 from realevol.init_state import *
-from realevol import Solver
+from realevol.realevol import Solver
 
 gf_struct = {'up':[0], 'dn':[0]}
 chi_indices = [('dn',0),('up',0)]
@@ -33,6 +34,6 @@ init_state = make_equilibrium_init_state(h0,
                                          params = {})
 
 # Set initial state
-S.initial_state = init_state
+S.set_initial_state(init_state)
 
 S.compute_2t_obs(h = h, params = {})

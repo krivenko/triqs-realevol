@@ -1,3 +1,4 @@
+import triqs.utility.mpi as mpi
 from realevol.texpr import TExpr as te
 from realevol.operators_texpr import *
 from realevol.init_state import *
@@ -23,7 +24,7 @@ t_max = 1.0
 n_t = 11
 
 fops = set((sn,site) for sn, site in product(spin_names,range(4)))
-print "Fundamental operator set:", fops
+print("Fundamental operator set:", fops)
 
 eq_params = {}
 eq_params['verbosity'] = 2
@@ -35,25 +36,25 @@ h0 += U*sum(n('up',site)*n('dn',site) for site in range(4))
 h0 += t*sum(c_dag(sn,site)*c(sn,(site+1)%4) + c_dag(sn,site)*c(sn,(site-1)%4)
             for sn, site in product(spin_names,range(4)))
 
-print "h0 =", h0
+print("h0 =", h0)
 
 init_state = make_equilibrium_init_state(h0, fermion_indices = fops, boson_indices = set(),
                                          temperature = 1/beta, params = eq_params)
 
-print "Initial state:"
-print init_state
+print("Initial state:")
+print(init_state)
 
 # Time-dependent Hamiltonian
 h = h0 + tp*sum(c_dag(sn,site1)*c(sn,site2)
                 for sn, (site1, site2) in product(spin_names,((0,2),(2,0),(1,3),(3,1))))
 
-print "h(t) =", h
+print("h(t) =", h)
 
 # Solver object
 S = Solver(gf_struct, chi_indices, t_max = t_max, n_t = n_t)
 
 # Set initial state
-S.initial_state = init_state
+S.set_initial_state(init_state)
 
 gf_params = {}
 gf_params['verbosity'] = 2
