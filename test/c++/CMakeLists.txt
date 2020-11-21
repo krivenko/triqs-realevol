@@ -52,8 +52,7 @@ endmacro()
 # Simple tests
 set(SIMPLE_TESTS time_expr time_interp many_body_operator hilbert_space space_partition
                  mesh_container lanczos_worker hs_structure sort2 interpolator
-                 init_state_pure
-                 trimer)
+                 init_state_pure)
 foreach(test ${SIMPLE_TESTS})
   add_realevol_cpp_test(${test})
 endforeach()
