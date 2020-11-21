@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * TRIQS: a Toolbox for Research in Interacting Quantum Systems
+ * realevol - Real time evolution solver based on TRIQS
  *
  * Copyright (C) 2013 T. Shields
  * Copyright (C) 2016 I. Krivenko
