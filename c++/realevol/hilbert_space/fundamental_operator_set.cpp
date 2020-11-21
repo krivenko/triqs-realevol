@@ -34,8 +34,7 @@
 
 #include "fundamental_operator_set.hpp"
 
-namespace realevol {
-namespace hilbert_space {
+namespace realevol::hilbert_space {
 
 
  namespace { // auxiliary functions
@@ -106,4 +105,4 @@ namespace hilbert_space {
    fops = fundamental_operator_set(v_f);
  }
 
-}}
+}

@@ -23,8 +23,7 @@
 #include <h5/h5.hpp>
 #include <triqs/utility/variant_extensions.hpp>
 
-namespace realevol {
-namespace operators {
+namespace realevol::operators {
 
 std::ostream& operator<<(std::ostream& os, canonical_ops_t const& op) {
  os << (op.stat == hilbert_space::statistic_enum::Fermion ? "C" : "A");
@@ -44,7 +43,7 @@ bool operator<(monomial_t const& m1, monomial_t const& m2) {
 }
 
 std::ostream& operator<<(std::ostream& os, monomial_t const& m) {
- monomial_t::const_iterator it = std::begin(m), end_it = std::end(m);
+ auto it = std::begin(m), end_it = std::end(m);
  auto next_it = it; ++next_it;
  int power = 1;
  for(;it != end_it; ++it, ++next_it) {
@@ -57,5 +56,4 @@ std::ostream& operator<<(std::ostream& os, monomial_t const& m) {
  return os;
 }
 
-}
 }

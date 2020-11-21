@@ -20,12 +20,11 @@
  ******************************************************************************/
 #include <triqs/utility/first_include.hpp>
 
+#include <csignal>
 #include <set>
 #include <algorithm>
 #include <iterator>
 #include <limits>
-
-#include <signal.h>
 
 #include <triqs/utility/signal_handler.hpp>
 
@@ -42,11 +41,12 @@
 
 namespace signal_handler = triqs::signal_handler;
 
-#define CHECK_SIGNALS                           \
-if(signal_handler::received()) {                \
- int signal = signal_handler::last();           \
- if(signal == SIGINT) TRIQS_KEYBOARD_INTERRUPT; \
- else                 TRIQS_RUNTIME_ERROR;      \
+static void check_signals() {
+ if(signal_handler::received()) {
+  int signal = signal_handler::last();
+  if(signal == SIGINT) TRIQS_KEYBOARD_INTERRUPT;
+  else                 TRIQS_RUNTIME_ERROR;
+ }
 }
 
 namespace realevol {
@@ -196,7 +196,7 @@ void solver::compute_2t_obs(HamiltonianType const& h_, compute_2t_obs_parameters
                                                     initial_state->get_full_hs(),
                                                     obs_fops,
                                                     is_zero_on_mesh<gf_mesh<retime>>(t_mesh));
- CHECK_SIGNALS;
+ check_signals();
 
  if(params.verbosity >= 1 && comm.rank() == 0)
   std::cout << "Found " << hs_struct.sub_hilbert_spaces.size()
@@ -230,7 +230,7 @@ void solver::compute_2t_obs(HamiltonianType const& h_, compute_2t_obs_parameters
  // Compute subspace branching for the initial state
  auto const& subspaces = initial_state->get_sub_hilbert_spaces();
  auto subspace_branchings = hs_struct.compute_branchings(subspaces);
- CHECK_SIGNALS;
+ check_signals();
 
  if(params.verbosity >= 2 && comm.rank() == 0) {
   std::cout << "Subspace branching for the initial state:" << std::endl;
@@ -246,13 +246,13 @@ void solver::compute_2t_obs(HamiltonianType const& h_, compute_2t_obs_parameters
 
  auto g_g_wl = params.compute_g_g ?
                wlm.make_gf_worldlines(gf_struct, true) : std::vector<worldline_desc_t>();
- CHECK_SIGNALS;
+ check_signals();
  auto g_l_wl = params.compute_g_l ?
                wlm.make_gf_worldlines(gf_struct, false) : std::vector<worldline_desc_t>();
- CHECK_SIGNALS;
+ check_signals();
  auto chi_wl = params.compute_chi ?
                wlm.make_chi_worldlines(chi_indices) : std::vector<worldline_desc_t>();
- CHECK_SIGNALS;
+ check_signals();
 
  long nwl = 0;
  if(params.verbosity >= 2 && comm.rank() == 0) {
@@ -306,7 +306,7 @@ void solver::compute_2t_obs(HamiltonianType const& h_, compute_2t_obs_parameters
   }
  };
 
- CHECK_SIGNALS;
+ check_signals();
 
  for(auto & f : g_g) {
   if(params.compute_g_g)
@@ -340,11 +340,11 @@ void solver::compute_2t_obs(HamiltonianType const& h_, compute_2t_obs_parameters
     worker(wl, obs, std::integral_constant<h_interpolation,Simpson>());
     break;
   }
-  CHECK_SIGNALS;
+  check_signals();
  }
  comm.barrier();
 
- CHECK_SIGNALS;
+ check_signals();
 
  // Collect results from all MPI ranks
  if(params.compute_g_g) g_g = mpi_reduce(g_g, comm, 0, true);

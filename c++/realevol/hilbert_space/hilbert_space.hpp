@@ -28,8 +28,7 @@
 
 #include "fundamental_operator_set.hpp"
 
-namespace realevol {
-namespace hilbert_space {
+namespace realevol::hilbert_space {
 
 /// The coding of the fermionic Fock state: 64 bits word in binary.
 using fock_state_t = uint64_t;
@@ -347,4 +346,4 @@ class sub_hilbert_space {
  }
 
 };
-}}
+}

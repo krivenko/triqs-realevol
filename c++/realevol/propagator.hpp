@@ -58,7 +58,7 @@ template<typename HScalarType>
 struct prop_1d_t {
  inst_h_t<HScalarType> inst_h;
  state_on_subspace_t tmp_st;
- double eigenvalue;
+ double eigenvalue = {};
  prop_1d_t(inst_h_t<HScalarType> && inst_h, sub_hilbert_space const& sp);
  prop_1d_t(prop_1d_t const&) = delete;
  void diag(double t, double dt);

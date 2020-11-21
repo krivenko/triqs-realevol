@@ -106,7 +106,7 @@ class mpi_dispatcher {
   MPI_Status recv_s;
   MPI_Irecv(&job, 1, job_datatype, 0, send_job_tag, comm.get(), &recv_r);
   MPI_Wait(&recv_r,&recv_s);
-  int c;
+  int c = {};
   MPI_Get_count(&recv_s, job_datatype,&c);
   if(c == 1) return {job};
 

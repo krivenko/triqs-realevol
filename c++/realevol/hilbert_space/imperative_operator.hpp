@@ -29,8 +29,7 @@
 #include "../operators/many_body_operator.hpp"
 #include "./hilbert_space.hpp"
 
-namespace realevol {
-namespace hilbert_space {
+namespace realevol::hilbert_space {
 
 /*
    If UseMap is false, the constructor takes two arguments:
@@ -314,4 +313,4 @@ template <typename HilbertType, typename ScalarType = double, bool UseMap = fals
   return target_st;
  }
 };
-}}
+}

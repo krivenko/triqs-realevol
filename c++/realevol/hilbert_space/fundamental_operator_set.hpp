@@ -32,8 +32,7 @@
 
 #include <h5/h5.hpp>
 
-namespace realevol {
-namespace hilbert_space {
+namespace realevol::hilbert_space {
 
  /// Structure of the Green's function
  using gf_struct_t = std::map<std::string,std::vector<std::variant<int, std::string>>>;
@@ -267,5 +266,4 @@ class fundamental_operator_set {
  friend void h5_read_attribute(h5::object obj, std::string const& name, fundamental_operator_set& f);
 
 };
-}}
-
+}

@@ -24,6 +24,7 @@
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #endif
 
+#include <csignal>
 #include <cmath>
 #include <limits>
 #include <vector>
@@ -33,8 +34,6 @@
 #include <iterator>
 #include <numeric>
 #include <type_traits>
-
-#include <signal.h>
 
 #include <triqs/arrays/vector.hpp>
 #include <triqs/arrays/linalg/eigenelements.hpp>
@@ -55,11 +54,12 @@
 
 namespace signal_handler = triqs::signal_handler;
 
-#define CHECK_SIGNALS                           \
-if(signal_handler::received()) {                \
- int signal = signal_handler::last();           \
- if(signal == SIGINT) TRIQS_KEYBOARD_INTERRUPT; \
- else                 TRIQS_RUNTIME_ERROR;      \
+static void check_signals() {
+ if(signal_handler::received()) {
+  int signal = signal_handler::last();
+  if(signal == SIGINT) TRIQS_KEYBOARD_INTERRUPT;
+  else                 TRIQS_RUNTIME_ERROR;
+ }
 }
 
 namespace realevol {
@@ -105,7 +105,7 @@ init_state make_pure_init_state(OperatorType const& generator,
 
  // Fill st.sub_hilbert_spaces[0]
  foreach(psi, [&sp](fock_state_t f, dcomplex) { sp.add_fock_state(f); });
- CHECK_SIGNALS;
+ check_signals();
 
  // Add a weighted state
  state_on_subspace_t st_on_sp(sp);
@@ -167,7 +167,7 @@ void find_lowest_levels_on_subspace(sub_hilbert_space const& sp,
                                     double energy_window,
                                     int verbosity,
                                     int arpack_min_matrix_size,
-                                    int arpack_tol, int arpack_ncv,
+                                    double arpack_tol, int arpack_ncv,
                                     int rank) {
 
  using triqs::utility::real;
@@ -451,11 +451,12 @@ init_state make_equilibrium_init_state(OperatorType const& h,
   TRIQS_RUNTIME_ERROR << "arpack_min_matrix_size must be >= 4!";
 
  double beta, energy_window;
- if(temperature == 0)
+ if(temperature == 0) {
   // XXX If this is too low, n_relevant_ev is "0" for zero temperature with ARPACK and MPI.
   // The minimum tolerance that worked on my machine was "1e-13", for "1e-14" there was this problem. mdanilov
+  beta = 0;
   energy_window = (params.arpack_tolerance != 0 ? params.arpack_tolerance : 1e-12);
- else {
+ } else {
   beta = 1 / temperature;
   energy_window = -temperature * std::log(params.min_rel_weight);
  }
@@ -465,13 +466,13 @@ init_state make_equilibrium_init_state(OperatorType const& h,
  // Initial state object
  init_state ist(fops, bits_per_boson);
 
- CHECK_SIGNALS;
+ check_signals();
 
  // Partition the Hilbert space
  space_partition<state_on_space_t, static_op_on_space_t>
  partition(state_on_space_t(ist.get_full_hs()), static_op_on_space_t(h_, fops, ist.get_full_hs()));
 
- CHECK_SIGNALS;
+ check_signals();
 
  // Fill subspaces
  std::vector<sub_hilbert_space> subspaces;
@@ -479,7 +480,7 @@ init_state make_equilibrium_init_state(OperatorType const& h,
  for (long n = 0; n < partition.n_subspaces(); ++n) subspaces.emplace_back(n);
  foreach(partition, [&](fock_state_t s, int spn) { subspaces[spn].add_fock_state(s); });
 
- CHECK_SIGNALS;
+ check_signals();
 
  bool h_is_real = imag(h_).is_zero();
  if(h_is_real) h_ = real(h_);
@@ -547,7 +548,7 @@ init_state make_equilibrium_init_state(OperatorType const& h,
                                   comm.rank());
   }
 
-  CHECK_SIGNALS;
+  check_signals();
 
   if(params.verbosity >= 2 && sp_lowest_levels.back().first == sp.get_index())
    std::cout << "[Node " << comm.rank() << "] Provisionally relevant levels on subspace "
@@ -576,7 +577,7 @@ init_state make_equilibrium_init_state(OperatorType const& h,
  rel_sp_i.reserve(rank_local_n);
  eigensystems.reserve(rank_local_n);
 
- CHECK_SIGNALS;
+ check_signals();
 
  if(params.verbosity >= 1 && comm.rank() == 0)
   std::cout << "Computing eigenvectors ..." << std::endl;
@@ -616,7 +617,7 @@ init_state make_equilibrium_init_state(OperatorType const& h,
                         comm.rank());
   }
 
-  CHECK_SIGNALS;
+  check_signals();
 
   // Rank-local checks
   assert(rel_sp_i.size() == eigensystems.size());
@@ -647,7 +648,7 @@ init_state make_equilibrium_init_state(OperatorType const& h,
  // Ensure that no reallocations occur in ist.sub_hilbert_spaces
  shs.reserve(all_relevant_sp_i.size());
 
- CHECK_SIGNALS;
+ check_signals();
 
  // Finally, fill the init_state object
  eigensystem_t eig;
@@ -670,7 +671,7 @@ init_state make_equilibrium_init_state(OperatorType const& h,
    ist.weighted_states.back().state.amplitudes() = evec(range(),i);
   }
 
-  CHECK_SIGNALS;
+  check_signals();
  }
 
  if(params.verbosity >= 1 && comm.rank() == 0)

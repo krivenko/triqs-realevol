@@ -90,9 +90,9 @@ void h5_read(h5::group fg, std::string const &name, init_state & st) {
  for(int i = 0; i < n_wst; ++i) {
   auto wst_gr = states_gr.open_group(std::to_string(i));
 
-  double weight;
+  double weight = {};
   h5_read(wst_gr, "weight", weight);
-  int sp_index;
+  int sp_index = {};
   h5_read(wst_gr, "sp_index", sp_index);
   st.weighted_states.emplace_back(state_on_subspace_t(st.sub_hilbert_spaces[sp_index]), weight);
   h5_read(wst_gr, "amplitudes", st.weighted_states.back().state.amplitudes());

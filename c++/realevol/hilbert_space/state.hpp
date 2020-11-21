@@ -31,8 +31,7 @@
 
 #include "hilbert_space.hpp"
 
-namespace realevol {
-namespace hilbert_space {
+namespace realevol::hilbert_space {
 
 /// Many-body state as a list of amplitudes in a *basis of Fock states*
 /**
@@ -494,4 +493,4 @@ TargetState project(OriginalState const& psi, sub_hilbert_space const& proj_hs) 
 }
 
 #endif
-}}
+}

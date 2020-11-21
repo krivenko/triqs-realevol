@@ -41,17 +41,16 @@ public:
 
 protected:
 
-  bool is_constant_;
+  bool is_constant_ = true;
   mesh_type mesh;
-  data_type data;
+  data_type data = {0};
 
 public:
 
   // Construct explicitly constant interpolator
-  interpolator1d() : is_constant_(true), data{0} {};
-  interpolator1d(value_type val) : is_constant_(true), data{val} {}
+  interpolator1d() = default;
+  interpolator1d(value_type val) : data{val} {}
   interpolator1d(mesh_type const& mesh, value_type val) :
-    is_constant_(true),
     mesh(mesh),
     data{val}
   {}
@@ -82,10 +81,10 @@ public:
     return (1.0 - d) * data(l) + d * data(l + 1);
   }
 
-  size_t size() const { return mesh.size(); }
+  [[nodiscard]] size_t size() const { return mesh.size(); }
 
   // Accessors
-  mesh_type const& get_mesh() const { return mesh; }
+  [[nodiscard]] mesh_type const& get_mesh() const { return mesh; }
   data_type const& get_data() const { return data; }
   data_type & get_data() { return data; }
 
@@ -98,7 +97,7 @@ public:
   }
 
   friend bool is_constant(interpolator1d const& interp) { return interp.is_constant_; }
-  bool is_zero() const { return is_constant(*this) && data(0) == T{}; }
+  [[nodiscard]] bool is_zero() const { return is_constant(*this) && data(0) == T{}; }
 
   friend std::ostream& operator<<(std::ostream& os, interpolator1d const& interp) {
     if(interp.is_constant_)

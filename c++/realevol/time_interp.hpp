@@ -50,8 +50,13 @@ public:
   time_interp(mesh_type const& mesh, real_data_type const& r, real_data_type const& i);
   time_interp(mesh_type const& mesh, data_type const& z);
 
+  time_interp(time_interp const&) = default;
+  time_interp(time_interp &&) noexcept = default;
+  ~time_interp() = default;
+
   // Assignment
   time_interp & operator=(time_interp const& ti) = default;
+  time_interp & operator=(time_interp && ti) noexcept = default;
 
   // Arithmetics
   time_interp operator-() const;
@@ -113,9 +118,9 @@ public:
 
 }
 
-namespace triqs { namespace utility {
+namespace triqs::utility {
 
 inline bool is_zero(realevol::time_interp const& ti, double = 0 /* neglected */) { return ti.is_zero(); }
 inline realevol::time_interp conj(realevol::time_interp const& ti) { return ti.conj(); }
 
-}}
+}

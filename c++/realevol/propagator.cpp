@@ -93,7 +93,7 @@ template<typename HScalarType>
 inline void prop_lapack_t<HScalarType>::diag(double t, double dt) {
  inst_h.t = t;
  inst_h.dt = dt;
- for(long i : range(from_st.size())) {
+ for(int i : range(from_st.size())) {
   from_st(i) = 1.0;
   to_st = inst_h(from_st);
   workspace(range(),i) = to_st.amplitudes();
@@ -108,7 +108,7 @@ inline void prop_lapack_t<HScalarType>::operator()(state_on_subspace_t & st, dou
  if(!inst_h.is_static) diag(t_min, dt);
  auto & psi = st.amplitudes();
  psi = conj(eig.second) * psi;
- for(long i : range(psi.size())) psi(i) *= std::exp(c * dt * eig.first(i));
+ for(int i : range(psi.size())) psi(i) *= std::exp(c * dt * eig.first(i));
  psi = eig.second.transpose() * psi;
 }
 

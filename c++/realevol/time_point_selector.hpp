@@ -34,7 +34,7 @@ class time_point_selector {
 
  using mesh_point_t = triqs::gfs::gf_mesh<triqs::gfs::retime>::mesh_point_t;
 
- inline bool in_domain(mesh_point_t const &t, mesh_point_t const &tp) const {
+ [[nodiscard]] inline bool in_domain(mesh_point_t const &t, mesh_point_t const &tp) const {
    return (t >= t_range.first && t <= t_range.second) &&
           (tp >= tp_range.first && tp <= tp_range.second) &&
           std::abs(double(t) - double(tp)) <= delta_t_max;
@@ -42,10 +42,10 @@ class time_point_selector {
 
 public:
 
- time_point_selector(std::pair<double, double> const& t_range,
-                     std::pair<double, double> const& tp_range,
+ time_point_selector(std::pair<double, double> t_range,
+                     std::pair<double, double> tp_range,
                      double delta_t_max) :
-  t_range(t_range), tp_range(tp_range), delta_t_max(delta_t_max) {}
+  t_range(std::move(t_range)), tp_range(std::move(tp_range)), delta_t_max(delta_t_max) {}
 
  inline bool operator()(mesh_point_t const &t, mesh_point_t const &tp) const {
   bool b = in_domain(t, tp);

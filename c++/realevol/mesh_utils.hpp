@@ -40,7 +40,7 @@ template<class Mesh>
 struct is_zero_on_mesh {
 
  Mesh const& mesh;
- is_zero_on_mesh(Mesh const& mesh) : mesh(mesh) {}
+ explicit is_zero_on_mesh(Mesh const& mesh) : mesh(mesh) {}
 
  template<class Callable> bool operator()(Callable const& callable) {
   using triqs::utility::is_zero;

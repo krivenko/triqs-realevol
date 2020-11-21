@@ -42,7 +42,7 @@ make_gf_ret_adv(block_gf_2t_t const& g_l, block_gf_2t_t const& g_g) {
    << " has different target shapes within g_l and g_g.";
   auto indices = g_l[bl].indices();
 
-  blocks.push_back(gf_2t_t{mesh, shape, indices});
+  blocks.emplace_back(mesh, shape, indices);
  }
 
  auto res = std::make_pair(make_block_gf(g_l.block_names(), blocks),

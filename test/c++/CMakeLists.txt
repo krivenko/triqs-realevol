@@ -51,7 +51,8 @@ macro(add_realevol_cpp_test test)
 
   # Run clang-tidy if found
   if(CLANG_TIDY_EXECUTABLE)
-    set_target_properties(${test_name} PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_EXECUTABLE}")
+    set_target_properties(${test_name} PROPERTIES
+                          CXX_CLANG_TIDY "${CLANG_TIDY_EXECUTABLE}")
   endif()
 
   # Run cppcheck if found
@@ -71,15 +72,23 @@ macro(add_realevol_cpp_test test)
 endmacro()
 
 # Simple tests
-set(SIMPLE_TESTS time_expr time_interp many_body_operator hilbert_space space_partition
-                 mesh_container lanczos_worker hs_structure sort2 interpolator
-                 init_state_pure)
+set(SIMPLE_TESTS time_expr.cpp
+                 time_interp.cpp
+                 many_body_operator.cpp
+                 hilbert_space.cpp
+                 space_partition.cpp
+                 mesh_container.cpp
+                 lanczos_worker.cpp
+                 hs_structure.cpp
+                 sort2.cpp
+                 interpolator.cpp
+                 init_state_pure.cpp)
 foreach(test ${SIMPLE_TESTS})
   add_realevol_cpp_test(${test})
 endforeach()
 
 # MPI tests
-set(MPI_TESTS mpi_dispatcher init_state_equilibrium)
+set(MPI_TESTS mpi_dispatcher.cpp init_state_equilibrium.cpp)
 foreach(test ${MPI_TESTS})
   add_realevol_cpp_test(${test} 1 2 4)
 endforeach()

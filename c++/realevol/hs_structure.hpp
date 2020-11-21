@@ -102,7 +102,7 @@ struct hilbert_space_structure {
    auto const& hs = sub_hilbert_spaces[spn];
    res[spn] = true;
    for(auto f : hs.get_all_fock_states()) {
-    from_st(f) = .1;
+    from_st(f) = 1;
     imp_op.apply(from_st, to_st);
     from_st.zero();
     if(!classify_pred(to_st)) {

@@ -154,27 +154,27 @@ public:
  /// Constant iterator over weighted pure states
  using const_iterator = std::vector<weighted_state_t>::const_iterator;
 
- inline const_iterator begin() const noexcept { return weighted_states.cbegin(); }
- inline const_iterator cbegin() const noexcept { return weighted_states.cbegin(); }
- inline const_iterator end() const noexcept { return weighted_states.cend(); }
- inline const_iterator cend() const noexcept { return weighted_states.cend(); }
+ [[nodiscard]] inline const_iterator begin() const noexcept { return weighted_states.cbegin(); }
+ [[nodiscard]] inline const_iterator cbegin() const noexcept { return weighted_states.cbegin(); }
+ [[nodiscard]] inline const_iterator end() const noexcept { return weighted_states.cend(); }
+ [[nodiscard]] inline const_iterator cend() const noexcept { return weighted_states.cend(); }
 
  /// Get fundamental operator set
- fundamental_operator_set const& get_fops() const { return fops; }
+ [[nodiscard]] fundamental_operator_set const& get_fops() const { return fops; }
 
  /// Get full Hilbert space
- class hilbert_space const& get_full_hs() const { return full_hs; }
+ [[nodiscard]] class hilbert_space const& get_full_hs() const { return full_hs; }
 
  /// Get invariant subspaces
- std::vector<sub_hilbert_space> const& get_sub_hilbert_spaces() const {
+ [[nodiscard]] std::vector<sub_hilbert_space> const& get_sub_hilbert_spaces() const {
   return sub_hilbert_spaces;
  }
 
  /// Number of weighted pure states in this initial state
- int size() const { return weighted_states.size(); }
+ [[nodiscard]] int size() const { return weighted_states.size(); }
 
  /// Get all weighted states
- std::vector<weighted_state_t> const& get_weighted_states() const { return weighted_states; }
+ [[nodiscard]] std::vector<weighted_state_t> const& get_weighted_states() const { return weighted_states; }
 
  /// Stream output
  friend std::ostream & operator<<(std::ostream & os, init_state const& st);

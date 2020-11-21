@@ -22,6 +22,7 @@
 #include "time_expr.hpp"
 
 #include <sstream>
+#include <utility>
 
 #include <triqs/utility/exceptions.hpp>
 
@@ -92,14 +93,14 @@ time_expr::time_expr(double r, std::string const& im_str) : time_expr(to_string(
 time_expr::time_expr(const char* re_str, double i) : time_expr(std::string(re_str),to_string(i)) {}
 time_expr::time_expr(double r, const char* im_str) : time_expr(to_string(r),std::string(im_str)) {}
 
-time_expr::time_expr(std::string const& str) :
-  re_str(str), _is_real(true) {
+time_expr::time_expr(std::string str) :
+  re_str(std::move(str)), _is_real(true) {
   auto symt = create_sym_table();
   init_re_expr(symt);
 }
 
-time_expr::time_expr(std::string const& re_str, std::string const& im_str) :
-  re_str(re_str), im_str(im_str), _is_real(false) {
+time_expr::time_expr(std::string re_str, std::string im_str) :
+  re_str(std::move(re_str)), im_str(std::move(im_str)), _is_real(false) {
   auto symt = create_sym_table();
   init_re_expr(symt);
   init_im_expr(symt);
@@ -112,7 +113,7 @@ time_expr::time_expr(time_expr const& te) :
   if(!_is_real) init_im_expr(symt);
 }
 
-time_expr::time_expr(time_expr && te) :
+time_expr::time_expr(time_expr && te) noexcept :
   re_str(std::move(te.re_str)),
   im_str(std::move(te.im_str)),
   _is_real(std::move(te._is_real)) {

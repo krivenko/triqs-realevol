@@ -58,7 +58,7 @@ class time_expr : public boost::operators<time_expr>
   exprtk::expression<double> re, im;
   bool _is_real;
 
-  mutable double arg;
+  mutable double arg = {};
 
 public:
 
@@ -67,10 +67,10 @@ public:
   time_expr(double r);
   time_expr(double r, double i);
   time_expr(std::complex<double> const& z);
-  time_expr(std::string const& re_str);
+  time_expr(std::string re_str);
   time_expr(const char* str);
 
-  time_expr(std::string const& re_str, std::string const& im_str);
+  time_expr(std::string re_str, std::string im_str);
   time_expr(const char* re_str, const char* im_str);
   time_expr(std::string const& re_str, double i);
   time_expr(double r, std::string const& im_str);
@@ -78,7 +78,7 @@ public:
   time_expr(double r, const char* im_str);
 
   time_expr(time_expr const&);
-  time_expr(time_expr &&);
+  time_expr(time_expr &&) noexcept;
 
   // Assignments
   time_expr & operator=(double r);
@@ -137,16 +137,16 @@ private:
 
 };
 
-inline time_expr operator ""_te(long double r){ return time_expr(r); }
+inline time_expr operator ""_te(long double r){ return time_expr(double(r)); }
 inline time_expr operator ""_te(const char* expr, std::size_t) { return time_expr(expr); };
 
 }
 
-namespace triqs { namespace utility {
+namespace triqs::utility {
 
 inline bool is_zero(realevol::time_expr const& te, double /* neglected */ = 0) {
   return te.is_zero();
 }
 inline realevol::time_expr conj(realevol::time_expr const& te) { return te.conj(); }
 
-}}
+}

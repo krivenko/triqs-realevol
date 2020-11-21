@@ -28,8 +28,7 @@
 #include <triqs/utility/numeric_ops.hpp>
 #include <boost/pending/disjoint_sets.hpp>
 
-namespace realevol {
-namespace hilbert_space {
+namespace realevol::hilbert_space {
 
 template<typename T> struct triqs_is_zero {
  bool operator()(T x) const {
@@ -273,4 +272,4 @@ class space_partition {
  // Map representative basis state to subspace index
  std::map<index_t, index_t> representative_to_index;
 };
-}}
+}

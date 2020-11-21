@@ -67,9 +67,11 @@ macro(add_realevol_cpp_lib CPPLIBNAME)
 
   # Run clang-tidy if found
   if(CLANG_TIDY_EXECUTABLE)
+    set(CLANG_TIDY_ARGS "-header-filter=^.*/realevol/[a-z0-9_]+\.hpp$ "
+                        "-checks=-cppcoreguidelines-non-private-member-variables-in-classes")
     set_target_properties(${CPPLIBNAME} PROPERTIES
                           CXX_CLANG_TIDY
-                          "${CLANG_TIDY_EXECUTABLE};-header-filter=^.*/realevol/[a-z0-9_]+\.hpp$")
+                          "${CLANG_TIDY_EXECUTABLE};${CLANG_TIDY_ARGS}")
   endif()
 
   # Run cppcheck if found

@@ -31,8 +31,7 @@
 
 #include "../hilbert_space/fundamental_operator_set.hpp"
 
-namespace realevol {
-namespace operators {
+namespace realevol::operators {
 
  using triqs::utility::real_or_complex;
 
@@ -407,5 +406,4 @@ namespace operators {
   return many_body_operator_generic<scalar_t>::make_canonical(hilbert_space::statistic_enum::Boson, true, indices_t{indices...});
  }
 
-}
 }

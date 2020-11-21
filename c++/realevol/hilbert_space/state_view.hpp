@@ -31,8 +31,7 @@
 #include "hilbert_space.hpp"
 #include "state.hpp"
 
-namespace realevol {
-namespace hilbert_space {
+namespace realevol::hilbert_space {
 
 /// Many-body state as a view of a `triqs::arrays::vector` object.
 /**
@@ -210,4 +209,4 @@ state<HilbertSpace, ScalarType, false> make_zero_state(state_view<HilbertSpace, 
  return {st.get_hilbert()};
 }
 
-}}
+}
