@@ -1,18 +1,37 @@
-#!/bin/env pytriqs
+# ##############################################################################
+#
+# realevol - Real time evolution solver based on TRIQS
+#
+# Copyright (C) 2014-2020, I. Krivenko, M. Danilov, P. Kubiczek
+#
+# realevol is free software: you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
+#
+# realevol is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+# A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# realevol (in the file COPYING.txt in this directory). If not, see
+# <http://www.gnu.org/licenses/>.
+#
+# ##############################################################################
 
 import numpy as np
 from scipy.integrate import complex_ode
 from itertools import product
 
-from pytriqs.archive import *
+from h5 import *
 
 M = 6
 fock_dim = 2 ** M
 
 states = [s for s in product(*[range(0,2)]*M)]
 # Sort by the total number of particles
-states.sort(cmp = lambda s1,s2: sum(s1)-sum(s2))
-states = map(lambda s: np.array(s,dtype=int),states)
+states.sort(key = lambda s: sum(s))
+states = list(map(lambda s: np.array(s,dtype=int), states))
 
 ct = [np.matrix(np.zeros((fock_dim,fock_dim)),dtype=complex) for o in range(M)]
 cdt = [np.matrix(np.zeros((fock_dim,fock_dim)),dtype=complex) for o in range(M)]
@@ -28,8 +47,8 @@ canonical_check = np.zeros((M,M),dtype=bool)
 for o1, o2 in product(range(M),range(M)):
     canonical_check[o1,o2] = (cdt[o1]*ct[o2] + ct[o2]*cdt[o1] == np.eye(fock_dim)*(1 if o1==o2 else 0)).all()
 
-print "Canonical anticommutators:"
-print canonical_check
+print("Canonical anticommutators:")
+print(canonical_check)
 
 c1up, c2up, c3up, c1dn, c2dn, c3dn = ct
 cd1up, cd2up, cd3up, cd1dn, cd2dn, cd3dn = cdt
@@ -77,17 +96,18 @@ while SO.successful() and SO.t <= tmax-dt:
     psi.append(SO.y)
 
 avg_names = ("n_1_up","n_2_up","n_3_up","n_1_dn","n_2_dn","n_3_dn","unity")
-avgs = map(lambda op: average(op,psi), (n1up,n2up,n3up,n1dn,n2dn,n3dn))
+avgs = list(map(lambda op: average(op,psi), (n1up,n2up,n3up,n1dn,n2dn,n3dn)))
 avgs.append(np.ones(N_t))
 arch.create_group("Sz_0.5")
+Sz_gr = arch['Sz_0.5']
 
 for name, avg in zip(avg_names,avgs):
-    path = "/Sz_0.5/" + name
-    arch.create_group(path)
-    arch[path + '/vector'] = avg
-    arch[path + '/mesh/min'] = tmin
-    arch[path + '/mesh/max'] = tmax
-    arch[path + '/mesh/size'] = N_t
+    Sz_gr.create_group(name)
+    Sz_gr[name]['vector'] = avg
+    Sz_gr[name].create_group('mesh')
+    Sz_gr[name]['mesh']['min'] = tmin
+    Sz_gr[name]['mesh']['max'] = tmax
+    Sz_gr[name]['mesh']['size'] = N_t
 
 # S_z = 0
 psi0 = np.dot(cd1dn*cd1up*cd2up*cd3dn,vac)
@@ -99,16 +119,15 @@ while SO.successful() and SO.t <= tmax-dt:
     psi.append(SO.y)
 
 avg_names = ("n_1_up","n_2_up","n_3_up","n_1_dn","n_2_dn","n_3_dn","unity")
-avgs = map(lambda op: average(op,psi), (n1up,n2up,n3up,n1dn,n2dn,n3dn))
+avgs = list(map(lambda op: average(op,psi), (n1up,n2up,n3up,n1dn,n2dn,n3dn)))
 avgs.append(np.ones(N_t))
 arch.create_group("Sz_0")
+Sz_gr = arch['Sz_0']
 
 for name, avg in zip(avg_names,avgs):
-    path = "/Sz_0/" + name
-    arch.create_group(path)
-    arch[path + '/vector'] = avg
-    arch[path + '/mesh/min'] = tmin
-    arch[path + '/mesh/max'] = tmax
-    arch[path + '/mesh/size'] = N_t
-
- 
+    Sz_gr.create_group(name)
+    Sz_gr[name]['vector'] = avg
+    Sz_gr[name].create_group('mesh')
+    Sz_gr[name]['mesh']['min'] = tmin
+    Sz_gr[name]['mesh']['max'] = tmax
+    Sz_gr[name]['mesh']['size'] = N_t
