@@ -13,6 +13,16 @@ else()
   endif()
 endif()
 
+# -- Boost --
+find_package(Boost 1.53 REQUIRED)
+
+# -- ARPACK-NG --
+find_package(arpack-ng CONFIG 3.6.0 REQUIRED)
+message(STATUS "Found ARPACK-NG version ${arpack-ng_VERSION}")
+message(STATUS "  arpack_ng_LIBRARIES: ${arpack_ng_LIBRARIES}")
+add_library(arpack INTERFACE)
+target_link_libraries(arpack INTERFACE ${arpack_ng_LIBRARIES})
+
 # -- Cpp2Py --
 if(PythonSupport OR Build_Documentation)
   external_dependency(Cpp2Py
@@ -32,12 +42,10 @@ external_dependency(GTest
   EXCLUDE_FROM_ALL
 )
 
-# -- Boost --
-find_package(Boost 1.53 REQUIRED)
-
-# -- ezARPACK + ARPACK-NG --
+# -- ezARPACK --
 set(Examples OFF CACHE BOOL "")
 set(Tests OFF CACHE BOOL "")
+set(Skip_arpack-ng ON CACHE BOOL "")
 external_dependency(ezARPACK
   VERSION 0.9
   GIT_REPO https://github.com/krivenko/ezARPACK
