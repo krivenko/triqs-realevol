@@ -26,7 +26,7 @@
 
 #include <mpi/mpi.hpp>
 
-#include "common.hpp"
+#include "types.hpp"
 #include "init_state.hpp"
 #include "propagator.hpp"
 

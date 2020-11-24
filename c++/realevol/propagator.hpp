@@ -29,7 +29,7 @@
 #include "hilbert_space/state.hpp"
 #include "hilbert_space/imperative_operator.hpp"
 
-#include "common.hpp"
+#include "types.hpp"
 #include "lanczos_worker.hpp"
 
 namespace realevol {

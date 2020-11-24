@@ -25,7 +25,7 @@
 #include <type_traits>
 #include <vector>
 
-#include "common.hpp"
+#include "types.hpp"
 #include "init_state.hpp"
 #include "worldlines.hpp"
 #include "propagator.hpp"

@@ -27,7 +27,6 @@
 
 #include <triqs/arrays/linalg/eigenelements.hpp>
 
-#include "common.hpp"
 #include "propagator.hpp"
 
 namespace realevol {

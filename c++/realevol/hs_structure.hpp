@@ -28,7 +28,7 @@
 
 #include "hilbert_space/space_partition.hpp"
 
-#include "common.hpp"
+#include "types.hpp"
 
 namespace realevol {
 

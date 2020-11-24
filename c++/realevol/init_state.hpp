@@ -30,7 +30,7 @@
 #include <h5/h5.hpp>
 #include <mpi/mpi.hpp>
 
-#include "common.hpp"
+#include "types.hpp"
 
 namespace realevol {
 
