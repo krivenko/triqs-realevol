@@ -29,6 +29,8 @@
 
 #include "triqs/operators/many_body_operator.hpp"
 #include "compute_2t_obs_parameters.hpp"
+#include "solver_parameters.hpp"
+
 
 namespace realevol {
 
@@ -81,4 +83,109 @@ public:
 
 };
 
+//
+// Expectation values
+//
+
+// Compute expectation value of operator 'op' as a function of time
+expectval_container_t compute_expectval(static_operator_t const& op,
+                                        init_state const& initial_state,
+                                        mesh_t_t const& t_mesh,
+                                        solver_parameters_t const& params,
+                                        mpi::communicator const& comm = {});
+
+//
+// 2-point correlator
+//
+
+// Compute a 2-point correlator of operators 'op1' and 'op2' with their time
+// arguments defined on 't_mesh'.
+correlator_2t_container_t compute_correlator_2t(static_operator_t const& op1,
+                                                static_operator_t const& op2,
+                                                init_state const& initial_state,
+                                                mesh_2t_t const& t_mesh,
+                                                solver_parameters_t const& params,
+                                                mpi::communicator const& comm = {});
+// Compute a 2-point correlator of operators 'op1' and 'op2' with their time
+// arguments defined on a Cartesian product 't_mesh' x 't_mesh'.
+correlator_2t_container_t compute_correlator_2t(static_operator_t const& op1,
+                                                static_operator_t const& op2,
+                                                init_state const& initial_state,
+                                                mesh_t_t const& t_mesh,
+                                                solver_parameters_t const& params,
+                                                mpi::communicator const& comm = {});
+
+//
+// 3-point correlator
+//
+
+// Compute a 3-point correlator of operators 'op1', 'op2' and 'op3' with their time
+// arguments defined on 't_mesh'.
+correlator_3t_container_t compute_correlator_3t(static_operator_t const& op1,
+                                                static_operator_t const& op2,
+                                                static_operator_t const& op3,
+                                                init_state const& initial_state,
+                                                mesh_3t_t const& t_mesh,
+                                                solver_parameters_t const& params,
+                                                mpi::communicator const& comm = {});
+// Compute a 3-point correlator of operators 'op1', 'op2' and 'op3' with their time
+// arguments defined on a Cartesian product 't_mesh' x 't_mesh' x 't_mesh'.
+correlator_3t_container_t compute_correlator_3t(static_operator_t const& op1,
+                                                static_operator_t const& op2,
+                                                static_operator_t const& op3,
+                                                init_state const& initial_state,
+                                                mesh_t_t const& t_mesh,
+                                                solver_parameters_t const& params,
+                                                mpi::communicator const& comm = {});
+
+//
+// Lesser GF
+//
+
+// Compute the lesser GF defined on 't_mesh'.
+block_gf_2t_t compute_g_l(gf_struct_t const& gf_struct,
+                          init_state const& initial_state,
+                          mesh_2t_t const& t_mesh,
+                          solver_parameters_t const& params,
+                          mpi::communicator const& comm = {});
+// Compute the lesser GF defined on a Cartesian product 't_mesh' x 't_mesh'.
+block_gf_2t_t compute_g_l(gf_struct_t const& gf_struct,
+                          init_state const& initial_state,
+                          mesh_t_t const& t_mesh,
+                          solver_parameters_t const& params,
+                          mpi::communicator const& comm = {});
+
+//
+// Greater GF
+//
+
+// Compute the greater GF defined on 't_mesh'.
+block_gf_2t_t compute_g_g(gf_struct_t const& gf_struct,
+                          init_state const& initial_state,
+                          mesh_2t_t const& t_mesh,
+                          solver_parameters_t const& params,
+                          mpi::communicator const& comm = {});
+// Compute the greater GF defined on a Cartesian product 't_mesh' x 't_mesh'.
+block_gf_2t_t compute_g_g(gf_struct_t const& gf_struct,
+                          init_state const& initial_state,
+                          mesh_t_t const& t_mesh,
+                          solver_parameters_t const& params,
+                          mpi::communicator const& comm = {});
+
+//
+// Susceptibility
+//
+
+// Compute the susceptibility defined on 't_mesh'.
+block_gf_2t_t compute_chi(gf_struct_t const& gf_struct,
+                          init_state const& initial_state,
+                          mesh_2t_t const& t_mesh,
+                          solver_parameters_t const& params,
+                          mpi::communicator const& comm = {});
+// Compute the susceptibility defined on a Cartesian product 't_mesh' x 't_mesh'.
+block_gf_2t_t compute_chi(gf_struct_t const& gf_struct,
+                          init_state const& initial_state,
+                          mesh_t_t const& t_mesh,
+                          solver_parameters_t const& params,
+                          mpi::communicator const& comm = {});
 }

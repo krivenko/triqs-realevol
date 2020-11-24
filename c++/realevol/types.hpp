@@ -38,6 +38,16 @@ using namespace triqs::gfs;
 using namespace realevol::operators;
 using namespace realevol::hilbert_space;
 
+// Time meshes
+using mesh_t_t = gf_mesh<retime>;
+using mesh_2t_t = gf_mesh<cartesian_product<retime, retime>>;
+using mesh_3t_t = gf_mesh<cartesian_product<retime, retime, retime>>;
+
+// Multi-dimensional GF containers for computed correlation functions
+using expectval_container_t = gf<retime, scalar_valued>;
+using correlator_2t_container_t = gf<cartesian_product<retime, retime>, scalar_valued>;
+using correlator_3t_container_t = gf<cartesian_product<retime, retime, retime>, scalar_valued>;
+
 using gf_2t_t = gf<cartesian_product<retime, retime>>;
 using block_gf_2t_t = block_gf<cartesian_product<retime, retime>>;
 using gf_2t_view = gf_view<cartesian_product<retime, retime>>;

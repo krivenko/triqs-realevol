@@ -1,0 +1,52 @@
+/*******************************************************************************
+ *
+ * realevol - Real time evolution solver based on TRIQS
+ *
+ * Copyright (C) 2014-2020, I. Krivenko, M. Danilov, P. Kubiczek
+ *
+ * TRIQS is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * TRIQS is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * TRIQS. If not, see <http://www.gnu.org/licenses/>.
+ *
+ ******************************************************************************/
+#pragma once
+
+#include <map>
+#include <utility>
+
+#include "types.hpp"
+#include "propagator.hpp"
+
+namespace realevol {
+
+// Parameters of the short time propagation solver
+struct solver_parameters_t {
+
+ /// Planck's constant
+ double hbar = 1.0;
+
+ /// Hamiltonian interpolation between time slices
+ h_interpolation hamiltonian_interpol = Rectangle;
+
+ /// Use Lanczos algorithm to exponentiate matrices of this size or bigger
+ int lanczos_min_matrix_size = 11;
+
+ /// Lanczos convergence threshold for the GS energy, for each invariant subspace
+ std::map<long, double> lanczos_gs_energy_tol = {};
+
+ /// Maximal dimension of the Krylov space, for each invariant subspace
+ std::map<long, int> lanczos_max_krylov_dim = {};
+
+ solver_parameters_t() = default;
+};
+
+}
