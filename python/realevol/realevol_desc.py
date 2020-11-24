@@ -24,7 +24,7 @@ from cpp2py.wrap_generator import *
 module = module_(full_name = "realevol", doc = "The Real-time evolution solver", app_name = "realevol")
 
 module.add_imports('triqs.gf',
-                   'realevol.texpr', 'realevol.interp',
+                   'realevol.texpr', 'realevol.tinterp',
                    'realevol.operators_texpr', 'realevol.operators_tinterp',
                    'realevol.init_state')
 
