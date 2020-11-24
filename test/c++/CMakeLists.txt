@@ -77,7 +77,6 @@ set(SIMPLE_TESTS time_expr.cpp
                  many_body_operator.cpp
                  hilbert_space.cpp
                  space_partition.cpp
-                 mesh_container.cpp
                  lanczos_worker.cpp
                  hs_structure.cpp
                  sort2.cpp
