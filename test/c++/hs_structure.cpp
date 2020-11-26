@@ -20,6 +20,7 @@
  ******************************************************************************/
 
 #include <set>
+#include <vector>
 
 #include <triqs/test_tools/arrays.hpp>
 
@@ -33,6 +34,55 @@ using namespace realevol::operators;
 using namespace realevol::hilbert_space;
 
 using state_set_t = std::set<fock_state_t>;
+
+void test_make_monomial_connections(hilbert_space_structure<time_expr_operator_t> const& hss) {
+
+  using realevol::hilbert_space::statistic_enum::Fermion;
+  using realevol::hilbert_space::statistic_enum::Boson;
+  canonical_ops_t ops[] = {
+    canonical_ops_t{Fermion, true, {"dn", 0}},
+    canonical_ops_t{Fermion, false, {"dn", 0}},
+    canonical_ops_t{Fermion, true, {"up", 0}},
+    canonical_ops_t{Fermion, false, {"up", 0}},
+    canonical_ops_t{Boson, true, {"B", 0}},
+    canonical_ops_t{Boson, false, {"B", 0}}
+  };
+
+  auto get_ref_conn = [&hss](bool dagger,
+                             realevol::hilbert_space::statistic_enum stat,
+                             int linear_index) {
+    auto c = (dagger ? hss.creation_connection : hss.annihilation_connection)
+             [stat](linear_index, range());
+    return std::vector<int>(c.begin(), c.end());
+  };
+
+  std::vector<int> ref_conns[] = {get_ref_conn(true, Fermion, 0),
+                                  get_ref_conn(false, Fermion, 0),
+                                  get_ref_conn(true, Fermion, 1),
+                                  get_ref_conn(false, Fermion, 1),
+                                  get_ref_conn(true, Boson, 0),
+                                  get_ref_conn(false, Boson, 0)};
+
+  for(int o = 0; o < 6; ++o) {
+    EXPECT_EQ(hss.make_monomial_connections(monomial_t{ops[o]}), ref_conns[o]);
+  }
+
+  auto compose = [](std::vector<int> const& v1, std::vector<int> const& v2) {
+    std::vector<int> v(v1);
+    for(int n = 0; n < v.size(); ++n) {
+      if(v[n] == -1) continue;
+      v[n] = v2[v[n]];
+    }
+    return v;
+  };
+
+  for(int o1 = 0; o1 < 6; ++o1) {
+    for(int o2 = 0; o2 < 6; ++o2) {
+      auto conn = hss.make_monomial_connections(monomial_t{ops[o1], ops[o2]});
+      EXPECT_EQ(conn, compose(ref_conns[o2], ref_conns[o1]));
+    }
+  }
+}
 
 TEST(hs_structure, BosonFermion) {
 
@@ -63,6 +113,8 @@ TEST(hs_structure, BosonFermion) {
  }
  for(fock_state_t i = 0; i < 32; ++i) part_ref.insert(state_set_t{i});
  EXPECT_EQ(part_ref, part);
+
+ test_make_monomial_connections(hss);
 }
 
 TEST(hs_structure, BosonFermionCoupled) {
@@ -104,6 +156,8 @@ TEST(hs_structure, BosonFermionCoupled) {
  }
 
  EXPECT_EQ(part_ref, part);
+
+ test_make_monomial_connections(hss);
 }
 
 MAKE_MAIN;
