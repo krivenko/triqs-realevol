@@ -46,7 +46,7 @@ class test_star_texpr(unittest.TestCase):
         dt = te("0.1*(1-exp(-5*t))")
 
         fops = set(product(spin_names,range(n_bath+1)))
-        gf_struct = {'dn':[0], 'up':[0]}
+        gf_struct = [('dn', [0]), ('up', [0])]
         chi_indices = [('dn',0),('up',0)]
 
         t_max = 5.0

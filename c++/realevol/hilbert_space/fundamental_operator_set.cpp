@@ -68,8 +68,8 @@ namespace realevol::hilbert_space {
    return v;
   }
 
-  fundamental_operator_set::indices_t to_indices(std::vector<std::string> const& v) {
-   fundamental_operator_set::indices_t indices; // list of indices of this C, C^+ op
+  indices_t to_indices(std::vector<std::string> const& v) {
+   indices_t indices; // list of indices of this C, C^+ op
    for (auto& x : v)
     if (!x.empty()) indices.push_back(string_to_variant(x));
    return indices;

@@ -112,8 +112,8 @@ TEST(hilbert_space, hilbert_space) {
  EXPECT_EQ(520, hs1.get_fock_state(520)); // Fock state for index 520
  EXPECT_EQ(520, hs1.get_state_index(hs1.get_fock_state(520))); // index of fock state 120
 
- std::set<hs::fundamental_operator_set::indices_t> ind_f = {};
- std::multiset<hs::fundamental_operator_set::indices_t> ind_b = {};
+ std::set<hs::indices_t> ind_f = {};
+ std::multiset<hs::indices_t> ind_b = {};
  // Fock state for vacuum
  EXPECT_EQ(0, hs1.get_fock_state(fop, ind_f));
  EXPECT_EQ(0, hs1.get_fock_state(fop, ind_f, ind_b));

@@ -39,7 +39,7 @@ namespace realevol::operators {
  template <typename ScalarType> class many_body_operator_generic;
 
  /// The indices of the C, C^+, A, A^+ operators are a vector of int/string
- using indices_t = realevol::hilbert_space::fundamental_operator_set::indices_t;
+ using indices_t = realevol::hilbert_space::indices_t;
 
  /// The user class
  using many_body_operator = many_body_operator_generic<real_or_complex>;

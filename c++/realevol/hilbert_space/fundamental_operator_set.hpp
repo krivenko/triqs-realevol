@@ -34,8 +34,11 @@
 
 namespace realevol::hilbert_space {
 
+ /// Sequence of indices (`std::vector` of int/string variant objects)
+ using indices_t = std::vector<std::variant<int, std::string>>;
+
  /// Structure of the Green's function
- using gf_struct_t = std::map<std::string,std::vector<std::variant<int, std::string>>>;
+ using gf_struct_t = std::vector<std::pair<std::string, std::vector<std::variant<int, std::string>>>>;
 
  /// The statistics: Boson or Fermion
  enum statistic_enum {Boson, Fermion};
@@ -48,9 +51,6 @@ namespace realevol::hilbert_space {
  */
 class fundamental_operator_set {
  public:
-
- /// Sequence of indices (`std::vector` of int/string variant objects)
- using indices_t = std::vector<std::variant<int, std::string>>;
 
  /// The set represented as a pair of plain `std::vector` (for fermions and bosons)
  using reduction_t = std::pair<std::vector<indices_t>,std::vector<indices_t>>;

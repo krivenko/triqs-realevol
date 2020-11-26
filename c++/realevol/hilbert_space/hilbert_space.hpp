@@ -160,8 +160,8 @@ class hilbert_space {
    @return Fock state
  */
  fock_state_t get_fock_state(fundamental_operator_set const &fops,
-                             std::set<fundamental_operator_set::indices_t> const& fermion_indices,
-                             std::multiset<fundamental_operator_set::indices_t> const& boson_indices = {}
+                             std::set<indices_t> const& fermion_indices,
+                             std::multiset<indices_t> const& boson_indices = {}
                             ) const {
   fock_state_t f = 0;
   for(auto const& index : fermion_indices) f += fock_state_t(1) << fops.pos(index, Fermion);
