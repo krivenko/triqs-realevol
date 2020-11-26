@@ -90,12 +90,13 @@ public:
 
  // Do the actual observable calculation for one worldline
  template<h_interpolation HInterpol>
- void operator()(worldline_desc_t const& wl, gf_2t_t & obs,
+ void operator()(worldline_desc_t<2> const& wl, gf_2t_t & obs,
                  std::integral_constant<h_interpolation,HInterpol>) const {
 
-  auto const& left_hs = subspaces[wl.left_sp_index];
-  auto const& middle_hs = subspaces[wl.middle_sp_index];
-  auto const& right_hs = subspaces[wl.right_sp_index];
+
+  auto const& left_hs = subspaces[wl.sp_indices[2]];
+  auto const& middle_hs = subspaces[wl.sp_indices[1]];
+  auto const& right_hs = subspaces[wl.sp_indices[0]];
 
   auto get_gs_energy_tol = [this](int spn) {
    auto it = lanczos_gs_energy_tol.find(spn);
@@ -107,20 +108,20 @@ public:
   };
 
   auto t_mesh = std::get<0>(obs.mesh());
-  propagator<HScalarType> left_prop(h, left_hs, t_mesh, hbar, is_static_sp[wl.left_sp_index], HInterpol,
+  propagator<HScalarType> left_prop(h, left_hs, t_mesh, hbar, is_static_sp[wl.sp_indices[2]], HInterpol,
                                     lanczos_min_matrix_size,
-                                    get_gs_energy_tol(wl.left_sp_index),
-                                    get_max_krylov_dim(wl.left_sp_index)
+                                    get_gs_energy_tol(wl.sp_indices[2]),
+                                    get_max_krylov_dim(wl.sp_indices[2])
                                    );
-  propagator<HScalarType> middle_prop(h, middle_hs, t_mesh, hbar, is_static_sp[wl.middle_sp_index], HInterpol,
+  propagator<HScalarType> middle_prop(h, middle_hs, t_mesh, hbar, is_static_sp[wl.sp_indices[1]], HInterpol,
                                       lanczos_min_matrix_size,
-                                      get_gs_energy_tol(wl.middle_sp_index),
-                                      get_max_krylov_dim(wl.middle_sp_index)
+                                      get_gs_energy_tol(wl.sp_indices[1]),
+                                      get_max_krylov_dim(wl.sp_indices[1])
                                     );
-  propagator<HScalarType> right_prop(h, right_hs, t_mesh, hbar, is_static_sp[wl.right_sp_index], HInterpol,
+  propagator<HScalarType> right_prop(h, right_hs, t_mesh, hbar, is_static_sp[wl.sp_indices[0]], HInterpol,
                                      lanczos_min_matrix_size,
-                                     get_gs_energy_tol(wl.right_sp_index),
-                                     get_max_krylov_dim(wl.right_sp_index)
+                                     get_gs_energy_tol(wl.sp_indices[0]),
+                                     get_max_krylov_dim(wl.sp_indices[0])
                                     );
 
   auto const& fops = initial_state.get_fops();
@@ -129,27 +130,34 @@ public:
   auto const& wst = initial_state.get_weighted_states()[wl.weighted_state_index];
 
   using op_with_map_t = imperative_operator<sub_hilbert_space,dcomplex,true>;
-  op_with_map_t A; // operator connecting middle_hs to left_hs
-  op_with_map_t B; // operator connecting right_hs to middle_hs
-  dcomplex coeff = wst.weight;
 
-  switch(wl.observable) {
-   case worldline_desc_t::GreaterGf:
-    A = op_with_map_t(c(wl.index1), fops, full_hs, c_conn[fops[wl.index1]], &subspaces);
-    B = op_with_map_t(c_dag(wl.index2), fops, full_hs, cdag_conn[fops[wl.index2]], &subspaces);
-    coeff *= -1i / hbar;
-    break;
-   case worldline_desc_t::LesserGf:
-    A = op_with_map_t(c_dag(wl.index2), fops, full_hs, cdag_conn[fops[wl.index2]], &subspaces);
-    B = op_with_map_t(c(wl.index1), fops, full_hs, c_conn[fops[wl.index1]], &subspaces);
-    coeff *= 1i / hbar;
-    break;
-   case worldline_desc_t::Susceptibility:
-    A = op_with_map_t(n(wl.index1), fops, full_hs, n_conn[fops[wl.index1]], &subspaces);
-    B = op_with_map_t(n(wl.index2), fops, full_hs, n_conn[fops[wl.index2]], &subspaces);
-    coeff *= -1i / hbar;
-    break;
-  }
+  // FIXME This lambda will go away as a result of the solver interface rewrite
+  auto const& select_conn = [&](monomial_t const& m) -> std::vector<int> const& {
+    if(m.size() == 1 && m[0].dagger == true) // c^+
+      return cdag_conn[fops[m[0].indices]];
+    else if(m.size() == 1 && m[0].dagger == false) // c
+      return c_conn[fops[m[0].indices]];
+    else // n
+      return n_conn[fops[m[0].indices]];
+  };
+
+  // operator connecting middle_hs to left_hs
+  auto A = op_with_map_t(
+    many_body_operator(1, wl.M[1]),
+    fops,
+    full_hs,
+    select_conn(wl.M[1]),
+    &subspaces
+  );
+  // operator connecting right_hs to middle_hs
+  auto B = op_with_map_t(
+    many_body_operator(1, wl.M[0]),
+    fops,
+    full_hs,
+    select_conn(wl.M[0]),
+    &subspaces
+  );
+  dcomplex coeff = wl.factor * wst.weight;
 
   // Worldline contribution is evaluated as
   // coeff * <bra_st(*A_it)| A U(*A_it,*B_it) B |ket_st(*B_it)>
@@ -173,7 +181,7 @@ public:
    ket_st = psi_0;
    int B_index_prev = 0;
    for(int B_index = 0; B_index < t_mesh.size(); B_index++) {
-    if(!(wl.observable == worldline_desc_t::LesserGf ?
+    if(!(wl.observable == worldline_desc_t<2>::LesserGf ?
       t_selector(t_mesh[B_index], t_mesh[A_index]) :
       t_selector(t_mesh[A_index], t_mesh[B_index])))
       continue;
@@ -184,7 +192,7 @@ public:
     middle_prop(middle_st, B_index, A_index);
     A.apply(middle_st, a_st);
 
-    (wl.observable == worldline_desc_t::LesserGf ?
+    (wl.observable == worldline_desc_t<2>::LesserGf ?
      obs[{B_index, A_index}] : obs[{A_index, B_index}])
      (wl.inner_index1, wl.inner_index2) += coeff * dot_product(bra_st, a_st);
 

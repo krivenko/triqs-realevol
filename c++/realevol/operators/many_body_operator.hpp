@@ -23,6 +23,7 @@
 #include <ostream>
 #include <cmath>
 #include <algorithm>
+#include <utility>
 
 #include <boost/operators.hpp>
 #include <triqs/utility/real_or_complex.hpp>
@@ -126,6 +127,11 @@ namespace realevol::operators {
   explicit many_body_operator_generic(scalar_t const& x) {
    using triqs::utility::is_zero;
    if (!is_zero(x)) monomials.insert({{}, x});
+  }
+
+  explicit many_body_operator_generic(scalar_t const& x, monomial_t m) {
+    using triqs::utility::is_zero;
+    if (!is_zero(x)) monomials.insert({std::move(m), x});
   }
 
   template <typename S> many_body_operator_generic& operator=(many_body_operator_generic<S> const& x) {

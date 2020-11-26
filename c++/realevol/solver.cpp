@@ -242,16 +242,19 @@ void solver::compute_2t_obs(HamiltonianType const& h_, compute_2t_obs_parameters
  }
 
  // Generate all contributing world lines
- worldlines_maker<HamiltonianType> wlm(*initial_state, hs_struct, subspace_branchings);
+ worldlines_maker<HamiltonianType> wlm(*initial_state,
+                                       hs_struct,
+                                       subspace_branchings,
+                                       params.hbar);
 
  auto g_g_wl = params.compute_g_g ?
-               wlm.make_gf_worldlines(gf_struct, true) : std::vector<worldline_desc_t>();
+               wlm.make_gf_worldlines(gf_struct, true) : std::vector<worldline_desc_t<2>>();
  check_signals();
  auto g_l_wl = params.compute_g_l ?
-               wlm.make_gf_worldlines(gf_struct, false) : std::vector<worldline_desc_t>();
+               wlm.make_gf_worldlines(gf_struct, false) : std::vector<worldline_desc_t<2>>();
  check_signals();
  auto chi_wl = params.compute_chi ?
-               wlm.make_chi_worldlines(chi_indices) : std::vector<worldline_desc_t>();
+               wlm.make_chi_worldlines(chi_indices) : std::vector<worldline_desc_t<2>>();
  check_signals();
 
  long nwl = 0;
@@ -269,7 +272,7 @@ void solver::compute_2t_obs(HamiltonianType const& h_, compute_2t_obs_parameters
   if(params.compute_chi) print_worldlines(chi_wl, "the susceptibility:");
  }
 
- std::vector<worldline_desc_t> all_worldlines;
+ std::vector<worldline_desc_t<2>> all_worldlines;
  all_worldlines.reserve(g_g_wl.size() + g_l_wl.size() + chi_wl.size());
  for(auto && wl : {g_g_wl, g_l_wl, chi_wl})
   std::move(wl.begin(), wl.end(), std::back_inserter(all_worldlines));
@@ -290,17 +293,17 @@ void solver::compute_2t_obs(HamiltonianType const& h_, compute_2t_obs_parameters
                                   );
 
  auto choose_obs =
- [this](worldline_desc_t const& wl, bool verbose, long nwl) -> gf_2t_t& {
+ [this](worldline_desc_t<2> const& wl, bool verbose, long nwl) -> gf_2t_t& {
   if(verbose)
    std::cout << "[Node " << comm.rank() << "] Evaluating world line " << nwl;
   switch(wl.observable) {
-   case worldline_desc_t::GreaterGf:
+   case worldline_desc_t<2>::GreaterGf:
     if(verbose) std::cout << " (greater GF component)" << std::endl;
     return g_g[wl.block_index];
-   case worldline_desc_t::LesserGf:
+   case worldline_desc_t<2>::LesserGf:
     if(verbose) std::cout << " (lesser GF component)" << std::endl;
     return g_l[wl.block_index];
-   case worldline_desc_t::Susceptibility:
+   case worldline_desc_t<2>::Susceptibility:
     if(verbose) std::cout << " (susceptibility component)" << std::endl;
     return chi;
   }
