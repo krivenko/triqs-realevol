@@ -23,16 +23,15 @@
 \begin{document}
 \maketitle
 
-The Lanczos short time propagation solver (\realevol) is designed to solve models of many-body quantum systems with interacting fermions and bosons out of thermodynamical equilibrium. It is based on TRIQS library version 1.4.x. Similarly to other TRIQS applications, \realevol\ is written in C++14 and comes with a Python interface, which allows to run physical simulations by writing simple Python scripts.
+The Lanczos short time propagation solver (\realevol) is designed to solve models of many-body quantum systems with interacting fermions and bosons out of thermodynamical equilibrium. It is based on TRIQS library version 3.0.x. Similarly to other TRIQS applications, \realevol\ is written in C++17 and comes with a Python interface, which allows to run physical simulations by writing simple Python scripts.
 
 Besides TRIQS, \realevol\ has the following prerequisites:
 \begin{itemize}
     \item Boost C++ libraries, version 1.53 or newer (headers only);
     \item A working MPI implementation;
-    \item A recent version of ARPACK-NG (\url{https://github.com/opencollab/arpack-ng});
-    \item \texttt{triqs\_arpack} version 0.5, coinstalled with TRIQS
-    (\url{https://github.com/krivenko/triqs_arpack/tree/0.5}).
+    \item ARPACK-NG version 3.6.0 or newer (\url{https://github.com/opencollab/arpack-ng});
 \end{itemize}
+The step-by-step installation instructions are given in the \texttt{README.md} file in the root source directory.
 
 In \realevol\ Python scripts, time dependence of operators can be specified in 
 two ways.
@@ -48,19 +47,6 @@ two ways.
     constructed on a time mesh from a user-provided \texttt{NumPy} array of 
     complex values.
 \end{itemize}
-
-In order to ease installation of \realevol\ and of its prerequisites, I wrote a
-shell script called \texttt{build\_realevol\_and\_deps.sh} (to be found in \texttt{/scripts} subdirectory). When run, it tries to find the source codes of \realevol\ in subdirectory \texttt{\$(pwd)/realevol.git}. It also creates two more subdirectories in the current directory,
-\begin{itemize}
-    \item \texttt{\$(pwd)/build}, to place distributives and build files of TRIQS, ARPACK-NG, \texttt{triqs\_arpack} and \realevol;
-    \item \texttt{\$(pwd)/installed}, as the installation directory for \realevol\ and the prerequisites.
-\end{itemize}
-
-The installation procedure can be tweaked by changing the header section of
-\texttt{build\_realevol\_and\_deps.sh}:
-
-\lstinputlisting[language=bash, firstline=3, lastline=11]
-    {../../scripts/build_realevol_and_deps.sh}
 
 \section{\label{sec:formulation}Problem formulation}
 \subsection{\label{sec:formulation:space}States space}
@@ -502,7 +488,7 @@ An alternative to the \texttt{TExpr} object is the linear interpolator object
 \texttt{TInterp}.
 
 \begin{lstlisting}[language=Python]
-from pytriqs.gf.local import MeshReTime     # Real time mesh
+from triqs.gf import MeshReTime             # Real time mesh
 from realevol.tinterp import TInterp        # Linear interpolator
 from realevol.operators_tinterp import *    # Second quantization operators
 \end{lstlisting}
@@ -551,7 +537,7 @@ The Python object solver \texttt{Solver} is central to any \realevol\ simulation
 
     \item Set the initial state to be used in the simulation (Sec.~ \ref{sec:init_state}).
     \begin{lstlisting}[language=Python]
-    S.initial_state = init_state
+    S.set_initial_state(init_state)
     \end{lstlisting}
 
     \item Compute the two-times correlation functions.
@@ -586,8 +572,8 @@ The Python object solver \texttt{Solver} is central to any \realevol\ simulation
 
 \section{\label{sec:example}Simulation example}
 
-The following Python script is to be run as \texttt{pytriqs example.py} or
-\texttt{mpirun -n \$NPROCS pytriqs example.py}.
+The following Python script is to be run as \texttt{python3 example.py} or
+\texttt{mpirun -n \$NPROCS python3 example.py}.
 
 \hrule
 

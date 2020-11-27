@@ -4,13 +4,12 @@
 # H(t) = eps0 * (n_up + n_dn) + U n_up n_dn + omega * a^+ a
 #      + g(t) * (n_up + n_dn) * (a^+ + a),
 
-from pytriqs.archive import HDFArchive  # HDF5 archive interface
+from h5 import HDFArchive  # HDF5 archive interface
 from realevol.texpr import TExpr        # Time-dependent expressions
 from realevol.operators_texpr import *  # Time-dependent second quantization operators
-from realevol.gf_retime import *        # Green's function of two times
 from realevol.init_state import *       # Routines to prepare initial states
 from realevol.realevol import *         # Solver object
-import pytriqs.utility.mpi as mpi       # MPI utilities
+import triqs.utility.mpi as mpi       # MPI utilities
 
 # Model parameters
 T = 0.5                         # Temperature of the equilibrium initial state
@@ -58,7 +57,7 @@ H = H0 + g * (n('up',0) + n('dn',0)) * (a_dag('B',0) + a('B',0))
 S = Solver(gf_struct, chi_indices, t_max = t_max, n_t = n_t)
 
 # Set initial state
-S.initial_state = init_state
+S.set_initial_state(init_state)
 
 # Parameters for GF/Chi calculation
 gf_params = {}
