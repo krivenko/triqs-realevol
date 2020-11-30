@@ -108,7 +108,7 @@ add_realevol_cpp_lib(realevol_time_interp_c time_interp.cpp)
 
 # Build main solver library
 add_realevol_cpp_lib(realevol_c solver.cpp init_state.cpp make_init_state.cpp
-                     propagator.cpp utility.cpp
+                     propagator.cpp dynamical_trace.cpp utility.cpp
                      operators/many_body_operator.cpp
                      hilbert_space/fundamental_operator_set.cpp)
 

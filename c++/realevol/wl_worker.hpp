@@ -30,6 +30,7 @@
 #include "worldlines.hpp"
 #include "propagator.hpp"
 #include "time_point_selector.hpp"
+#include "dynamical_trace.hpp"
 
 namespace realevol {
 
@@ -41,6 +42,7 @@ class wl_worker {
 
  init_state const& initial_state;
  hilbert_space_structure<HamiltonianType> const& hss;
+ HamiltonianType const& h_;
  op_on_subspace_t<HScalarType> h;
  double hbar;
 
@@ -64,6 +66,7 @@ public:
            std::map<long,int> const& lanczos_max_krylov_dim
           ) :
  initial_state(initial_state), hss(hss),
+ h_(h),
  h(h, initial_state.get_fops(), initial_state.get_full_hs()), hbar(hbar),
  subspaces(hss.sub_hilbert_spaces),
  is_static_sp(is_static_sp),
@@ -93,111 +96,32 @@ public:
  void operator()(worldline_desc_t<2> const& wl, gf_2t_t & obs,
                  std::integral_constant<h_interpolation,HInterpol>) const {
 
-
-  auto const& left_hs = subspaces[wl.sp_indices[2]];
-  auto const& middle_hs = subspaces[wl.sp_indices[1]];
-  auto const& right_hs = subspaces[wl.sp_indices[0]];
-
-  auto get_gs_energy_tol = [this](int spn) {
-   auto it = lanczos_gs_energy_tol.find(spn);
-   return it != lanczos_gs_energy_tol.end() ? it->second : -1;
-  };
-  auto get_max_krylov_dim = [this](int spn) {
-   auto it = lanczos_max_krylov_dim.find(spn);
-   return it != lanczos_max_krylov_dim.end() ? it->second : -1;
-  };
-
   auto t_mesh = std::get<0>(obs.mesh());
-  propagator<HScalarType> left_prop(h, left_hs, t_mesh, hbar, is_static_sp[wl.sp_indices[2]], HInterpol,
-                                    lanczos_min_matrix_size,
-                                    get_gs_energy_tol(wl.sp_indices[2]),
-                                    get_max_krylov_dim(wl.sp_indices[2])
-                                   );
-  propagator<HScalarType> middle_prop(h, middle_hs, t_mesh, hbar, is_static_sp[wl.sp_indices[1]], HInterpol,
-                                      lanczos_min_matrix_size,
-                                      get_gs_energy_tol(wl.sp_indices[1]),
-                                      get_max_krylov_dim(wl.sp_indices[1])
-                                    );
-  propagator<HScalarType> right_prop(h, right_hs, t_mesh, hbar, is_static_sp[wl.sp_indices[0]], HInterpol,
-                                     lanczos_min_matrix_size,
-                                     get_gs_energy_tol(wl.sp_indices[0]),
-                                     get_max_krylov_dim(wl.sp_indices[0])
-                                    );
 
-  auto const& fops = initial_state.get_fops();
-  auto const& full_hs = initial_state.get_full_hs();
+  auto lanczos_params = lanczos_params_t{lanczos_min_matrix_size,
+                                         lanczos_gs_energy_tol,
+                                         lanczos_max_krylov_dim};
 
-  auto const& wst = initial_state.get_weighted_states()[wl.weighted_state_index];
-
-  using op_with_map_t = imperative_operator<sub_hilbert_space,dcomplex,true>;
-
-  // FIXME This lambda will go away as a result of the solver interface rewrite
-  auto const& select_conn = [&](monomial_t const& m) -> std::vector<int> const& {
-    if(m.size() == 1 && m[0].dagger == true) // c^+
-      return cdag_conn[fops[m[0].indices]];
-    else if(m.size() == 1 && m[0].dagger == false) // c
-      return c_conn[fops[m[0].indices]];
-    else // n
-      return n_conn[fops[m[0].indices]];
-  };
-
-  // operator connecting middle_hs to left_hs
-  auto A = op_with_map_t(
-    many_body_operator(1, wl.M[1]),
-    fops,
-    full_hs,
-    select_conn(wl.M[1]),
-    &subspaces
+  dynamical_trace<2, HamiltonianType> trace(
+    initial_state,
+    h_,
+    hbar,
+    hss,
+    is_static_sp,
+    t_mesh,
+    HInterpol,
+    lanczos_params
   );
-  // operator connecting right_hs to middle_hs
-  auto B = op_with_map_t(
-    many_body_operator(1, wl.M[0]),
-    fops,
-    full_hs,
-    select_conn(wl.M[0]),
-    &subspaces
-  );
-  dcomplex coeff = wl.factor * wst.weight;
 
-  // Worldline contribution is evaluated as
-  // coeff * <bra_st(*A_it)| A U(*A_it,*B_it) B |ket_st(*B_it)>
+  auto result = correlator_2t_container_t{{t_mesh, t_mesh}};
+  trace(wl, result);
 
-  // |ket_st(*B_it)> = U(*B_it,0)|psi_0>
-  auto psi_0 = project<state_on_subspace_t>(wst.state, right_hs);
-  auto ket_st = psi_0;
-  // <bra_st(*A_it)| = <psi_0| U(0,*A_it)
-  // |bra_st(*A_it)> = U(*A_it,0) |psi_0>
-  auto bra_st = project<state_on_subspace_t>(wst.state, left_hs);
-
-  // |middle_st(*A_it)> = U(*A_it,*B_it) B |ket_st(*B_it)>
-  auto middle_st = state_on_subspace_t(middle_hs);
-  // |a_st(*A_it)> = A |middle_st(*A_it)>
-  auto a_st = state_on_subspace_t(left_hs);
-
-  int A_index_prev = 0;
-  for(int A_index = 0; A_index < t_mesh.size(); A_index_prev = A_index++) {
-   left_prop(bra_st, A_index_prev, A_index);
-
-   ket_st = psi_0;
-   int B_index_prev = 0;
-   for(int B_index = 0; B_index < t_mesh.size(); B_index++) {
-    if(!(wl.observable == worldline_desc_t<2>::LesserGf ?
-      t_selector(t_mesh[B_index], t_mesh[A_index]) :
-      t_selector(t_mesh[A_index], t_mesh[B_index])))
-      continue;
-
-    right_prop(ket_st, B_index_prev, B_index);
-
-    B.apply(ket_st, middle_st);
-    middle_prop(middle_st, B_index, A_index);
-    A.apply(middle_st, a_st);
-
-    (wl.observable == worldline_desc_t<2>::LesserGf ?
-     obs[{B_index, A_index}] : obs[{A_index, B_index}])
-     (wl.inner_index1, wl.inner_index2) += coeff * dot_product(bra_st, a_st);
-
-     B_index_prev = B_index;
-   }
+  for(auto t1 : t_mesh) {
+    for(auto t2 : t_mesh) {
+      (wl.observable == worldline_desc_t<2>::LesserGf ?
+        obs[{t2, t1}] : obs[{t1, t2}])(wl.inner_index1, wl.inner_index2)
+          += result[{t1, t2}];
+    }
   }
  }
 

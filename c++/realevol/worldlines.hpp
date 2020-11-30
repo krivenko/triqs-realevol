@@ -80,7 +80,7 @@ template<std::size_t NPoints> struct worldline_desc_t {
       os << desc.M[n];
       os << "|" << desc.sp_indices[n] << ">";
     }
-    os << "weighted_state " << desc.weighted_state_index;
+    os << " weighted_state " << desc.weighted_state_index;
     return os;
   }
 };
