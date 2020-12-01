@@ -44,6 +44,7 @@ bool operator<(monomial_t const& m1, monomial_t const& m2) {
 
 std::ostream& operator<<(std::ostream& os, monomial_t const& m) {
  auto it = std::begin(m), end_it = std::end(m);
+ if(it == end_it) return os;
  auto next_it = it; ++next_it;
  int power = 1;
  for(;it != end_it; ++it, ++next_it) {
