@@ -29,6 +29,7 @@
 #include "init_state.hpp"
 #include "worldlines.hpp"
 #include "propagator.hpp"
+#include "time_point_selector.hpp"
 
 namespace realevol {
 
@@ -84,6 +85,9 @@ class dynamical_trace {
   // Are all matrix elements of H(t) time-independent on a given subspace?
   std::vector<bool> const& is_static_sp;
 
+  // Selector of time point combinations to process.
+  time_point_selector<NPoints> const& t_selector;
+
   // Hamiltonian H(t)
   op_on_subspace_t<HScalarType> h;
 
@@ -107,6 +111,7 @@ public:
                   double hbar,
                   hilbert_space_structure<HamiltonianType> const& hss,
                   std::vector<bool> const& is_static_sp,
+                  time_point_selector<NPoints> const& t_selector,
                   gf_mesh<retime> const& t_mesh,
                   h_interpolation HInterpol,
                   lanczos_params_t const& lanczos_params);

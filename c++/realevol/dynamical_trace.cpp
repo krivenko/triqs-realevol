@@ -36,6 +36,7 @@ dynamical_trace<NPoints, HamiltonianType>::dynamical_trace(
   double hbar,
   hilbert_space_structure<HamiltonianType> const& hss,
   std::vector<bool> const& is_static_sp,
+  time_point_selector<NPoints> const& t_selector,
   gf_mesh<retime> const& t_mesh,
   h_interpolation HInterpol,
   lanczos_params_t const& lanczos_params
@@ -43,6 +44,7 @@ dynamical_trace<NPoints, HamiltonianType>::dynamical_trace(
   initial_state(initial_state),
   hss(hss),
   is_static_sp(is_static_sp),
+  t_selector(t_selector),
   h(h, initial_state.get_fops(), initial_state.get_full_hs()),
   hbar(hbar),
   t_mesh(t_mesh),
@@ -70,6 +72,31 @@ void add_to_element(time_container_t<NPoints> & gf,
                     dcomplex val
                    ) {
   add_to_element_impl(gf, t_indices, val, std::make_index_sequence<NPoints>());
+}
+
+//
+// Call time_point_selector<NPoints> with a mesh object and a std::array
+// of time point indices.
+//
+
+template<std::size_t... Ints>
+bool call_t_selector_impl(time_point_selector<sizeof...(Ints)> const& t_selector,
+                          gf_mesh<retime> const& t_mesh,
+                          std::array<int, sizeof...(Ints)> const& t_indices,
+                          std::index_sequence<Ints...>
+                         ) {
+  return t_selector({t_mesh[t_indices[Ints]]...});
+}
+
+template<std::size_t NPoints>
+bool call_t_selector(time_point_selector<NPoints> const& t_selector,
+                     gf_mesh<retime> const& t_mesh,
+                     std::array<int, NPoints> const& t_indices
+                    ) {
+  return call_t_selector_impl(t_selector,
+                              t_mesh,
+                              t_indices,
+                              std::make_index_sequence<NPoints>());
 }
 
 //
@@ -165,6 +192,8 @@ void dynamical_trace<NPoints, HamiltonianType>::do_inner_loop(
   } else {
     // The innermost loop is reached, terminating the recursion and
     // computing the scalar product.
+    if(!call_t_selector(t_selector, t_mesh, t_indices)) return;
+
     props[NPoints - 1](psi[NPoints - 1], t_indices[1], t_indices[0]);
     ops[NPoints - 1].apply(psi[NPoints - 1], psi[NPoints]);
 

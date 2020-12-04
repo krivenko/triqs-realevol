@@ -110,29 +110,27 @@ HamiltonianType try_reduce_to_constant(HamiltonianType const& op, gf_mesh<retime
  return res;
 }
 
-void init_observable(gf_2t_view f, time_point_selector const& t_selector) {
+void init_observable(gf_2t_view f, time_point_selector<2> const& t_selector) {
  gf_mesh<retime>::mesh_point_t t, tp;
  for(auto ttp : f.mesh()) {
   std::tie(t, tp) = ttp.components_tuple();
-  f[{t, tp}]() = t_selector(t, tp) ? .0 : dcomplex(nan, nan);
+  f[{t, tp}]() = t_selector({t, tp}) ? .0 : dcomplex(nan, nan);
  }
 }
 
-#ifdef USE_ANTIHERMITICITY
-void restore_antihermiticity(gf_2t_view f, time_point_selector const& t_selector) {
+void restore_antihermiticity(gf_2t_view f, time_point_selector<2> const& t_selector) {
  gf_mesh<retime>::mesh_point_t t, tp;
 
  // FIXME: Workaround for TRIQS issue #798
  matrix<dcomplex> mat(f.mesh().size(), f.mesh().size());
  for(auto ttp : f.mesh()) {
   std::tie(t, tp) = ttp.components_tuple();
-  if(t_selector(t, tp)) { // Have we computed this pair?
+  if(t_selector({t, tp})) { // Have we computed this pair?
    mat = f[{t, tp}];
    f[{tp, t}] = -dagger(mat);
   }
  }
 }
-#endif
 
 template<typename HamiltonianType>
 void solver::compute_2t_obs(HamiltonianType const& h_, compute_2t_obs_parameters_t const& params) {
@@ -283,7 +281,10 @@ void solver::compute_2t_obs(HamiltonianType const& h_, compute_2t_obs_parameters
 
  mpi_dispatcher<long> disp(comm, all_worldlines.size());
 
- time_point_selector t_selector(params.t_range, params.tp_range, params.delta_t_max);
+ time_point_selector<2> t_selector({params.t_range, params.tp_range},
+   std::array<double, 1>{params.delta_t_max},
+   true
+ );
 
  wl_worker<HamiltonianType> worker(*initial_state, h, params.hbar, hs_struct, is_static_sp,
                                    t_selector,
@@ -354,14 +355,12 @@ void solver::compute_2t_obs(HamiltonianType const& h_, compute_2t_obs_parameters
  if(params.compute_g_l) g_l = mpi_reduce(g_l, comm, 0, true);
  if(params.compute_chi) chi = mpi_reduce(chi, comm, 0, true);
 
-#ifdef USE_ANTIHERMITICITY
  if(params.compute_g_g)
   for(auto & f : g_g) restore_antihermiticity(f, t_selector);
  if(params.compute_g_l)
   for(auto & f : g_l) restore_antihermiticity(f, t_selector);
  if(params.compute_chi)
   restore_antihermiticity(chi, t_selector);
-#endif
 
  signal_handler::stop();
 

@@ -74,12 +74,6 @@ if(PythonSupport AND NOT TRIQS_WITH_PYTHON_SUPPORT)
   message(FATAL_ERROR "TRIQS was installed without Python support. Cannot build the Python Interface. Disable the build with -DPythonSupport=OFF")
 endif()
 
-option(Use_Antihermiticity "Use the antihermiticity of GFs/susceptibilities to skip computation of some (t,t') points" ON)
-mark_as_advanced(Use_Antihermiticity)
-if(Use_Antihermiticity)
-  add_definitions(-DUSE_ANTIHERMITICITY)
-endif(Use_Antihermiticity)
-
 # Compile C++ benchmarks
 option(Build_Benchmarks "Compile C++ benchmarks" OFF)
 

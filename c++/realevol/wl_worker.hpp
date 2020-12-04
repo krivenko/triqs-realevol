@@ -48,7 +48,7 @@ class wl_worker {
 
  std::vector<sub_hilbert_space> const& subspaces;
  std::vector<bool> const& is_static_sp;
- time_point_selector const& t_selector;
+ mutable time_point_selector<2> t_selector;
  std::vector<std::vector<int>> c_conn, cdag_conn, n_conn;
 
  int lanczos_min_matrix_size;
@@ -60,7 +60,7 @@ public:
  wl_worker(init_state const& initial_state, HamiltonianType const& h, double hbar,
            hilbert_space_structure<HamiltonianType> const& hss,
            std::vector<bool> const& is_static_sp,
-           time_point_selector const& t_selector,
+           time_point_selector<2> t_selector,
            int lanczos_min_matrix_size,
            std::map<long,double> const& lanczos_gs_energy_tol,
            std::map<long,int> const& lanczos_max_krylov_dim
@@ -70,7 +70,7 @@ public:
  h(h, initial_state.get_fops(), initial_state.get_full_hs()), hbar(hbar),
  subspaces(hss.sub_hilbert_spaces),
  is_static_sp(is_static_sp),
- t_selector(t_selector),
+ t_selector(std::move(t_selector)),
  lanczos_min_matrix_size(lanczos_min_matrix_size),
  lanczos_gs_energy_tol(lanczos_gs_energy_tol),
  lanczos_max_krylov_dim(lanczos_max_krylov_dim) {
@@ -102,12 +102,14 @@ public:
                                          lanczos_gs_energy_tol,
                                          lanczos_max_krylov_dim};
 
+  t_selector.set_swap_t_tp(wl.observable == worldline_desc_t<2>::LesserGf);
   dynamical_trace<2, HamiltonianType> trace(
     initial_state,
     h_,
     hbar,
     hss,
     is_static_sp,
+    t_selector,
     t_mesh,
     HInterpol,
     lanczos_params
