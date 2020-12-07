@@ -85,8 +85,10 @@ public:
 //
 
 // Compute expectation value of operator 'op' as a function of time
+template<typename HamiltonianType>
 expectval_container_t compute_expectval(static_operator_t const& op,
                                         init_state const& initial_state,
+                                        HamiltonianType const& h,
                                         mesh_t_t const& t_mesh,
                                         solver_parameters_t const& params,
                                         mpi::communicator const& comm = {});
@@ -97,9 +99,11 @@ expectval_container_t compute_expectval(static_operator_t const& op,
 
 // Compute a 2-point correlator of operators 'op1' and 'op2' with their time
 // arguments defined on a Cartesian product 't_mesh' x 't_mesh'.
+template<typename HamiltonianType>
 correlator_2t_container_t compute_correlator_2t(static_operator_t const& op1,
                                                 static_operator_t const& op2,
                                                 init_state const& initial_state,
+                                                HamiltonianType const& h,
                                                 mesh_t_t const& t_mesh,
                                                 solver_parameters_t const& params,
                                                 mpi::communicator const& comm = {});
@@ -110,10 +114,12 @@ correlator_2t_container_t compute_correlator_2t(static_operator_t const& op1,
 
 // Compute a 3-point correlator of operators 'op1', 'op2' and 'op3' with their time
 // arguments defined on a Cartesian product 't_mesh' x 't_mesh' x 't_mesh'.
+template<typename HamiltonianType>
 correlator_3t_container_t compute_correlator_3t(static_operator_t const& op1,
                                                 static_operator_t const& op2,
                                                 static_operator_t const& op3,
                                                 init_state const& initial_state,
+                                                HamiltonianType const& h,
                                                 mesh_t_t const& t_mesh,
                                                 solver_parameters_t const& params,
                                                 mpi::communicator const& comm = {});
@@ -123,8 +129,10 @@ correlator_3t_container_t compute_correlator_3t(static_operator_t const& op1,
 //
 
 // Compute the lesser GF defined on a Cartesian product 't_mesh' x 't_mesh'.
+template<typename HamiltonianType>
 block_gf_2t_t compute_g_l(gf_struct_t const& gf_struct,
                           init_state const& initial_state,
+                          HamiltonianType const& h,
                           mesh_t_t const& t_mesh,
                           solver_parameters_t const& params,
                           mpi::communicator const& comm = {});
@@ -134,8 +142,10 @@ block_gf_2t_t compute_g_l(gf_struct_t const& gf_struct,
 //
 
 // Compute the greater GF defined on a Cartesian product 't_mesh' x 't_mesh'.
+template<typename HamiltonianType>
 block_gf_2t_t compute_g_g(gf_struct_t const& gf_struct,
                           init_state const& initial_state,
+                          HamiltonianType const& h,
                           mesh_t_t const& t_mesh,
                           solver_parameters_t const& params,
                           mpi::communicator const& comm = {});
@@ -145,8 +155,10 @@ block_gf_2t_t compute_g_g(gf_struct_t const& gf_struct,
 //
 
 // Compute the susceptibility defined on a Cartesian product 't_mesh' x 't_mesh'.
+template<typename HamiltonianType>
 block_gf_2t_t compute_chi(gf_struct_t const& gf_struct,
                           init_state const& initial_state,
+                          HamiltonianType const& h,
                           mesh_t_t const& t_mesh,
                           solver_parameters_t const& params,
                           mpi::communicator const& comm = {});

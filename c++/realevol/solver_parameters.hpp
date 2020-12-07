@@ -23,13 +23,18 @@
 #include <map>
 #include <utility>
 
-#include "types.hpp"
+#include <mpi/mpi.hpp>
+
 #include "propagator.hpp"
 
 namespace realevol {
 
 // Parameters of the short time propagation solver
 struct solver_parameters_t {
+
+ /// Verbosity level
+ /// default: 3 on MPI rank 0, 0 otherwise.
+ int verbosity = ((mpi::communicator().rank() == 0) ? 3 : 0); // silence the slave nodes
 
  /// Planck's constant
  double hbar = 1.0;
