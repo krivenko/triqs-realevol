@@ -20,6 +20,8 @@
  ******************************************************************************/
 #pragma once
 
+// TODO: Remove this file altogether
+
 #include <cmath>
 #include <map>
 #include <utility>

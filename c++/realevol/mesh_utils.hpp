@@ -20,6 +20,8 @@
  ******************************************************************************/
 #pragma once
 
+#include <triqs/utility/numeric_ops.hpp>
+
 namespace realevol {
 
 // Replace a callable object with a constant if it returns equal values at all mesh points
