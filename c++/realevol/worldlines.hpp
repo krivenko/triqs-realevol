@@ -23,6 +23,7 @@
 #include <array>
 #include <complex>
 #include <iostream>
+#include <optional>
 #include <vector>
 
 #include "init_state.hpp"
@@ -109,6 +110,20 @@ public:
   make_gf_worldlines(gf_struct_t const& gf_struct, bool is_greater);
   std::vector<worldline_desc_t<2>>
   make_chi_worldlines(chi_indices_t const& chi_indices);
+
+  template<std::size_t NPoints>
+  std::vector<worldline_desc_t<NPoints>>
+  make_worldlines(std::array<static_operator_t, NPoints> const& ops) const;
+
+private:
+
+  using op_iter_t = static_operator_t::const_iterator;
+
+  template<std::size_t NPoints, std::size_t Point>
+  void make_worldlines_impl(
+    std::array<std::pair<op_iter_t, op_iter_t>, NPoints> op_iters,
+    std::vector<worldline_desc_t<NPoints>> & worldlines
+  ) const;
 };
 
 } // namespace realevol
