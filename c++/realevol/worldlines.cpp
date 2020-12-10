@@ -162,7 +162,7 @@ void worldlines_maker<HamiltonianType>::make_worldlines_impl(
   std::array<std::pair<op_iter_t, op_iter_t>, NPoints> op_iters,
   std::vector<worldline_desc_t<NPoints>> & worldlines
 ) const {
-  if constexpr(Point + 1 < NPoints) {
+  if constexpr(Point < NPoints) {
     auto & [it, end_it] = op_iters[Point];
     for(; it != end_it; ++it) { // Iterate over monomials in ops[Point]
       make_worldlines_impl<NPoints, Point + 1>(op_iters, worldlines);

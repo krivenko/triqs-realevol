@@ -79,6 +79,7 @@ set(SIMPLE_TESTS time_expr.cpp
                  space_partition.cpp
                  lanczos_worker.cpp
                  hs_structure.cpp
+                 worldlines.cpp
                  sort2.cpp
                  interpolator.cpp
                  init_state_pure.cpp)

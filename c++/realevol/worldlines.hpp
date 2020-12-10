@@ -96,7 +96,7 @@ class worldlines_maker {
   // Subspace branchings from the initial state to the time-dependent problem
   branchings_t const& branchings;
   // Planck's constant
-  double hbar;
+  double hbar; // TODO: Remove
 
 public:
 
@@ -111,6 +111,10 @@ public:
   std::vector<worldline_desc_t<2>>
   make_chi_worldlines(chi_indices_t const& chi_indices);
 
+  // Return a list of worldlines contributing to a correlator of operators 'ops'
+  //
+  // The operators in 'ops' must be listed in the right-to-left order.
+  // E.g., ops = {C, B, A} for a correlator <A B C>.
   template<std::size_t NPoints>
   std::vector<worldline_desc_t<NPoints>>
   make_worldlines(std::array<static_operator_t, NPoints> const& ops) const;

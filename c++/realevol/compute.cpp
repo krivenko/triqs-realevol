@@ -134,7 +134,7 @@ correlator_2t_container_t compute_correlator_2t(static_operator_t const& op1,
                                                 mesh_t_t const& t_mesh,
                                                 solver_parameters_t const& params,
                                                 mpi::communicator const& comm) {
-  return compute_impl({op1, op2}, initial_state, h, t_mesh, params, comm);
+  return compute_impl({op2, op1}, initial_state, h, t_mesh, params, comm);
 }
 
 //
@@ -152,7 +152,7 @@ correlator_3t_container_t compute_correlator_3t(static_operator_t const& op1,
                                                 mesh_t_t const& t_mesh,
                                                 solver_parameters_t const& params,
                                                 mpi::communicator const& comm) {
-  return compute_impl({op1, op2, op3}, initial_state, h, t_mesh, params, comm);
+  return compute_impl({op3, op2, op1}, initial_state, h, t_mesh, params, comm);
 }
 
 //
