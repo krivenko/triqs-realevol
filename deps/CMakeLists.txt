@@ -19,9 +19,19 @@ find_package(Boost 1.53 REQUIRED)
 # -- ARPACK-NG --
 find_package(arpack-ng CONFIG 3.6.0 REQUIRED)
 message(STATUS "Found ARPACK-NG version ${arpack-ng_VERSION}")
-message(STATUS "  arpack_ng_LIBRARIES: ${arpack_ng_LIBRARIES}")
-add_library(arpack INTERFACE)
-target_link_libraries(arpack INTERFACE ${arpack_ng_LIBRARIES})
+if(arpack_ng_LIBRARIES) # ARPACK-NG prior to version 3.8.0
+  message(STATUS "  arpack_ng_LIBRARIES: ${arpack_ng_LIBRARIES}")
+  add_library(arpack INTERFACE)
+  target_link_libraries(arpack INTERFACE ${arpack_ng_LIBRARIES})
+else() # ARPACK 3.8.0 and newer
+  find_package(LAPACK REQUIRED)
+  add_library(arpack INTERFACE)
+  target_link_libraries(arpack INTERFACE ARPACK::ARPACK ${LAPACK_LIBRARIES})
+  if(arpack-ng_DIR)
+    # A workaround for the broken ARPACK::ARPACK target
+    target_link_libraries(arpack INTERFACE -L${arpack-ng_DIR}/../.. -larpack)
+  endif()
+endif()
 
 # -- Cpp2Py --
 if(PythonSupport OR Build_Documentation)
