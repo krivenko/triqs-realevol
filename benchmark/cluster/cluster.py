@@ -19,30 +19,35 @@
 #
 # ##############################################################################
 
+from h5 import HDFArchive
 import triqs.utility.mpi as mpi
-from realevol.texpr import TExpr as te
-from realevol.operators_texpr import *
+from triqs.gf import BlockGf, MeshReTime
+from realevol.tinterp import TInterp as ti
+from realevol.operators_tinterp import *
 from realevol.init_state import *
 from realevol.realevol import *
 from itertools import product
+import numpy as np
 
 # Cluster benchmark
 # 4 site cluster, nn-hoppings are switched on (quench and slow switching)
 
 spin_names = ('up','dn')
 
+t_max = 1.0
+n_t = 11
+m_interp = MeshReTime(0, t_max, n_t)
+
 # Model parameters
 U = 2.0
 mu = U*0.1
+h = 0.15
 t = 0.3
-tp = -0.1
-#tp = -0.1*te("1-exp(-10*t)")
+tp = ti(m_interp, np.array([-0.1*(1-np.exp(-10*x)) for x in m_interp]))
 beta = 40.0
 
 gf_struct = {'dn' : range(3)}
 chi_indices = [(sn,site) for sn, site in product(spin_names,range(4))]
-t_max = 1.0
-n_t = 11
 
 fops = set((sn,site) for sn, site in product(spin_names,range(4)))
 print("Fundamental operator set:", fops)
@@ -53,6 +58,7 @@ eq_params['arpack_min_matrix_size'] = 11
 
 # Initial Hamiltonian
 h0 = mu*sum(n(*i) for i in fops)
+h0 += sum((h * n(*i) if i[0] == "up" else -h * n(*i)) for i in fops)
 h0 += U*sum(n('up',site)*n('dn',site) for site in range(4))
 h0 += t*sum(c_dag(sn,site)*c(sn,(site+1)%4) + c_dag(sn,site)*c(sn,(site-1)%4)
             for sn, site in product(spin_names,range(4)))
@@ -82,3 +88,10 @@ gf_params['verbosity'] = 2
 gf_params['lanczos_min_matrix_size'] = 10000
 
 S.compute_2t_obs(h = h, params = gf_params)
+
+if mpi.is_master_node():
+    with HDFArchive('cluster.h5', 'w') as ar:
+        ar['init_state'] = init_state
+        ar['g_l'] = S.g_l
+        ar['g_g'] = S.g_g
+        ar['chi'] = S.chi

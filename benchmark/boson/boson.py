@@ -19,6 +19,7 @@
 #
 # ##############################################################################
 
+from h5 import HDFArchive
 import triqs.utility.mpi as mpi
 from realevol.texpr import TExpr
 from realevol.operators_texpr import c, c_dag, n, a, a_dag
@@ -58,3 +59,10 @@ init_state = make_equilibrium_init_state(h0,
 S.set_initial_state(init_state)
 
 S.compute_2t_obs(h = h, params = {})
+
+if mpi.is_master_node():
+    with HDFArchive('boson.h5', 'w') as ar:
+        ar['init_state'] = init_state
+        ar['g_l'] = S.g_l
+        ar['g_g'] = S.g_g
+        ar['chi'] = S.chi
