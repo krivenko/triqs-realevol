@@ -24,8 +24,13 @@
 
 #include <triqs/utility/signal_handler.hpp>
 
+#include "array_utility.hpp"
 #include "mesh_utils.hpp"
 #include "hs_structure.hpp"
+#include "time_point_selector.hpp"
+#include "mpi_dispatcher.hpp"
+#include "worldlines.hpp"
+#include "dynamical_trace.hpp"
 #include "compute.hpp"
 
 namespace signal_handler = triqs::signal_handler;
@@ -101,11 +106,115 @@ time_container_t<NPoints> compute_impl(std::array<static_operator_t, NPoints> co
     is_zero_on_mesh<gf_mesh<retime>>(t_mesh)
   );
 
-  // TODO
+  check_signals();
 
-  time_container_t<NPoints> result;
+  if(params.verbosity >= 1 && comm.rank() == 0)
+    std::cout << "Found " << hs_struct.sub_hilbert_spaces.size()
+              << " invariant subspaces." << std::endl;
+  if(params.verbosity >= 2 && comm.rank() == 0) {
+    for(auto const& sp : hs_struct.sub_hilbert_spaces) {
+      std::cout << " Subspace " << sp.get_index() << " [" << sp.size() << "]: ";
+      for(auto f : sp.get_all_fock_states()) std::cout << f << " ";
+      std::cout << std::endl;
+    }
+  }
 
-  // TODO
+  // Check on which invariant subspaces the Hamiltonian is static
+  auto static_pred = [](auto const& st) {
+    bool c = true;
+    foreach(st,[&c](uint32_t, auto const& te){
+      if(!is_constant(te)) c = false;
+    });
+    return c;
+  };
+
+  auto is_static_sp = hs_struct.classify_subspaces(h, static_pred);
+
+  if(params.verbosity >= 2 && comm.rank() == 0) {
+    std::cout <<
+      "The Hamiltonian is static on the following invariant subspaces";
+    std::cout << std::endl << " ";
+    for(long spn = 0; spn < is_static_sp.size(); ++spn) {
+      if(is_static_sp[spn]) std::cout << spn << " ";
+    }
+    std::cout << std::endl;
+  }
+
+  // Compute subspace branching for the initial state
+  auto const& subspaces = initial_state.get_sub_hilbert_spaces();
+  auto subspace_branchings = hs_struct.compute_branchings(subspaces);
+
+  check_signals();
+
+  if(params.verbosity >= 2 && comm.rank() == 0) {
+    std::cout << "Subspace branching for the initial state:" << std::endl;
+    for(long spn = 0; spn < subspaces.size(); ++spn) {
+      std::cout << " " << subspaces[spn].get_index() << " -> ";
+      for(long spi : subspace_branchings[spn]) std::cout << spi << " ";
+      std::cout << std::endl;
+    }
+  }
+
+  // Generate all contributing world lines
+  worldlines_maker<HamiltonianType> wlm(initial_state,
+                                        hs_struct,
+                                        subspace_branchings,
+                                        params.hbar);
+  auto worldlines = wlm.make_worldlines(ops);
+
+  if(params.verbosity >= 2 && comm.rank() == 0) {
+    std::cout << "Processing world lines ("
+              << worldlines.size() << " in total):" << std::endl;
+    for(long i : range(worldlines.size())) {
+      std::cout << "[" << i << "] " << worldlines[i] << std::endl;
+    }
+  }
+  if(worldlines.size() == 0) return;
+
+  check_signals();
+
+  // FIXME: properly initialize this selector
+  time_point_selector<NPoints> t_selector(
+    make_array_repeat<NPoints>({-INFINITY, INFINITY}),
+    make_array_repeat<NPoints - 1>(INFINITY),
+    false
+  );
+
+  auto lanczos_params = lanczos_params_t{params.lanczos_min_matrix_size,
+                                         params.lanczos_gs_energy_tol,
+                                         params.lanczos_max_krylov_dim};
+  dynamical_trace<NPoints, HamiltonianType> worker(initial_state,
+                                                   h,
+                                                   params.hbar,
+                                                   hs_struct,
+                                                   is_static_sp,
+                                                   t_selector,
+                                                   t_mesh,
+                                                   params.hamiltonian_interpol,
+                                                   lanczos_params);
+
+  time_container_t<NPoints> result(t_mesh);
+  mpi_dispatcher<long> disp(comm, worldlines.size());
+
+  check_signals();
+
+  long nwl;
+  while(true) {
+    if((nwl = disp().value_or(-1)) == -1) break;
+    worker(worldlines[nwl], result);
+    check_signals();
+  }
+  comm.barrier();
+
+  check_signals();
+
+  // Collect results from all MPI ranks
+  result = mpi_reduce(result, comm, 0, true);
+
+  signal_handler::stop();
+
+  if(params.verbosity >= 1 && comm.rank() == 0)
+    std::cout << "Done" << std::endl;
 
   return result;
 }
