@@ -26,8 +26,8 @@ from realevol.operators_texpr import c, c_dag, n, a, a_dag
 from realevol.init_state import *
 from realevol.realevol import Solver
 
-gf_struct = {'up':[0], 'dn':[0]}
-chi_indices = [('dn',0),('up',0)]
+gf_struct = [('dn', [0]), ('up', [0])]
+chi_indices = [('dn', 0),('up',0)]
 fops_fermion = set([("up",0),("dn",0)])
 fops_boson = set([("B",0)])
 bits_per_boson = {('B',0) : 3}

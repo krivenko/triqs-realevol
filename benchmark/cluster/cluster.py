@@ -46,7 +46,7 @@ t = 0.3
 tp = ti(m_interp, np.array([-0.1*(1-np.exp(-10*x)) for x in m_interp]))
 beta = 40.0
 
-gf_struct = {'dn' : range(3)}
+gf_struct = [('dn', range(3))]
 chi_indices = [(sn,site) for sn, site in product(spin_names,range(4))]
 
 fops = set((sn,site) for sn, site in product(spin_names,range(4)))
