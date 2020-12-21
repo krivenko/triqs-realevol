@@ -21,6 +21,8 @@
 #include <triqs/utility/first_include.hpp>
 
 #include <csignal>
+#include <string>
+#include <vector>
 
 #include <triqs/utility/signal_handler.hpp>
 
@@ -46,12 +48,13 @@ static void check_signals() {
 namespace realevol {
 
 template<std::size_t NPoints, typename HamiltonianType>
-time_container_t<NPoints> compute_impl(std::array<static_operator_t, NPoints> const& ops,
-                                       init_state const& initial_state,
-                                       HamiltonianType const& h_,
-                                       mesh_t_t const& t_mesh,
-                                       solver_parameters_t const& params,
-                                       mpi::communicator const& comm) {
+void compute_impl(std::array<static_operator_t, NPoints> const& ops,
+                  init_state const& initial_state,
+                  HamiltonianType const& h_,
+                  mesh_t_t const& t_mesh,
+                  time_container_t<NPoints> & result,
+                  solver_parameters_t const& params,
+                  mpi::communicator const& comm) {
   // Complete fundamental operator set of the problem
   auto const& fops = initial_state.get_fops();
 
@@ -193,7 +196,6 @@ time_container_t<NPoints> compute_impl(std::array<static_operator_t, NPoints> co
                                                    params.hamiltonian_interpol,
                                                    lanczos_params);
 
-  time_container_t<NPoints> result(t_mesh);
   mpi_dispatcher<long> disp(comm, worldlines.size());
 
   check_signals();
@@ -219,6 +221,10 @@ time_container_t<NPoints> compute_impl(std::array<static_operator_t, NPoints> co
   return result;
 }
 
+//
+// Expectation value
+//
+
 template<typename HamiltonianType>
 expectval_container_t compute_expectval(static_operator_t const& op,
                                         init_state const& initial_state,
@@ -226,7 +232,9 @@ expectval_container_t compute_expectval(static_operator_t const& op,
                                         mesh_t_t const& t_mesh,
                                         solver_parameters_t const& params,
                                         mpi::communicator const& comm) {
-  return compute_impl({op}, initial_state, h, t_mesh, params, comm);
+  time_container_t<1> result(t_mesh);
+  compute_impl({op}, initial_state, h, t_mesh, result, params, comm);
+  return result;
 }
 
 //
@@ -243,7 +251,9 @@ correlator_2t_container_t compute_correlator_2t(static_operator_t const& op1,
                                                 mesh_t_t const& t_mesh,
                                                 solver_parameters_t const& params,
                                                 mpi::communicator const& comm) {
-  return compute_impl({op2, op1}, initial_state, h, t_mesh, params, comm);
+  time_container_t<2> result({t_mesh, t_mesh});
+  compute_impl({op2, op1}, initial_state, h, t_mesh, result, params, comm);
+  return result;
 }
 
 //
@@ -261,7 +271,60 @@ correlator_3t_container_t compute_correlator_3t(static_operator_t const& op1,
                                                 mesh_t_t const& t_mesh,
                                                 solver_parameters_t const& params,
                                                 mpi::communicator const& comm) {
-  return compute_impl({op3, op2, op1}, initial_state, h, t_mesh, params, comm);
+  time_container_t<3> result({t_mesh, t_mesh, t_mesh});
+  compute_impl({op3, op2, op1}, initial_state, h, t_mesh, result, params, comm);
+  return result;
+}
+
+//
+// Compute block GF for a given gf_struct and time mesh
+//
+
+template<typename F>
+block_gf_2t_t compute_block_gf(gf_struct_t const& gf_struct,
+                               mesh_t_t const& t_mesh,
+                               F && f
+                              ) {
+  struct index_visitor  {
+    std::vector<std::string> indices;
+    void operator()(int i) { indices.push_back(std::to_string(i)); }
+    void operator()(std::string s) { indices.push_back(s); }
+  };
+
+  const double nan = std::numeric_limits<double>::quiet_NaN();
+
+  std::vector<std::string> block_names;
+  std::vector<gf_2t_t> g_blocks;
+
+  for (auto const& bl : gf_struct) {
+    block_names.push_back(bl.first);
+    int n = bl.second.size();
+
+    index_visitor iv;
+    for (auto const& ind : bl.second) { std::visit(iv, ind); }
+    std::vector<std::vector<std::string>> indices{{iv.indices,iv.indices}};
+
+    auto block = gf_2t_t{{t_mesh, t_mesh}, make_shape(n, n), indices};
+    block() = std::complex<double>(nan, nan);
+
+    for(int i1 = 0; i1 < bl.second.size(); ++i1) {
+      for(int i2 = 0; i2 < bl.second.size(); ++i2) {
+        slice_target_to_scalar(block, i1, i2) = f(bl.first, bl.second[i1], bl.second[i2]);
+      }
+    }
+
+    g_blocks.push_back(std::move(block));
+  }
+
+  return make_block_gf(block_names, g_blocks);
+}
+
+//
+// Change t <-> t' in time_container_t<2>
+//
+
+time_container_t<2> transpose_time_gf(time_container_t<2> const& g) {
+  return time_container_t<2>(g.mesh(), transposed_view(g.data()), g.indices());
 }
 
 //
@@ -276,7 +339,25 @@ block_gf_2t_t compute_g_l(gf_struct_t const& gf_struct,
                           mesh_t_t const& t_mesh,
                           solver_parameters_t const& params,
                           mpi::communicator const& comm) {
-  // TODO: call compute_correlator_2t() and multiply result by (i/hbar)
+  auto f = [&](std::string const& block_name,
+               std::variant<int, std::string> const& ind1,
+               std::variant<int, std::string> const& ind2) {
+    auto op1 = c_dag(block_name, ind2);
+    auto op2 = c(block_name, ind1);
+    return transpose_time_gf(
+      compute_correlator_2t(op1,
+                            op2,
+                            initial_state,
+                            h,
+                            t_mesh,
+                            params,
+                            comm
+      )
+    );
+  };
+  auto g_l = compute_block_gf(gf_struct, t_mesh, f);
+  g_l *= 1i / params.hbar;
+  return g_l;
 }
 
 //
@@ -291,7 +372,23 @@ block_gf_2t_t compute_g_g(gf_struct_t const& gf_struct,
                           mesh_t_t const& t_mesh,
                           solver_parameters_t const& params,
                           mpi::communicator const& comm) {
-  // TODO: call compute_correlator_2t() and multiply result by (-i/hbar)
+
+  auto f = [&](std::string const& block_name,
+               std::variant<int, std::string> const& ind1,
+               std::variant<int, std::string> const& ind2) {
+    auto op1 = c(block_name, ind1);
+    auto op2 = c_dag(block_name, ind2);
+    return compute_correlator_2t(op1,
+                                 op2,
+                                 initial_state,
+                                 h,
+                                 t_mesh,
+                                 params,
+                                 comm);
+  };
+  auto g_g = compute_block_gf(gf_struct, t_mesh, f);
+  g_g *= -1i / params.hbar;
+  return g_g;
 }
 
 //
@@ -306,7 +403,22 @@ block_gf_2t_t compute_chi(gf_struct_t const& chi_struct,
                           mesh_t_t const& t_mesh,
                           solver_parameters_t const& params,
                           mpi::communicator const& comm) {
-  // TODO: call compute_correlator_2t() and multiply result by (-i/hbar)
+  auto f = [&](std::string const& block_name,
+               std::variant<int, std::string> const& ind1,
+               std::variant<int, std::string> const& ind2) {
+    auto op1 = n(block_name, ind1);
+    auto op2 = n(block_name, ind2);
+    return compute_correlator_2t(op1,
+                                 op2,
+                                 initial_state,
+                                 h,
+                                 t_mesh,
+                                 params,
+                                 comm);
+  };
+  auto chi = compute_block_gf(chi_struct, t_mesh, f);
+  chi *= -1i / params.hbar;
+  return chi;
 }
 
 //
