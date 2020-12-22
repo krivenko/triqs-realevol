@@ -21,7 +21,7 @@
 
 import triqs.utility.mpi as mpi
 from h5 import HDFArchive
-from triqs.gf import BlockGf
+from triqs.gf import BlockGf, MeshReTime
 from realevol.texpr import TExpr as te
 from realevol.operators_texpr import *
 from realevol.init_state import *
@@ -44,11 +44,12 @@ t = [0.3]*n_bath
 dt = te("0.1*(1-exp(-5*t))")
 
 fops = set(product(spin_names,range(n_bath+1)))
-gf_struct = {'dn':[0], 'up':[0]}
-chi_indices = [('dn',0),('up',0)]
+gf_struct = [('dn', [0]), ('up', [0])]
+chi_indices = [('dn',0), ('up',0)]
 
 t_max = 1.0
 n_t = 21
+t_mesh = MeshReTime(0, t_max, n_t)
 
 ## Initial Hamiltonian
 h0 = -mu*(n('up',0) + n('dn',0)) + U*n('up',0)*n('dn',0)
@@ -65,37 +66,35 @@ init_state = make_equilibrium_init_state(h0,
 # Hamiltonian after quench
 h = h0 + sum(dt*(c_dag(sn,0)*c(sn,1) + c_dag(sn,1)*c(sn,0)) for sn in spin_names)
 
-# Solver object
-S = Solver(gf_struct, chi_indices, t_max = t_max, n_t = n_t)
-
-# Set initial state
-S.set_initial_state(init_state)
-
-gf_params = {}
-gf_params['verbosity'] = 2
-gf_params['lanczos_min_matrix_size'] = 10000
+params = {}
+params['verbosity'] = 2
+params['lanczos_min_matrix_size'] = 10000
 
 print("Computing with LAPACK ...")
 timing = datetime.now()
-S.compute_2t_obs(h = h, params = gf_params)
+g_g = compute_g_g(gf_struct, init_state, h, t_mesh, params)
+g_l = compute_g_l(gf_struct, init_state, h, t_mesh, params)
+chi = compute_chi(chi_indices, init_state, h, t_mesh, params)
 timing = datetime.now() - timing
 print("Elapsed time:", timing)
 
-lapack = {'g_l' : S.g_l,
-          'g_g' : S.g_g,
-          'chi' : S.chi,
+lapack = {'g_l' : g_l,
+          'g_g' : g_g,
+          'chi' : chi,
           'timing' : str(timing)}
 
 print("Computing with Lanczos algorithm ...")
-gf_params['lanczos_min_matrix_size'] = 9
+params['lanczos_min_matrix_size'] = 9
 timing = datetime.now()
-S.compute_2t_obs(h = h, params = gf_params)
+g_g = compute_g_g(gf_struct, init_state, h, t_mesh, params)
+g_l = compute_g_l(gf_struct, init_state, h, t_mesh, params)
+chi = compute_chi(chi_indices, init_state, h, t_mesh, params)
 timing = datetime.now() - timing
 print("Elapsed time:", timing)
 
-lanczos = {'g_l' : S.g_l,
-           'g_g' : S.g_g,
-           'chi' : S.chi,
+lanczos = {'g_l' : g_l,
+           'g_g' : g_g,
+           'chi' : chi,
            'timing' : str(timing)}
 
 if mpi.is_master_node():
@@ -111,6 +110,4 @@ if mpi.is_master_node():
         gr['g_l_dn'] = diff(lapack['g_l']['dn'], lanczos['g_l']['dn'])
         gr['g_g_up'] = diff(lapack['g_g']['up'], lanczos['g_g']['up'])
         gr['g_g_dn'] = diff(lapack['g_g']['dn'], lanczos['g_g']['dn'])
-        for i, j in product(range(2), range(2)):
-            gr['chi_%i_%i' % (i,j)] = diff(lapack ['chi'],
-                                           lanczos['chi'])
+        gr['chi'] = diff(lapack['chi'], lanczos['chi'])
