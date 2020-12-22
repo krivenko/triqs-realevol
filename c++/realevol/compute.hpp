@@ -111,10 +111,10 @@ block_gf_2t_t compute_g_g(gf_struct_t const& gf_struct,
 
 // Compute the susceptibility defined on a Cartesian product 't_mesh' x 't_mesh'.
 template<typename HamiltonianType>
-block_gf_2t_t compute_chi(gf_struct_t const& chi_struct,
-                          init_state const& initial_state,
-                          HamiltonianType const& h,
-                          mesh_t_t const& t_mesh,
-                          solver_parameters_t const& params,
-                          mpi::communicator const& comm = {});
+gf_2t_t compute_chi(chi_indices_t const& chi_indices,
+                    init_state const& initial_state,
+                    HamiltonianType const& h,
+                    mesh_t_t const& t_mesh,
+                    solver_parameters_t const& params,
+                    mpi::communicator const& comm = {});
 }

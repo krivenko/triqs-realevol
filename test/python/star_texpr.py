@@ -22,7 +22,7 @@
 import unittest
 
 from h5 import HDFArchive
-from triqs.gf import BlockGf
+from triqs.gf import BlockGf, MeshReTime
 from realevol.texpr import TExpr as te
 from realevol.operators_texpr import *
 from realevol.init_state import *
@@ -31,11 +31,19 @@ import triqs.utility.mpi as mpi
 import numpy as np
 from itertools import product
 
+# FIXME
+from numpy.testing import assert_allclose
+
 class test_star_texpr(unittest.TestCase):
     """Star test: correlated Hubbard atom + n bath sites"""
 
     def test_Solver(self):
         spin_names = ('up','dn')
+
+        t_max = 5.0
+        n_t = 6
+        # Time mesh
+        t_mesh = MeshReTime(0, t_max, n_t)
 
         # Model parameters
         U = 3.0
@@ -47,10 +55,7 @@ class test_star_texpr(unittest.TestCase):
 
         fops = set(product(spin_names,range(n_bath+1)))
         gf_struct = [('dn', [0]), ('up', [0])]
-        chi_indices = [('dn',0),('up',0)]
-
-        t_max = 5.0
-        n_t = 6
+        chi_indices = [('dn',0), ('up',0)]
 
         ## Initial Hamiltonian
         h0 = -mu*(n('up',0) + n('dn',0)) + U*n('up',0)*n('dn',0)
@@ -67,27 +72,25 @@ class test_star_texpr(unittest.TestCase):
         # Hamiltonian after quench
         h = h0 + sum(dt*(c_dag(sn,0)*c(sn,1) + c_dag(sn,1)*c(sn,0)) for sn in spin_names)
 
-        # Solver object
-        S = Solver(gf_struct, chi_indices, t_max = t_max, n_t = n_t)
+        params = {}
+        params['verbosity'] = 2
+        params['lanczos_min_matrix_size'] = 10000
 
-        # Set initial state
-        S.set_initial_state(init_state)
-
-        gf_params = {}
-        gf_params['verbosity'] = 2
-        gf_params['lanczos_min_matrix_size'] = 10000
-
-        S.compute_2t_obs(h = h, params = gf_params)
+        g_g = compute_g_g(gf_struct, init_state, h, t_mesh, params)
+        g_l = compute_g_l(gf_struct, init_state, h, t_mesh, params)
+        chi = compute_chi(chi_indices, init_state, h, t_mesh, params)
 
         if mpi.is_master_node():
             with HDFArchive('star.ref.h5', 'r') as ar:
                 #ar['init_state'] = init_state
-                #ar['g_l'] = S.g_l
-                #ar['g_g'] = S.g_g
-                #ar['chi'] = S.chi
-                assert_block_gfs_are_close(ar['g_g'], S.g_g)
-                assert_block_gfs_are_close(ar['g_l'], S.g_l)
-                assert_gfs_are_close(ar['chi'], S.chi)
+                #ar['g_l'] = g_l
+                #ar['g_g'] = g_g
+                #ar['chi'] = chi
+                assert_block_gfs_are_close(ar['g_g'], g_g)
+                assert_block_gfs_are_close(ar['g_l'], g_l)
+                # FIXME: Cannot directly compare GF objects because format of
+                # indices has changed
+                assert_allclose(ar['chi'].data, chi.data)
 
 if __name__ == '__main__':
     unittest.main()

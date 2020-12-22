@@ -21,10 +21,11 @@
 
 from h5 import HDFArchive
 import triqs.utility.mpi as mpi
+from triqs.gf import MeshReTime
 from realevol.texpr import TExpr
 from realevol.operators_texpr import c, c_dag, n, a, a_dag
 from realevol.init_state import *
-from realevol.realevol import Solver
+from realevol.realevol import *
 
 gf_struct = [('dn', [0]), ('up', [0])]
 chi_indices = [('dn', 0),('up',0)]
@@ -33,8 +34,7 @@ fops_boson = set([("B",0)])
 bits_per_boson = {('B',0) : 3}
 t_max = 10.0
 n_t = 1000
-
-S = Solver(gf_struct, chi_indices, t_max = t_max, n_t = n_t)
+t_mesh = MeshReTime(0, t_max, n_t)
 
 U = 3.0
 mu = U/2
@@ -55,14 +55,13 @@ init_state = make_equilibrium_init_state(h0,
                                          bits_per_boson = bits_per_boson,
                                          params = {})
 
-# Set initial state
-S.set_initial_state(init_state)
-
-S.compute_2t_obs(h = h, params = {})
+g_g = compute_g_g(gf_struct, init_state, h, t_mesh, {})
+g_l = compute_g_l(gf_struct, init_state, h, t_mesh, {})
+chi = compute_chi(chi_indices, init_state, h, t_mesh, {})
 
 if mpi.is_master_node():
     with HDFArchive('boson.h5', 'w') as ar:
         ar['init_state'] = init_state
-        ar['g_l'] = S.g_l
-        ar['g_g'] = S.g_g
-        ar['chi'] = S.chi
+        ar['g_l'] = g_l
+        ar['g_g'] = g_g
+        ar['chi'] = chi

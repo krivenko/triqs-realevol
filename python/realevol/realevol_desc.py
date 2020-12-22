@@ -297,15 +297,15 @@ module.add_function(
 
 module.add_function(
     name = "compute_chi",
-    signature = "block_gf_2t_t(gf_struct_t chi_struct, init_state initial_state, time_expr_operator_t h, mesh_t_t t_mesh, solver_parameters_t params)",
-    calling_pattern = "auto result = compute_chi(chi_struct, initial_state, h, t_mesh, params)",
+    signature = "gf_2t_t(chi_indices_t chi_indices, init_state initial_state, time_expr_operator_t h, mesh_t_t t_mesh, solver_parameters_t params)",
+    calling_pattern = "auto result = compute_chi(chi_indices, initial_state, h, t_mesh, params)",
     doc = """Compute the susceptibility defined on a Cartesian product 't_mesh' x 't_mesh'"""
 )
 
 module.add_function(
     name = "compute_chi",
-    signature = "block_gf_2t_t(gf_struct_t chi_struct, init_state initial_state, time_interp_operator_t h, mesh_t_t t_mesh, solver_parameters_t params)",
-    calling_pattern = "auto result = compute_chi(chi_struct, initial_state, h, t_mesh, params)",
+    signature = "gf_2t_t(chi_indices_t chi_indices, init_state initial_state, time_interp_operator_t h, mesh_t_t t_mesh, solver_parameters_t params)",
+    calling_pattern = "auto result = compute_chi(chi_indices, initial_state, h, t_mesh, params)",
     doc = """Compute the susceptibility defined on a Cartesian product 't_mesh' x 't_mesh'"""
 )
 

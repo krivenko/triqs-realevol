@@ -36,14 +36,14 @@ spin_names = ('up','dn')
 
 t_max = 1.0
 n_t = 11
-m_interp = MeshReTime(0, t_max, n_t)
+t_mesh = MeshReTime(0, t_max, n_t)
 
 # Model parameters
 U = 2.0
 mu = U*0.1
 h = 0.15
 t = 0.3
-tp = ti(m_interp, np.array([-0.1*(1-np.exp(-10*x)) for x in m_interp]))
+tp = ti(t_mesh, np.array([-0.1*(1-np.exp(-10*x)) for x in t_mesh]))
 beta = 40.0
 
 gf_struct = [('dn', range(3))]
@@ -77,21 +77,17 @@ h = h0 + tp*sum(c_dag(sn,site1)*c(sn,site2)
 
 print("h(t) =", h)
 
-# Solver object
-S = Solver(gf_struct, chi_indices, t_max = t_max, n_t = n_t)
+params = {}
+params['verbosity'] = 2
+params['lanczos_min_matrix_size'] = 10000
 
-# Set initial state
-S.set_initial_state(init_state)
-
-gf_params = {}
-gf_params['verbosity'] = 2
-gf_params['lanczos_min_matrix_size'] = 10000
-
-S.compute_2t_obs(h = h, params = gf_params)
+g_g = compute_g_g(gf_struct, init_state, h, t_mesh, params)
+g_l = compute_g_l(gf_struct, init_state, h, t_mesh, params)
+chi = compute_chi(chi_indices, init_state, h, t_mesh, params)
 
 if mpi.is_master_node():
     with HDFArchive('cluster.h5', 'w') as ar:
         ar['init_state'] = init_state
-        ar['g_l'] = S.g_l
-        ar['g_g'] = S.g_g
-        ar['chi'] = S.chi
+        ar['g_l'] = g_l
+        ar['g_g'] = g_g
+        ar['chi'] = chi
