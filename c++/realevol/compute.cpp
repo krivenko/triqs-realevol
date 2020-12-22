@@ -35,7 +35,7 @@
 #include "time_point_selector.hpp"
 #include "mpi_dispatcher.hpp"
 #include "worldlines.hpp"
-#include "dynamical_trace.hpp"
+#include "wl_worker.hpp"
 #include "compute.hpp"
 
 namespace signal_handler = triqs::signal_handler;
@@ -177,8 +177,7 @@ void compute_impl(std::array<static_operator_t, NPoints> const& ops,
   // Generate all contributing world lines
   worldlines_maker<HamiltonianType> wlm(initial_state,
                                         hs_struct,
-                                        subspace_branchings,
-                                        params.hbar);
+                                        subspace_branchings);
   auto worldlines = wlm.make_worldlines(ops);
 
   if(params.verbosity >= 2 && comm.rank() == 0) {
@@ -202,15 +201,15 @@ void compute_impl(std::array<static_operator_t, NPoints> const& ops,
   auto lanczos_params = lanczos_params_t{params.lanczos_min_matrix_size,
                                          params.lanczos_gs_energy_tol,
                                          params.lanczos_max_krylov_dim};
-  dynamical_trace<NPoints, HamiltonianType> worker(initial_state,
-                                                   h,
-                                                   params.hbar,
-                                                   hs_struct,
-                                                   is_static_sp,
-                                                   t_selector,
-                                                   t_mesh,
-                                                   params.hamiltonian_interpol,
-                                                   lanczos_params);
+  wl_worker<NPoints, HamiltonianType> worker(initial_state,
+                                             h,
+                                             params.hbar,
+                                             hs_struct,
+                                             is_static_sp,
+                                             t_selector,
+                                             t_mesh,
+                                             params.hamiltonian_interpol,
+                                             lanczos_params);
 
   mpi_dispatcher<long> disp(comm, worldlines.size());
 

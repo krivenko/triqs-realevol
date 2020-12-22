@@ -100,7 +100,7 @@ protected:
     );
 
     wlm1 = std::make_unique<worldlines_maker<time_expr_operator_t>>(
-      initial_state, *hss1, branchings1, 1.0
+      initial_state, *hss1, branchings1
     );
 
     // H2 does not mix any atomic states
@@ -119,7 +119,7 @@ protected:
     );
 
     wlm2 = std::make_unique<worldlines_maker<time_expr_operator_t>>(
-      initial_state, *hss2, branchings2, 1.0
+      initial_state, *hss2, branchings2
     );
   }
 
@@ -179,10 +179,6 @@ worldline_desc_t<NPoints> make_ref_worldline(
     return op.begin()->monomial;
   }, ops);
   return worldline_desc_t<NPoints>{
-    worldline_desc_t<NPoints>::GreaterGf, // TODO: Remove
-    0,                                    // TODO: Remove
-    0,                                    // TODO: Remove
-    0,                                    // TODO: Remove
     factor,
     std::move(M),
     std::move(sp_indices),

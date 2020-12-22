@@ -48,18 +48,6 @@ namespace realevol {
 
 template<std::size_t NPoints> struct worldline_desc_t {
 
-  /// Kind of observable
-  enum {LesserGf, GreaterGf, Susceptibility} observable; // TODO: remove
-
-  /// Block index of the observable (applies only to the GF)
-  int block_index; // TODO: remove
-
-  /// First inner index of the observable
-  int inner_index1; // TODO: remove
-
-  /// Second inner index of the observable
-  int inner_index2; // TODO: remove
-
   // Numerical prefactor of this contribution
   std::complex<double> factor;
 
@@ -95,21 +83,13 @@ class worldlines_maker {
   hilbert_space_structure<HamiltonianType> const& hss;
   // Subspace branchings from the initial state to the time-dependent problem
   branchings_t const& branchings;
-  // Planck's constant
-  double hbar; // TODO: Remove
 
 public:
 
   worldlines_maker(init_state const& initial_state,
                    hilbert_space_structure<HamiltonianType> const& hss,
-                   branchings_t const& branchings,
-                   double hbar) :
-  initial_state(initial_state), hss(hss), branchings(branchings), hbar(hbar) {}
-
-  std::vector<worldline_desc_t<2>>
-  make_gf_worldlines(gf_struct_t const& gf_struct, bool is_greater);
-  std::vector<worldline_desc_t<2>>
-  make_chi_worldlines(chi_indices_t const& chi_indices);
+                   branchings_t const& branchings) :
+  initial_state(initial_state), hss(hss), branchings(branchings) {}
 
   // Return a list of worldlines contributing to a correlator of operators 'ops'
   //

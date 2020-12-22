@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 
-#include "dynamical_trace.hpp"
+#include "wl_worker.hpp"
 
 #include "array_utility.hpp"
 
@@ -30,7 +30,7 @@ namespace realevol {
 //
 
 template<std::size_t NPoints, typename HamiltonianType>
-dynamical_trace<NPoints, HamiltonianType>::dynamical_trace(
+wl_worker<NPoints, HamiltonianType>::wl_worker(
   init_state const& initial_state,
   HamiltonianType const& h,
   double hbar,
@@ -164,7 +164,7 @@ bool call_t_selector(time_point_selector<NPoints> const& t_selector,
 
 template<std::size_t NPoints /* N */, typename HamiltonianType>
 template<std::size_t Point>
-void dynamical_trace<NPoints, HamiltonianType>::do_inner_loop(
+void wl_worker<NPoints, HamiltonianType>::do_inner_loop(
   std::array<propagator<HScalarType>, NPoints+1> const& props,
   std::array<op_with_map_t, NPoints> const& ops,
   std::array<state_on_subspace_t, NPoints+1> & psi,
@@ -206,7 +206,7 @@ void dynamical_trace<NPoints, HamiltonianType>::do_inner_loop(
 //
 
 template<std::size_t NPoints, typename HamiltonianType>
-void dynamical_trace<NPoints, HamiltonianType>::operator()(
+void wl_worker<NPoints, HamiltonianType>::operator()(
   worldline_desc_t<NPoints> const& wl,
   time_container_t<NPoints> & result
 ) const {
@@ -278,15 +278,15 @@ void dynamical_trace<NPoints, HamiltonianType>::operator()(
 //
 
 // Compute expectation values
-template class dynamical_trace<1, time_expr_operator_t>;
-template class dynamical_trace<1, time_interp_operator_t>;
+template class wl_worker<1, time_expr_operator_t>;
+template class wl_worker<1, time_interp_operator_t>;
 
 // Compute 2-point correlators
-template class dynamical_trace<2, time_expr_operator_t>;
-template class dynamical_trace<2, time_interp_operator_t>;
+template class wl_worker<2, time_expr_operator_t>;
+template class wl_worker<2, time_interp_operator_t>;
 
 // Compute 3-point correlators
-template class dynamical_trace<3, time_expr_operator_t>;
-template class dynamical_trace<3, time_interp_operator_t>;
+template class wl_worker<3, time_expr_operator_t>;
+template class wl_worker<3, time_interp_operator_t>;
 
 } // namespace realevol

@@ -81,7 +81,6 @@ using block_gf_2t_t = block_gf<cartesian_product<retime, retime>>;
 using gf_2t_view = gf_view<cartesian_product<retime, retime>>;
 using block_gf_2t_view = block_gf_view<cartesian_product<retime, retime>>;
 
-// FIXME: Do we really need these with the new API?
 using indices_type = operators::indices_t;
 using chi_indices_t = std::vector<std::pair<std::string, std::variant<int, std::string>>>;
 
