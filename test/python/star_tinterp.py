@@ -34,7 +34,7 @@ from itertools import product
 class test_star_texpr(unittest.TestCase):
     """Star test: correlated Hubbard atom + n bath sites"""
 
-    def test_Solver(self):
+    def test_compute(self):
         spin_names = ('up','dn')
 
         t_max = 5.0
