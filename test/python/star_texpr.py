@@ -31,9 +31,6 @@ import triqs.utility.mpi as mpi
 import numpy as np
 from itertools import product
 
-# FIXME
-from numpy.testing import assert_allclose
-
 class test_star_texpr(unittest.TestCase):
     """Star test: correlated Hubbard atom + n bath sites"""
 
@@ -88,9 +85,7 @@ class test_star_texpr(unittest.TestCase):
                 #ar['chi'] = chi
                 assert_block_gfs_are_close(ar['g_g'], g_g)
                 assert_block_gfs_are_close(ar['g_l'], g_l)
-                # FIXME: Cannot directly compare GF objects because format of
-                # indices has changed
-                assert_allclose(ar['chi'].data, chi.data)
+                assert_gfs_are_close(ar['chi'], chi)
 
 if __name__ == '__main__':
     unittest.main()
