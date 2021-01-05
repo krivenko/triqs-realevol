@@ -28,6 +28,9 @@ module = module_(full_name = "init_state", app_name = "realevol",
 module.add_imports('realevol.operators_texpr', 'realevol.operators_tinterp')
 
 module.add_include("<realevol/init_state.hpp>")
+module.add_include("<realevol/make_static_op.hpp>")
+module.add_include("<realevol/time_expr.hpp>")
+module.add_include("<realevol/time_interp.hpp>")
 
 module.add_include("<triqs/cpp2py_converters.hpp>")
 module.add_include("<cpp2py/converters/set.hpp>")
@@ -38,6 +41,8 @@ module.add_include("<cpp2py/converters/variant.hpp>")
 module.add_preamble("""
 using namespace realevol;
 using namespace realevol::hilbert_space;
+using time_expr_operator_t = realevol::operators::many_body_operator_generic<time_expr>;
+using time_interp_operator_t = realevol::operators::many_body_operator_generic<time_interp>;
 """)
 
 # The class solver
@@ -109,7 +114,8 @@ for cpp_t, py_t in operator_types:
                         signature = "init_state(%s generator, std::set<indices_t> fermion_indices,"
                                     "std::set<indices_t> boson_indices,"
                                     "std::map<operators::indices_t, int> bits_per_boson)" % cpp_t,
-                        calling_pattern = "auto result = make_pure_init_state(generator, fundamental_operator_set(fermion_indices,boson_indices), bits_per_boson)",
+                        calling_pattern = "auto result = make_pure_init_state(make_static_op(generator), "
+                                          "fundamental_operator_set(fermion_indices,boson_indices), bits_per_boson)",
                         doc = make_pure_init_state_doc % py_t)
 
     module.add_function(name = "make_equilibrium_init_state",
@@ -117,7 +123,8 @@ for cpp_t, py_t in operator_types:
                                     "std::set<indices_t> boson_indices,"
                                     "double temperature, realevol::eq_solver_parameters_t params,"
                                     "std::map<operators::indices_t, int> bits_per_boson = {})" % cpp_t,
-                        calling_pattern = "auto result = make_equilibrium_init_state(h, fundamental_operator_set(fermion_indices,boson_indices),"
+                        calling_pattern = "auto result = make_equilibrium_init_state(make_static_op(h), "
+                                          "fundamental_operator_set(fermion_indices,boson_indices),"
                                           "temperature, params, bits_per_boson)",
                         doc = make_equilibrium_init_state_doc % py_t)
 

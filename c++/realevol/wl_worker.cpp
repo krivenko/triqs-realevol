@@ -22,6 +22,8 @@
 #include "wl_worker.hpp"
 
 #include "array_utility.hpp"
+#include "time_expr.hpp"
+#include "time_interp.hpp"
 
 namespace realevol {
 

@@ -23,7 +23,6 @@
 
 #include <triqs/test_tools/arrays.hpp>
 
-#include <realevol/time_expr.hpp>
 #include <realevol/init_state.hpp>
 
 using namespace realevol;
@@ -36,9 +35,8 @@ TEST(init_state, pure) {
  fops.insert_fermion("up");
  fops.insert_boson("B");
 
- auto generator = (1.0 + c_dag<time_expr>("up") + c_dag<time_expr>("dn")
-                       + c_dag<time_expr>("dn")*c_dag<time_expr>("up"))
-                      *a_dag<time_expr>("B")*a_dag<time_expr>("B");
+ auto generator = (1.0 + c_dag("up") + c_dag("dn") + c_dag("dn")*c_dag("up"))
+                  *a_dag("B")*a_dag("B");
 
  auto st = make_pure_init_state(generator, fops, {{{"B"},3}});
 

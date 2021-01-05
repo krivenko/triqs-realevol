@@ -42,6 +42,8 @@ module.add_preamble("""
 using namespace triqs::gfs;
 using namespace realevol;
 using realevol::operators::many_body_operator;
+using time_expr_operator_t = realevol::operators::many_body_operator_generic<time_expr>;
+using time_interp_operator_t = realevol::operators::many_body_operator_generic<time_interp>;
 """)
 
 module.add_enum("h_interpolation", ["Rectangle", "Trapezoid", "Simpson"], "realevol",

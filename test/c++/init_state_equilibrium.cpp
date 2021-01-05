@@ -43,12 +43,11 @@ TEST(init_state_equilibrium, real) {
  fops.insert_fermion("up");
  fops.insert_boson("B");
 
- auto h0 = -mu*(n<time_expr>("up") + n<time_expr>("dn"));
- h0 += eta*(c_dag<time_expr>("up")*c<time_expr>("dn") + c_dag<time_expr>("dn")*c<time_expr>("up"));
- h0 += U*n<time_expr>("up")*n<time_expr>("dn");
- h0 += Omega*a_dag<time_expr>("B")*a<time_expr>("B");
- h0 += lambda*(n<time_expr>("up") + n<time_expr>("dn"))
-             *(a_dag<time_expr>("B") + a<time_expr>("B"));
+ auto h0 = -mu*(n("up") + n("dn"));
+ h0 += eta*(c_dag("up")*c("dn") + c_dag("dn")*c("up"));
+ h0 += U*n("up")*n("dn");
+ h0 += Omega*a_dag("B")*a("B");
+ h0 += lambda*(n("up") + n("dn"))*(a_dag("B") + a("B"));
 
  eq_solver_parameters_t params;
  params.verbosity = 2;
@@ -99,12 +98,11 @@ TEST(init_state_equilibrium, complex) {
  fops.insert_fermion("up");
  fops.insert_boson("B");
 
- auto h0 = -mu*(n<time_expr>("up") + n<time_expr>("dn"));
- h0 += eta*1i*(c_dag<time_expr>("up")*c<time_expr>("dn") - c_dag<time_expr>("dn")*c<time_expr>("up"));
- h0 += U*n<time_expr>("up")*n<time_expr>("dn");
- h0 += Omega*a_dag<time_expr>("B")*a<time_expr>("B");
- h0 += lambda*1i*(n<time_expr>("up") + n<time_expr>("dn"))
-             *(a_dag<time_expr>("B") - a<time_expr>("B"));
+ auto h0 = -mu*(n("up") + n("dn"));
+ h0 += eta*1i*(c_dag("up")*c("dn") - c_dag("dn")*c("up"));
+ h0 += U*n("up")*n("dn");
+ h0 += Omega*a_dag("B")*a("B");
+ h0 += lambda*1i*(n("up") + n("dn"))*(a_dag("B") - a("B"));
 
  eq_solver_parameters_t params;
  params.verbosity = 2;

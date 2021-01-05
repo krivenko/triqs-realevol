@@ -29,6 +29,7 @@
 
 #include <realevol/array_utility.hpp>
 #include <realevol/time_expr.hpp>
+#include <realevol/make_static_op.hpp>
 #include <realevol/mesh_utils.hpp>
 #include <realevol/init_state.hpp>
 #include <realevol/worldlines.hpp>
@@ -38,6 +39,8 @@ using namespace realevol::operators;
 using namespace realevol::hilbert_space;
 
 namespace realevol {
+
+using time_expr_operator_t = realevol::operators::many_body_operator_generic<time_expr>;
 
 template<std::size_t NPoints>
 bool operator==(worldline_desc_t<NPoints> const& wl1,
@@ -80,7 +83,7 @@ protected:
     params.verbosity = 0;
     params.arpack_min_matrix_size = 8;
 
-    initial_state = make_equilibrium_init_state(H0, fops, T, params);
+    initial_state = make_equilibrium_init_state(make_static_op(H0), fops, T, params);
 
     // H1 mixes |up> and |dn>
 

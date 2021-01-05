@@ -64,27 +64,9 @@ static void check_signals() {
 
 namespace realevol {
 
-template<typename OperatorType>
-static_operator_t make_static_op(OperatorType const& op, std::string const& error_message) {
- static_operator_t static_op;
- for(auto const& m : op) {
-  if(!is_constant(m.coef)) TRIQS_RUNTIME_ERROR << error_message;
-  auto new_coef = m.coef(0);
-  static_operator_t new_monomial(new_coef);
-  for(auto const& c : m.monomial)
-   new_monomial *= static_operator_t::make_canonical(c.stat, c.dagger, c.indices);
-  static_op += new_monomial;
- }
- return static_op;
-}
-
-template<typename OperatorType>
-init_state make_pure_init_state(OperatorType const& generator,
+init_state make_pure_init_state(static_operator_t const& generator,
                                 fundamental_operator_set const& fops,
                                 std::map<operators::indices_t, int> const& bits_per_boson) {
-
- // Static version of generator
- auto gen = make_static_op(generator, "Generating operator must be time-independent!");
 
  signal_handler::start();
 
@@ -99,7 +81,7 @@ init_state make_pure_init_state(OperatorType const& generator,
  vacuum(fock_state_t(0)) = 1;
 
  // Imperative version of generator
- static_op_on_space_t imp_gen(gen, ist.fops, ist.full_hs);
+ static_op_on_space_t imp_gen(generator, ist.fops, ist.full_hs);
 
  auto psi = imp_gen(vacuum);
 
@@ -123,15 +105,6 @@ init_state make_pure_init_state(OperatorType const& generator,
 
  return ist;
 }
-
-template
-init_state make_pure_init_state(time_expr_operator_t const&,
-                                fundamental_operator_set const&,
-                                std::map<operators::indices_t, int> const&);
-template
-init_state make_pure_init_state(time_interp_operator_t const&,
-                                fundamental_operator_set const&,
-                                std::map<operators::indices_t, int> const&);
 
 // -----------------------------------------------------------------
 
@@ -432,19 +405,15 @@ template<> struct mpi_type<realevol::JobWithGsEnergy> {
 
 namespace realevol {
 
-template<typename OperatorType>
-init_state make_equilibrium_init_state(OperatorType const& h,
+init_state make_equilibrium_init_state(static_operator_t const& h,
                                        fundamental_operator_set const& fops,
                                        double temperature,
                                        eq_solver_parameters_t const& params,
                                        std::map<operators::indices_t, int> const& bits_per_boson,
                                        mpi::communicator const& comm) {
 
- // Static version the equilibrium Hamiltonian
- auto h_ = make_static_op(h, "Initial Hamiltonian must be time-independent!");
-
  // Check that h is Hermitian
- if(!(h_ - dagger(h_)).is_zero())
+ if(!(h - dagger(h)).is_zero())
   TRIQS_RUNTIME_ERROR << "Supplied Hamitonian is not Hermitian!";
 
  if(params.arpack_min_matrix_size < 4)
@@ -470,7 +439,7 @@ init_state make_equilibrium_init_state(OperatorType const& h,
 
  // Partition the Hilbert space
  space_partition<state_on_space_t, static_op_on_space_t>
- partition(state_on_space_t(ist.get_full_hs()), static_op_on_space_t(h_, fops, ist.get_full_hs()));
+ partition(state_on_space_t(ist.get_full_hs()), static_op_on_space_t(h, fops, ist.get_full_hs()));
 
  check_signals();
 
@@ -481,6 +450,8 @@ init_state make_equilibrium_init_state(OperatorType const& h,
  foreach(partition, [&](fock_state_t s, int spn) { subspaces[spn].add_fock_state(s); });
 
  check_signals();
+
+ auto h_ = h;
 
  bool h_is_real = imag(h_).is_zero();
  if(h_is_real) h_ = real(h_);
@@ -683,19 +654,4 @@ init_state make_equilibrium_init_state(OperatorType const& h,
  return ist;
 }
 
-template
-init_state make_equilibrium_init_state(time_expr_operator_t const&,
-                                       fundamental_operator_set const&,
-                                       double,
-                                       eq_solver_parameters_t const&,
-                                       std::map<operators::indices_t, int> const&,
-                                       mpi::communicator const&);
-
-template
-init_state make_equilibrium_init_state(time_interp_operator_t const&,
-                                       fundamental_operator_set const&,
-                                       double,
-                                       eq_solver_parameters_t const&,
-                                       std::map<operators::indices_t, int> const&,
-                                       mpi::communicator const&);
 }

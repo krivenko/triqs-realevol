@@ -32,30 +32,14 @@
 
 #include "types.hpp"
 
-#include "time_expr.hpp"    // FIXME
-#include "time_interp.hpp"  // FIXME
-
 namespace realevol {
-
-using time_expr_operator_t = realevol::operators::many_body_operator_generic<time_expr>;
-using time_interp_operator_t = realevol::operators::many_body_operator_generic<time_interp>;
 
 class init_state;
 
 /// Apply a generating operator to the vacuum state to make a pure initial state
-template<typename OperatorType>
-init_state make_pure_init_state(OperatorType const& generator,
+init_state make_pure_init_state(static_operator_t const& generator,
                                 fundamental_operator_set const& fops,
                                 std::map<operators::indices_t, int> const& bits_per_boson = {});
-
-extern template
-init_state make_pure_init_state(time_expr_operator_t const&,
-                                fundamental_operator_set const&,
-                                std::map<operators::indices_t, int> const&);
-extern template
-init_state make_pure_init_state(time_interp_operator_t const&,
-                                fundamental_operator_set const&,
-                                std::map<operators::indices_t, int> const&);
 
 struct eq_solver_parameters_t {
 
@@ -76,29 +60,12 @@ struct eq_solver_parameters_t {
 };
 
 /// Make an equilibrium initial state at a given temperature (zero temperature is valid)
-template<typename OperatorType>
-init_state make_equilibrium_init_state(OperatorType const& h,
+init_state make_equilibrium_init_state(static_operator_t const& h,
                                        fundamental_operator_set const& fops,
                                        double temperature,
                                        eq_solver_parameters_t const& params,
                                        std::map<operators::indices_t, int> const& bits_per_boson = {},
                                        mpi::communicator const& comm = {});
-
-extern template
-init_state make_equilibrium_init_state(time_expr_operator_t const&,
-                                       fundamental_operator_set const&,
-                                       double,
-                                       eq_solver_parameters_t const&,
-                                       std::map<operators::indices_t, int> const&,
-                                       mpi::communicator const&);
-
-extern template
-init_state make_equilibrium_init_state(time_interp_operator_t const&,
-                                       fundamental_operator_set const&,
-                                       double,
-                                       eq_solver_parameters_t const&,
-                                       std::map<operators::indices_t, int> const&,
-                                       mpi::communicator const&);
 
 /// Initial state, including information about the Hilbert space structure
 class init_state {
@@ -195,20 +162,11 @@ private:
  /// List of pure states
  std::vector<weighted_state_t> weighted_states;
 
- friend init_state make_pure_init_state<time_expr_operator_t>(time_expr_operator_t const&,
-                                        fundamental_operator_set const&,
-                                        std::map<operators::indices_t, int> const&);
- friend init_state make_pure_init_state<time_interp_operator_t>(time_interp_operator_t const&,
+ friend init_state make_pure_init_state(static_operator_t const&,
                                         fundamental_operator_set const&,
                                         std::map<operators::indices_t, int> const&);
 
- friend init_state make_equilibrium_init_state<time_expr_operator_t>(time_expr_operator_t const&,
-                                               fundamental_operator_set const&,
-                                               double,
-                                               eq_solver_parameters_t const&,
-                                               std::map<operators::indices_t, int> const&,
-                                               mpi::communicator const&);
- friend init_state make_equilibrium_init_state<time_interp_operator_t>(time_interp_operator_t const&,
+ friend init_state make_equilibrium_init_state(static_operator_t const&,
                                                fundamental_operator_set const&,
                                                double,
                                                eq_solver_parameters_t const&,

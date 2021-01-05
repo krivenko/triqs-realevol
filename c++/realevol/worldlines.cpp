@@ -23,6 +23,8 @@
 #include <utility>
 
 #include "array_utility.hpp"
+#include "time_expr.hpp"
+#include "time_interp.hpp"
 #include "worldlines.hpp"
 
 namespace realevol {
