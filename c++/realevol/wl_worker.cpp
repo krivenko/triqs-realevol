@@ -277,6 +277,9 @@ void wl_worker<NPoints, HamiltonianType>::operator()(
 // Explicit instantiations
 //
 
+using time_expr_operator_t = realevol::operators::many_body_operator_generic<time_expr>;
+using time_interp_operator_t = realevol::operators::many_body_operator_generic<time_interp>;
+
 // Compute expectation values
 template class wl_worker<1, time_expr_operator_t>;
 template class wl_worker<1, time_interp_operator_t>;

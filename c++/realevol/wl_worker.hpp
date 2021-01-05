@@ -140,4 +140,22 @@ private:
                     ) const;
 };
 
+class time_expr;
+class time_interp;
+
+using time_expr_operator_t = realevol::operators::many_body_operator_generic<time_expr>;
+using time_interp_operator_t = realevol::operators::many_body_operator_generic<time_interp>;
+
+// Compute expectation values
+extern template class wl_worker<1, time_expr_operator_t>;
+extern template class wl_worker<1, time_interp_operator_t>;
+
+// Compute 2-point correlators
+extern template class wl_worker<2, time_expr_operator_t>;
+extern template class wl_worker<2, time_interp_operator_t>;
+
+// Compute 3-point correlators
+extern template class wl_worker<3, time_expr_operator_t>;
+extern template class wl_worker<3, time_interp_operator_t>;
+
 } // namespace realevol

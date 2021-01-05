@@ -107,6 +107,9 @@ worldlines_maker<HamiltonianType>::make_worldlines(
 // Explicit instantiations
 //
 
+using time_expr_operator_t = realevol::operators::many_body_operator_generic<time_expr>;
+using time_interp_operator_t = realevol::operators::many_body_operator_generic<time_interp>;
+
 template struct worldline_desc_t<1>;
 template struct worldline_desc_t<2>;
 template struct worldline_desc_t<3>;

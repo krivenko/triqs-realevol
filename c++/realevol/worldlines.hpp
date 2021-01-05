@@ -110,4 +110,10 @@ private:
   ) const;
 };
 
+class time_expr;
+class time_interp;
+
+extern template class worldlines_maker<time_expr>;
+extern template class worldlines_maker<time_interp>;
+
 } // namespace realevol

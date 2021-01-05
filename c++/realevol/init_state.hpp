@@ -32,7 +32,13 @@
 
 #include "types.hpp"
 
+#include "time_expr.hpp"    // FIXME
+#include "time_interp.hpp"  // FIXME
+
 namespace realevol {
+
+using time_expr_operator_t = realevol::operators::many_body_operator_generic<time_expr>;
+using time_interp_operator_t = realevol::operators::many_body_operator_generic<time_interp>;
 
 class init_state;
 

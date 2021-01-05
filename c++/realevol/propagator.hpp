@@ -114,6 +114,9 @@ public:
  void operator()(state_on_subspace_t & st, int t_start_index, int t_end_index) const;
 };
 
+class time_expr;
+class time_interp;
+
 extern template class propagator<time_expr>;
 extern template class propagator<time_interp>;
 

@@ -35,6 +35,8 @@ using namespace realevol::hilbert_space;
 
 using state_set_t = std::set<fock_state_t>;
 
+using time_expr_operator_t = realevol::operators::many_body_operator_generic<time_expr>;
+
 void test_make_monomial_connections(hilbert_space_structure<time_expr_operator_t> const& hss) {
 
   using realevol::hilbert_space::statistic_enum::Fermion;

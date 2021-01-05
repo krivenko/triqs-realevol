@@ -27,6 +27,8 @@
 
 #include <triqs/arrays/linalg/eigenelements.hpp>
 
+#include "time_expr.hpp"
+#include "time_interp.hpp"
 #include "propagator.hpp"
 
 namespace realevol {
@@ -206,6 +208,5 @@ void propagator<HScalarType>::operator()(state_on_subspace_t & st, int t_start_i
 
 template class propagator<time_expr>;
 template class propagator<time_interp>;
-
 
 }

@@ -34,9 +34,6 @@
 #include "hilbert_space/imperative_operator.hpp"
 #include "hilbert_space/state.hpp"
 
-#include "time_expr.hpp"
-#include "time_interp.hpp"
-
 namespace realevol {
 
 using namespace triqs::gfs;
@@ -84,8 +81,6 @@ using block_gf_2t_view = block_gf_view<cartesian_product<retime, retime>>;
 using indices_type = operators::indices_t;
 using chi_indices_t = std::vector<std::pair<std::string, std::variant<int, std::string>>>;
 
-using time_expr_operator_t = realevol::operators::many_body_operator_generic<time_expr>;
-using time_interp_operator_t = realevol::operators::many_body_operator_generic<time_interp>;
 using static_operator_t = many_body_operator;
 
 template<typename ScalarType>
