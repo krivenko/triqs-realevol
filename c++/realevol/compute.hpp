@@ -45,7 +45,7 @@ expectval_container_t compute_expectval(static_operator_t const& op,
                                         init_state const& initial_state,
                                         HamiltonianType const& h,
                                         mesh_t_t const& t_mesh,
-                                        solver_parameters_t const& params,
+                                        solver_parameters_t<1> const& params,
                                         mpi::communicator const& comm = {});
 
 //
@@ -60,7 +60,7 @@ correlator_2t_container_t compute_correlator_2t(static_operator_t const& op1,
                                                 init_state const& initial_state,
                                                 HamiltonianType const& h,
                                                 mesh_t_t const& t_mesh,
-                                                solver_parameters_t const& params,
+                                                solver_parameters_t<2> const& params,
                                                 mpi::communicator const& comm = {});
 
 //
@@ -76,7 +76,7 @@ correlator_3t_container_t compute_correlator_3t(static_operator_t const& op1,
                                                 init_state const& initial_state,
                                                 HamiltonianType const& h,
                                                 mesh_t_t const& t_mesh,
-                                                solver_parameters_t const& params,
+                                                solver_parameters_t<3> const& params,
                                                 mpi::communicator const& comm = {});
 
 //
@@ -89,7 +89,7 @@ block_gf_2t_t compute_g_l(gf_struct_t const& gf_struct,
                           init_state const& initial_state,
                           HamiltonianType const& h,
                           mesh_t_t const& t_mesh,
-                          solver_parameters_t const& params,
+                          solver_parameters_t<2> const& params,
                           mpi::communicator const& comm = {});
 
 //
@@ -102,7 +102,7 @@ block_gf_2t_t compute_g_g(gf_struct_t const& gf_struct,
                           init_state const& initial_state,
                           HamiltonianType const& h,
                           mesh_t_t const& t_mesh,
-                          solver_parameters_t const& params,
+                          solver_parameters_t<2> const& params,
                           mpi::communicator const& comm = {});
 
 //
@@ -115,6 +115,6 @@ gf_2t_t compute_chi(chi_indices_t const& chi_indices,
                     init_state const& initial_state,
                     HamiltonianType const& h,
                     mesh_t_t const& t_mesh,
-                    solver_parameters_t const& params,
+                    solver_parameters_t<2> const& params,
                     mpi::communicator const& comm = {});
 }

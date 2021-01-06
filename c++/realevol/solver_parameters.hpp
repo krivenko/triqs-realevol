@@ -20,17 +20,21 @@
  ******************************************************************************/
 #pragma once
 
+#include <array>
+#include <cstdlib>
+#include <cmath>
 #include <map>
 #include <utility>
 
 #include <mpi/mpi.hpp>
 
+#include "array_utility.hpp"
 #include "propagator.hpp"
 
 namespace realevol {
 
 // Parameters of the short time propagation solver
-struct solver_parameters_t {
+template<std::size_t NPoints> struct solver_parameters_t {
 
  /// Verbosity level
  /// default: 3 on MPI rank 0, 0 otherwise.
@@ -41,6 +45,13 @@ struct solver_parameters_t {
 
  /// Hamiltonian interpolation between time slices
  h_interpolation hamiltonian_interpol = Rectangle;
+
+ /// Time argument range restrictions, one per correlator point
+ std::array<std::pair<double, double>, NPoints> t_ranges =
+    make_array_repeat<std::pair<double, double>, NPoints>(std::make_pair(-INFINITY, INFINITY));
+
+ /// Maximal separations of successive time arguments
+ std::array<double, NPoints - 1> delta_t_max = make_array_repeat<double, NPoints - 1>(INFINITY);
 
  /// Use Lanczos algorithm to exponentiate matrices of this size or bigger
  int lanczos_min_matrix_size = 11;

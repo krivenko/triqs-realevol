@@ -69,7 +69,7 @@ void compute_impl(std::array<static_operator_t, NPoints> const& ops,
                   HamiltonianType const& h_,
                   mesh_t_t const& t_mesh,
                   time_container_t<NPoints> & result,
-                  solver_parameters_t const& params,
+                  solver_parameters_t<NPoints> const& params,
                   mpi::communicator const& comm) {
   // Complete fundamental operator set of the problem
   auto const& fops = initial_state.get_fops();
@@ -192,11 +192,7 @@ void compute_impl(std::array<static_operator_t, NPoints> const& ops,
   check_signals();
 
   // FIXME: properly initialize this selector
-  time_point_selector<NPoints> t_selector(
-    make_array_repeat<std::pair<double, double>, NPoints>(std::make_pair(-INFINITY, INFINITY)),
-    make_array_repeat<double, NPoints - 1>(INFINITY),
-    false
-  );
+  time_point_selector<NPoints> t_selector(params.t_ranges, params.delta_t_max, false);
 
   auto lanczos_params = lanczos_params_t{params.lanczos_min_matrix_size,
                                          params.lanczos_gs_energy_tol,
@@ -243,7 +239,7 @@ expectval_container_t compute_expectval(static_operator_t const& op,
                                         init_state const& initial_state,
                                         HamiltonianType const& h,
                                         mesh_t_t const& t_mesh,
-                                        solver_parameters_t const& params,
+                                        solver_parameters_t<1> const& params,
                                         mpi::communicator const& comm) {
   time_container_t<1> result(t_mesh);
   compute_impl<1>({op}, initial_state, h, t_mesh, result, params, comm);
@@ -262,7 +258,7 @@ correlator_2t_container_t compute_correlator_2t(static_operator_t const& op1,
                                                 init_state const& initial_state,
                                                 HamiltonianType const& h,
                                                 mesh_t_t const& t_mesh,
-                                                solver_parameters_t const& params,
+                                                solver_parameters_t<2> const& params,
                                                 mpi::communicator const& comm) {
   time_container_t<2> result({t_mesh, t_mesh});
   compute_impl<2>({op2, op1}, initial_state, h, t_mesh, result, params, comm);
@@ -282,7 +278,7 @@ correlator_3t_container_t compute_correlator_3t(static_operator_t const& op1,
                                                 init_state const& initial_state,
                                                 HamiltonianType const& h,
                                                 mesh_t_t const& t_mesh,
-                                                solver_parameters_t const& params,
+                                                solver_parameters_t<3> const& params,
                                                 mpi::communicator const& comm) {
   time_container_t<3> result({t_mesh, t_mesh, t_mesh});
   compute_impl<3>({op3, op2, op1}, initial_state, h, t_mesh, result, params, comm);
@@ -355,7 +351,7 @@ block_gf_2t_t compute_g_l(gf_struct_t const& gf_struct,
                           init_state const& initial_state,
                           HamiltonianType const& h,
                           mesh_t_t const& t_mesh,
-                          solver_parameters_t const& params,
+                          solver_parameters_t<2> const& params,
                           mpi::communicator const& comm) {
   auto f = [&](std::string const& block_name,
                std::variant<int, std::string> const& ind1,
@@ -388,7 +384,7 @@ block_gf_2t_t compute_g_g(gf_struct_t const& gf_struct,
                           init_state const& initial_state,
                           HamiltonianType const& h,
                           mesh_t_t const& t_mesh,
-                          solver_parameters_t const& params,
+                          solver_parameters_t<2> const& params,
                           mpi::communicator const& comm) {
 
   auto f = [&](std::string const& block_name,
@@ -419,7 +415,7 @@ gf_2t_t compute_chi(chi_indices_t const& chi_indices,
                     init_state const& initial_state,
                     HamiltonianType const& h,
                     mesh_t_t const& t_mesh,
-                    solver_parameters_t const& params,
+                    solver_parameters_t<2> const& params,
                     mpi::communicator const& comm) {
 
   struct index_visitor  {
@@ -462,24 +458,19 @@ gf_2t_t compute_chi(chi_indices_t const& chi_indices,
 // Explicit instantiations
 //
 
-// TODO: consider creating two translation units, one with explicit
-// instantiations for HamiltonianType = time_expr_operator_t, and the other one
-// for HamiltonianType = time_interp_operator_t.
-//
-
 template
 expectval_container_t compute_expectval(static_operator_t const& op,
                                         init_state const& initial_state,
                                         time_expr_operator_t const& h,
                                         mesh_t_t const& t_mesh,
-                                        solver_parameters_t const& params,
+                                        solver_parameters_t<1> const& params,
                                         mpi::communicator const& comm);
 template
 expectval_container_t compute_expectval(static_operator_t const& op,
                                         init_state const& initial_state,
                                         time_interp_operator_t const& h,
                                         mesh_t_t const& t_mesh,
-                                        solver_parameters_t const& params,
+                                        solver_parameters_t<1> const& params,
                                         mpi::communicator const& comm);
 
 template
@@ -488,7 +479,7 @@ correlator_2t_container_t compute_correlator_2t(static_operator_t const& op1,
                                                 init_state const& initial_state,
                                                 time_expr_operator_t const& h,
                                                 mesh_t_t const& t_mesh,
-                                                solver_parameters_t const& params,
+                                                solver_parameters_t<2> const& params,
                                                 mpi::communicator const& comm);
 template
 correlator_2t_container_t compute_correlator_2t(static_operator_t const& op1,
@@ -496,7 +487,7 @@ correlator_2t_container_t compute_correlator_2t(static_operator_t const& op1,
                                                 init_state const& initial_state,
                                                 time_interp_operator_t const& h,
                                                 mesh_t_t const& t_mesh,
-                                                solver_parameters_t const& params,
+                                                solver_parameters_t<2> const& params,
                                                 mpi::communicator const& comm);
 
 template
@@ -506,7 +497,7 @@ correlator_3t_container_t compute_correlator_3t(static_operator_t const& op1,
                                                 init_state const& initial_state,
                                                 time_expr_operator_t const& h,
                                                 mesh_t_t const& t_mesh,
-                                                solver_parameters_t const& params,
+                                                solver_parameters_t<3> const& params,
                                                 mpi::communicator const& comm);
 template
 correlator_3t_container_t compute_correlator_3t(static_operator_t const& op1,
@@ -515,7 +506,7 @@ correlator_3t_container_t compute_correlator_3t(static_operator_t const& op1,
                                                 init_state const& initial_state,
                                                 time_interp_operator_t const& h,
                                                 mesh_t_t const& t_mesh,
-                                                solver_parameters_t const& params,
+                                                solver_parameters_t<3> const& params,
                                                 mpi::communicator const& comm);
 
 template
@@ -523,14 +514,14 @@ block_gf_2t_t compute_g_l(gf_struct_t const& gf_struct,
                           init_state const& initial_state,
                           time_expr_operator_t const& h,
                           mesh_t_t const& t_mesh,
-                          solver_parameters_t const& params,
+                          solver_parameters_t<2> const& params,
                           mpi::communicator const& comm);
 template
 block_gf_2t_t compute_g_l(gf_struct_t const& gf_struct,
                           init_state const& initial_state,
                           time_interp_operator_t const& h,
                           mesh_t_t const& t_mesh,
-                          solver_parameters_t const& params,
+                          solver_parameters_t<2> const& params,
                           mpi::communicator const& comm);
 
 template
@@ -538,14 +529,14 @@ block_gf_2t_t compute_g_g(gf_struct_t const& gf_struct,
                           init_state const& initial_state,
                           time_expr_operator_t const& h,
                           mesh_t_t const& t_mesh,
-                          solver_parameters_t const& params,
+                          solver_parameters_t<2> const& params,
                           mpi::communicator const& comm);
 template
 block_gf_2t_t compute_g_g(gf_struct_t const& gf_struct,
                           init_state const& initial_state,
                           time_interp_operator_t const& h,
                           mesh_t_t const& t_mesh,
-                          solver_parameters_t const& params,
+                          solver_parameters_t<2> const& params,
                           mpi::communicator const& comm);
 
 template
@@ -553,14 +544,14 @@ gf_2t_t compute_chi(chi_indices_t const& chi_indices,
                     init_state const& initial_state,
                     time_expr_operator_t const& h,
                     mesh_t_t const& t_mesh,
-                    solver_parameters_t const& params,
+                    solver_parameters_t<2> const& params,
                     mpi::communicator const& comm);
 template
 gf_2t_t compute_chi(chi_indices_t const& chi_indices,
                     init_state const& initial_state,
                     time_interp_operator_t const& h,
                     mesh_t_t const& t_mesh,
-                    solver_parameters_t const& params,
+                    solver_parameters_t<2> const& params,
                     mpi::communicator const& comm);
 
 } // namespace realevol
