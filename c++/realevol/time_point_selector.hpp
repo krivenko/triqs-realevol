@@ -31,11 +31,10 @@ namespace realevol {
 /// Select (t_0, t_1, t_{N-1}) tuples fulfilling some inequalities
 template<std::size_t NPoints> class time_point_selector {
 
+protected:
+
  const std::array<std::pair<double, double>, NPoints> t_ranges;
  const std::array<double, NPoints - 1> delta_t_max;
- // TODO: Remove these if possible
- bool use_antihermiticity;
- bool swap_t_tp;
 
  using mesh_point_t = triqs::gfs::gf_mesh<triqs::gfs::retime>::mesh_point_t;
 
@@ -56,33 +55,29 @@ template<std::size_t NPoints> class time_point_selector {
 public:
 
  time_point_selector(std::array<std::pair<double, double>, NPoints> t_ranges,
-                     std::array<double, NPoints - 1> delta_t_max,
-                     bool use_antihermiticity = false,
-                     bool swap_t_tp = false
+                     std::array<double, NPoints - 1> delta_t_max
                     ) :
   t_ranges(std::move(t_ranges)),
-  delta_t_max(std::move(delta_t_max)),
-  use_antihermiticity(use_antihermiticity),
-  swap_t_tp(swap_t_tp) {}
-
- void set_swap_t_tp(bool swap) { swap_t_tp = swap; }
+  delta_t_max(std::move(delta_t_max)) {}
 
  inline bool operator()(std::array<mesh_point_t, NPoints> const& t) const {
-    if constexpr(NPoints == 2) {
-      auto t1 = swap_t_tp ? t[1] : t[0];
-      auto t2 = swap_t_tp ? t[0] : t[1];
-      bool b = in_domain({t1, t2});
-      if(use_antihermiticity) {
-        if(t1 >= t2) { // lower triangle: check that the (t,tp) pair is within domain
-          return b;
-        } else { // upper triangle: check that (t,tp) does not have an equivalent pair in the lower triangle
-          return b && !in_domain({t2, t1});
-        }
-      } else
-        return in_domain(t);
-    } else {
-      return in_domain(t);
-    }
+    return in_domain(t);
+  }
+};
+
+/// Select (t_0, t_1) tuples fulfilling some inequalities and the t_0 >= t_1 condition
+class time_point_selector_lower_triangle : public time_point_selector<2> {
+
+public:
+
+  time_point_selector_lower_triangle(
+    std::array<std::pair<double, double>, 2> t_ranges,
+    std::array<double, 1> delta_t_max
+  ) :
+  time_point_selector<2>(std::move(t_ranges), std::move(delta_t_max)) {}
+
+  inline bool operator()(std::array<mesh_point_t, 2> const& t) const {
+    return time_point_selector<2>::operator()(t) && (t[0] >= t[1]);
   }
 };
 

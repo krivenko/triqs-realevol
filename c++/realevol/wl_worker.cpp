@@ -31,14 +31,14 @@ namespace realevol {
 // Constructor
 //
 
-template<std::size_t NPoints, typename HamiltonianType>
-wl_worker<NPoints, HamiltonianType>::wl_worker(
+template<std::size_t NPoints, typename HamiltonianType, typename TPointSelector>
+wl_worker<NPoints, HamiltonianType, TPointSelector>::wl_worker(
   init_state const& initial_state,
   HamiltonianType const& h,
   double hbar,
   hilbert_space_structure<HamiltonianType> const& hss,
   std::vector<bool> const& is_static_sp,
-  time_point_selector<NPoints> const& t_selector,
+  TPointSelector const& t_selector,
   gf_mesh<retime> const& t_mesh,
   h_interpolation HInterpol,
   lanczos_params_t const& lanczos_params
@@ -60,7 +60,7 @@ wl_worker<NPoints, HamiltonianType>::wl_worker(
 //
 
 template<std::size_t... Ints>
-void add_to_element_impl(time_container_t<sizeof...(Ints)> & gf,
+void add_to_element_impl(time_container_view_t<sizeof...(Ints)> gf,
                          std::array<int, sizeof...(Ints)> const& t_indices,
                          dcomplex val,
                          std::index_sequence<Ints...>
@@ -69,7 +69,7 @@ void add_to_element_impl(time_container_t<sizeof...(Ints)> & gf,
 }
 
 template<std::size_t NPoints>
-void add_to_element(time_container_t<NPoints> & gf,
+void add_to_element(time_container_view_t<NPoints> gf,
                     std::array<int, NPoints> const& t_indices,
                     dcomplex val
                    ) {
@@ -164,15 +164,17 @@ bool call_t_selector(time_point_selector<NPoints> const& t_selector,
 // - The final result is obtained as <\phi(t_0)|\psi_N>.
 //
 
-template<std::size_t NPoints /* N */, typename HamiltonianType>
+template<std::size_t NPoints /* N */,
+         typename HamiltonianType,
+         typename TPointSelector>
 template<std::size_t Point>
-void wl_worker<NPoints, HamiltonianType>::do_inner_loop(
+void wl_worker<NPoints, HamiltonianType, TPointSelector>::do_inner_loop(
   std::array<propagator<HScalarType>, NPoints+1> const& props,
   std::array<op_with_map_t, NPoints> const& ops,
   std::array<state_on_subspace_t, NPoints+1> & psi,
   state_on_subspace_t & phi,
   dcomplex coeff,
-  time_container_t<NPoints> & result
+  time_container_view_t<NPoints> result
 ) const {
   if constexpr(Point < NPoints - 1) { // Do a step of recursion
 
@@ -207,10 +209,10 @@ void wl_worker<NPoints, HamiltonianType>::do_inner_loop(
 // Call operator
 //
 
-template<std::size_t NPoints, typename HamiltonianType>
-void wl_worker<NPoints, HamiltonianType>::operator()(
+template<std::size_t NPoints, typename HamiltonianType, typename TPointSelector>
+void wl_worker<NPoints, HamiltonianType, TPointSelector>::operator()(
   worldline_desc_t<NPoints> const& wl,
-  time_container_t<NPoints> & result
+  time_container_view_t<NPoints> result
 ) const {
 
   // Propagators U(t_{N-1}, 0), U(t_{N-2}, t_{N-1}), ..., U(0, t_0)
@@ -283,15 +285,19 @@ using time_expr_operator_t = realevol::operators::many_body_operator_generic<tim
 using time_interp_operator_t = realevol::operators::many_body_operator_generic<time_interp>;
 
 // Compute expectation values
-template class wl_worker<1, time_expr_operator_t>;
-template class wl_worker<1, time_interp_operator_t>;
+template class wl_worker<1, time_expr_operator_t, time_point_selector<1>>;
+template class wl_worker<1, time_interp_operator_t, time_point_selector<1>>;
 
 // Compute 2-point correlators
-template class wl_worker<2, time_expr_operator_t>;
-template class wl_worker<2, time_interp_operator_t>;
+template class wl_worker<2, time_expr_operator_t, time_point_selector<2>>;
+template class wl_worker<2, time_interp_operator_t, time_point_selector<2>>;
+
+// Compute GFs and susceptibilities
+template class wl_worker<2, time_expr_operator_t, time_point_selector_lower_triangle>;
+template class wl_worker<2, time_interp_operator_t, time_point_selector_lower_triangle>;
 
 // Compute 3-point correlators
-template class wl_worker<3, time_expr_operator_t>;
-template class wl_worker<3, time_interp_operator_t>;
+template class wl_worker<3, time_expr_operator_t, time_point_selector<3>>;
+template class wl_worker<3, time_interp_operator_t, time_point_selector<3>>;
 
 } // namespace realevol

@@ -81,6 +81,9 @@ using block_gf_2t_view = block_gf_view<cartesian_product<retime, retime>>;
 using indices_type = operators::indices_t;
 using chi_indices_t = std::vector<std::pair<std::string, std::variant<int, std::string>>>;
 
+template<std::size_t NPoints>
+using time_container_view_t = typename time_container_t<NPoints>::view_type;
+
 using static_operator_t = many_body_operator;
 
 template<typename ScalarType>

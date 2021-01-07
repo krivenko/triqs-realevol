@@ -69,7 +69,7 @@ struct lanczos_params_t {
 // corresponding Heisenberg operators must be monomials of creation/annihilation
 // operators.
 //
-template<std::size_t NPoints, typename HamiltonianType>
+template<std::size_t NPoints, typename HamiltonianType, typename TPointSelector>
 class wl_worker {
 
   static_assert(NPoints != 0, "Trivial dynamical trace is not supported");
@@ -86,7 +86,7 @@ class wl_worker {
   std::vector<bool> const& is_static_sp;
 
   // Selector of time point combinations to process.
-  time_point_selector<NPoints> const& t_selector;
+  TPointSelector const& t_selector;
 
   // Hamiltonian H(t)
   op_on_subspace_t<HScalarType> h;
@@ -111,7 +111,7 @@ public:
             double hbar,
             hilbert_space_structure<HamiltonianType> const& hss,
             std::vector<bool> const& is_static_sp,
-            time_point_selector<NPoints> const& t_selector,
+            TPointSelector const& t_selector,
             gf_mesh<retime> const& t_mesh,
             h_interpolation HInterpol,
             lanczos_params_t const& lanczos_params);
@@ -119,7 +119,7 @@ public:
   // Do the trace for one world line
   // The computed contribution will be *added* to 'result'
   void operator()(worldline_desc_t<NPoints> const& wl,
-                  time_container_t<NPoints> & result) const;
+                  time_container_view_t<NPoints> result) const;
 
 private:
 
@@ -136,7 +136,7 @@ private:
                      std::array<state_on_subspace_t, NPoints+1> & psi,
                      state_on_subspace_t & phi,
                      dcomplex coeff,
-                     time_container_t<NPoints> & result
+                     time_container_view_t<NPoints> result
                     ) const;
 };
 
@@ -147,15 +147,19 @@ using time_expr_operator_t = realevol::operators::many_body_operator_generic<tim
 using time_interp_operator_t = realevol::operators::many_body_operator_generic<time_interp>;
 
 // Compute expectation values
-extern template class wl_worker<1, time_expr_operator_t>;
-extern template class wl_worker<1, time_interp_operator_t>;
+extern template class wl_worker<1, time_expr_operator_t, time_point_selector<1>>;
+extern template class wl_worker<1, time_interp_operator_t, time_point_selector<1>>;
 
 // Compute 2-point correlators
-extern template class wl_worker<2, time_expr_operator_t>;
-extern template class wl_worker<2, time_interp_operator_t>;
+extern template class wl_worker<2, time_expr_operator_t, time_point_selector<2>>;
+extern template class wl_worker<2, time_interp_operator_t, time_point_selector<2>>;
+
+// Compute GFs and susceptibilities
+extern template class wl_worker<2, time_expr_operator_t, time_point_selector_lower_triangle>;
+extern template class wl_worker<2, time_interp_operator_t, time_point_selector_lower_triangle>;
 
 // Compute 3-point correlators
-extern template class wl_worker<3, time_expr_operator_t>;
-extern template class wl_worker<3, time_interp_operator_t>;
+extern template class wl_worker<3, time_expr_operator_t, time_point_selector<3>>;
+extern template class wl_worker<3, time_interp_operator_t, time_point_selector<3>>;
 
 } // namespace realevol

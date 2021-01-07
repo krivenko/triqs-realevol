@@ -21,6 +21,7 @@
 #include <triqs/utility/first_include.hpp>
 
 #include <csignal>
+#include <limits>
 #include <string>
 #include <utility>
 #include <vector>
@@ -63,14 +64,16 @@ HamiltonianType try_reduce_to_constant(HamiltonianType const& op, mesh_t_t const
   return res;
 }
 
-template<std::size_t NPoints, typename HamiltonianType>
+template<std::size_t NPoints, typename HamiltonianType, typename TPointSelector>
 void compute_impl(std::array<static_operator_t, NPoints> const& ops,
                   init_state const& initial_state,
                   HamiltonianType const& h_,
                   mesh_t_t const& t_mesh,
-                  time_container_t<NPoints> & result,
+                  time_container_view_t<NPoints> result,
                   solver_parameters_t<NPoints> const& params,
-                  mpi::communicator const& comm) {
+                  TPointSelector const& t_selector,
+                  mpi::communicator const& comm
+                 ) {
   // Complete fundamental operator set of the problem
   auto const& fops = initial_state.get_fops();
 
@@ -191,21 +194,20 @@ void compute_impl(std::array<static_operator_t, NPoints> const& ops,
 
   check_signals();
 
-  // FIXME: properly initialize this selector
-  time_point_selector<NPoints> t_selector(params.t_ranges, params.delta_t_max, false);
-
   auto lanczos_params = lanczos_params_t{params.lanczos_min_matrix_size,
                                          params.lanczos_gs_energy_tol,
                                          params.lanczos_max_krylov_dim};
-  wl_worker<NPoints, HamiltonianType> worker(initial_state,
-                                             h,
-                                             params.hbar,
-                                             hs_struct,
-                                             is_static_sp,
-                                             t_selector,
-                                             t_mesh,
-                                             params.hamiltonian_interpol,
-                                             lanczos_params);
+  wl_worker<NPoints, HamiltonianType, TPointSelector> worker(
+    initial_state,
+    h,
+    params.hbar,
+    hs_struct,
+    is_static_sp,
+    t_selector,
+    t_mesh,
+    params.hamiltonian_interpol,
+    lanczos_params
+  );
 
   mpi_dispatcher<long> disp(comm, worldlines.size());
 
@@ -242,7 +244,8 @@ expectval_container_t compute_expectval(static_operator_t const& op,
                                         solver_parameters_t<1> const& params,
                                         mpi::communicator const& comm) {
   time_container_t<1> result(t_mesh);
-  compute_impl<1>({op}, initial_state, h, t_mesh, result, params, comm);
+  time_point_selector<1> t_selector(params.t_ranges, params.delta_t_max);
+  compute_impl<1>({op}, initial_state, h, t_mesh, result, params, t_selector, comm);
   return result;
 }
 
@@ -261,7 +264,8 @@ correlator_2t_container_t compute_correlator_2t(static_operator_t const& op1,
                                                 solver_parameters_t<2> const& params,
                                                 mpi::communicator const& comm) {
   time_container_t<2> result({t_mesh, t_mesh});
-  compute_impl<2>({op2, op1}, initial_state, h, t_mesh, result, params, comm);
+  time_point_selector<2> t_selector(params.t_ranges, params.delta_t_max);
+  compute_impl<2>({op2, op1}, initial_state, h, t_mesh, result, params, t_selector, comm);
   return result;
 }
 
@@ -281,8 +285,49 @@ correlator_3t_container_t compute_correlator_3t(static_operator_t const& op1,
                                                 solver_parameters_t<3> const& params,
                                                 mpi::communicator const& comm) {
   time_container_t<3> result({t_mesh, t_mesh, t_mesh});
-  compute_impl<3>({op3, op2, op1}, initial_state, h, t_mesh, result, params, comm);
+  time_point_selector<3> t_selector(params.t_ranges, params.delta_t_max);
+  compute_impl<3>({op3, op2, op1}, initial_state, h, t_mesh, result, params, t_selector, comm);
   return result;
+}
+
+//
+// Initialize a GF container
+//
+
+void init_gf(time_container_view_t<2> f, time_point_selector_lower_triangle const& t_selector) {
+  const double nan = std::numeric_limits<double>::quiet_NaN();
+  for(auto t_tp : f.mesh()) {
+    auto const& [t, tp] = t_tp.components_tuple();
+    f[t_tp] = t_selector({t, tp}) ? .0 : dcomplex(nan, nan);
+  }
+}
+
+//
+// Change t <-> t' in a GF
+//
+
+auto swap_t_tp(gf_2t_view g) {
+  auto result = gf_2t_t{g.mesh(), g.target_shape(), g.indices()};
+  for(auto t_tp : g.mesh()) {
+    auto const& [t, tp] = t_tp.components_tuple();
+    result[t_tp] = g[{tp, t}];
+  }
+  return result;
+}
+
+//
+// Restore anti-hermiticity of a GF
+//
+void restore_antihermiticity(gf_2t_view f,
+                             time_point_selector_lower_triangle const& t_selector) {
+  for(auto t_tp : f.mesh()) {
+    auto const& [t, tp] = t_tp.components_tuple();
+    if(t_selector({t, tp})) continue;
+    // FIXME: Workaround for TRIQS issue #798
+    //
+    // https://github.com/TRIQS/triqs/issues/798
+    f[t_tp] = -dagger(matrix<dcomplex>(f[{tp, t}]));
+  }
 }
 
 //
@@ -292,6 +337,7 @@ correlator_3t_container_t compute_correlator_3t(static_operator_t const& op1,
 template<typename F>
 block_gf_2t_t compute_block_gf(gf_struct_t const& gf_struct,
                                mesh_t_t const& t_mesh,
+                               time_point_selector_lower_triangle const& t_selector,
                                F && f
                               ) {
   struct index_visitor  {
@@ -300,10 +346,12 @@ block_gf_2t_t compute_block_gf(gf_struct_t const& gf_struct,
     void operator()(std::string s) { indices.push_back(s); }
   };
 
-  const double nan = std::numeric_limits<double>::quiet_NaN();
-
   std::vector<std::string> block_names;
   std::vector<gf_2t_t> g_blocks;
+
+  // We have to use this temporary because slice_target_to_scalar()
+  // returns a non-contiguous view, which does not sit well with mpi_reduce().
+  time_container_t<2> gf_element({t_mesh, t_mesh});
 
   for (auto const& bl : gf_struct) {
     block_names.push_back(bl.first);
@@ -314,11 +362,12 @@ block_gf_2t_t compute_block_gf(gf_struct_t const& gf_struct,
     std::vector<std::vector<std::string>> indices{{iv.indices,iv.indices}};
 
     auto block = gf_2t_t{{t_mesh, t_mesh}, make_shape(n, n), indices};
-    block() = std::complex<double>(nan, nan);
 
     for(int i1 = 0; i1 < bl.second.size(); ++i1) {
       for(int i2 = 0; i2 < bl.second.size(); ++i2) {
-        slice_target_to_scalar(block, i1, i2) = f(bl.first, bl.second[i1], bl.second[i2]);
+        init_gf(gf_element, t_selector);
+        f(bl.first, bl.second[i1], bl.second[i2], gf_element);
+        slice_target_to_scalar(block, i1, i2) = gf_element;
       }
     }
 
@@ -326,19 +375,6 @@ block_gf_2t_t compute_block_gf(gf_struct_t const& gf_struct,
   }
 
   return make_block_gf(block_names, g_blocks);
-}
-
-//
-// Change t <-> t' in time_container_t<2>
-//
-
-time_container_t<2> transpose_time_gf(time_container_t<2> const& g) {
-  auto result = time_container_t<2>{g.mesh(), {}};
-  for(auto t_tp : g.mesh()) {
-    auto const& [t, tp] = t_tp.components_tuple();
-    result[{tp, t}] = g[t_tp];
-  }
-  return result;
 }
 
 //
@@ -353,24 +389,28 @@ block_gf_2t_t compute_g_l(gf_struct_t const& gf_struct,
                           mesh_t_t const& t_mesh,
                           solver_parameters_t<2> const& params,
                           mpi::communicator const& comm) {
+
+  time_point_selector_lower_triangle t_selector({params.t_ranges[1], params.t_ranges[0]},
+                                                params.delta_t_max);
+
   auto f = [&](std::string const& block_name,
                std::variant<int, std::string> const& ind1,
-               std::variant<int, std::string> const& ind2) {
+               std::variant<int, std::string> const& ind2,
+               time_container_view_t<2> result
+              ) {
     auto op1 = c_dag(block_name, ind2);
     auto op2 = c(block_name, ind1);
-    return transpose_time_gf(
-      compute_correlator_2t(op1,
-                            op2,
-                            initial_state,
-                            h,
-                            t_mesh,
-                            params,
-                            comm
-      )
-    );
+
+    compute_impl<2>({op2, op1}, initial_state, h, t_mesh, result, params, t_selector, comm);
   };
-  auto g_l = compute_block_gf(gf_struct, t_mesh, f);
+  auto g_l = compute_block_gf(gf_struct, t_mesh, t_selector, f);
   g_l *= 1i / params.hbar;
+
+  for(auto & g_l_block : g_l) {
+    restore_antihermiticity(g_l_block, t_selector);
+    g_l_block = swap_t_tp(g_l_block);
+  }
+
   return g_l;
 }
 
@@ -387,21 +427,25 @@ block_gf_2t_t compute_g_g(gf_struct_t const& gf_struct,
                           solver_parameters_t<2> const& params,
                           mpi::communicator const& comm) {
 
+  time_point_selector_lower_triangle t_selector(params.t_ranges, params.delta_t_max);
+
   auto f = [&](std::string const& block_name,
                std::variant<int, std::string> const& ind1,
-               std::variant<int, std::string> const& ind2) {
+               std::variant<int, std::string> const& ind2,
+               time_container_view_t<2> result
+              ) {
     auto op1 = c(block_name, ind1);
     auto op2 = c_dag(block_name, ind2);
-    return compute_correlator_2t(op1,
-                                 op2,
-                                 initial_state,
-                                 h,
-                                 t_mesh,
-                                 params,
-                                 comm);
+
+    compute_impl<2>({op2, op1}, initial_state, h, t_mesh, result, params, t_selector, comm);
   };
-  auto g_g = compute_block_gf(gf_struct, t_mesh, f);
+  auto g_g = compute_block_gf(gf_struct, t_mesh, t_selector, f);
   g_g *= -1i / params.hbar;
+
+  for(auto & g_g_block : g_g) {
+    restore_antihermiticity(g_g_block, t_selector);
+  }
+
   return g_g;
 }
 
@@ -432,25 +476,36 @@ gf_2t_t compute_chi(chi_indices_t const& chi_indices,
   }
   std::vector<std::vector<std::string>> indices{{indices1d, indices1d}};
 
+  time_point_selector_lower_triangle t_selector(params.t_ranges, params.delta_t_max);
+
   auto chi = gf_2t_t{{t_mesh, t_mesh}, make_shape(n_indices, n_indices), indices};
+
+  // We have to use this temporary because slice_target_to_scalar()
+  // returns a non-contiguous view, which does not sit well with mpi_reduce().
+  time_container_t<2> chi_element({t_mesh, t_mesh});
 
   for(int i1 = 0; i1 < n_indices; ++i1) {
     for(int i2 = 0; i2 < n_indices; ++i2) {
       auto op1 = n(chi_indices[i1].first, chi_indices[i1].second);
       auto op2 = n(chi_indices[i2].first, chi_indices[i2].second);
 
-      slice_target_to_scalar(chi, i1, i2) =
-        compute_correlator_2t(op1,
-                              op2,
-                              initial_state,
-                              h,
-                              t_mesh,
-                              params,
-                              comm);
+      init_gf(chi_element, t_selector);
+      compute_impl<2>({op2, op1},
+                      initial_state,
+                      h,
+                      t_mesh,
+                      chi_element,
+                      params,
+                      t_selector,
+                      comm);
+      slice_target_to_scalar(chi, i1, i2) = chi_element;
     }
   }
 
   chi *= -1i / params.hbar;
+
+  restore_antihermiticity(chi, t_selector);
+
   return chi;
 }
 
