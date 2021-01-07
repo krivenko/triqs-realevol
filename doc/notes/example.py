@@ -1,15 +1,16 @@
 # realevol example: Hubbard atom coupled to one boson
-# The coupling is slowly switched on at t = 0
+# The coupling is slowly switched on starting from t = 0
 #
 # H(t) = eps0 * (n_up + n_dn) + U n_up n_dn + omega * a^+ a
 #      + g(t) * (n_up + n_dn) * (a^+ + a),
 
-from h5 import HDFArchive  # HDF5 archive interface
+from h5 import HDFArchive               # HDF5 archive interface
+from triqs.gf import MeshReTime         # Real time mesh
 from realevol.texpr import TExpr        # Time-dependent expressions
 from realevol.operators_texpr import *  # Time-dependent second quantization operators
 from realevol.init_state import *       # Routines to prepare initial states
 from realevol.realevol import *         # Solver object
-import triqs.utility.mpi as mpi       # MPI utilities
+import triqs.utility.mpi as mpi         # MPI utilities
 
 # Model parameters
 T = 0.5                         # Temperature of the equilibrium initial state
@@ -20,7 +21,7 @@ g = TExpr("0.1*(1-exp(-5*t))")  # Time-dependent boson/fermion coupling constant
 
 # Structure of greater/lesser Green's functions: two 1x1 blocks
 # The blocks correspond to spin projections, which are not mixed by H(t)
-gf_struct = {'dn' : [0], 'up' : [0]}
+gf_struct = [('dn', [0]), ('up', [0])]
 
 # Indices of susceptibility functions
 # Solver will measure all <n_x n_y>, where x, y = (dn,0), (up,0) (4 components in total)
@@ -30,6 +31,8 @@ chi_indices = [('dn',0), ('up',0)]
 t_max = 1.0
 # Number of slices in the time grid
 n_t = 51
+# Real time mesh
+t_mesh = MeshReTime(0, t_max, n_t)
 
 # Hamiltonian at t = 0
 H0 = eps0 * (n('up',0) + n('dn',0)) + U*n('up',0)*n('dn',0)
@@ -53,26 +56,46 @@ init_state = make_equilibrium_init_state(H0,
 # Hamiltonian at t > 0
 H = H0 + g * (n('up',0) + n('dn',0)) * (a_dag('B',0) + a('B',0))
 
-## Construct a Solver object
-S = Solver(gf_struct, chi_indices, t_max = t_max, n_t = n_t)
+# Calculation parameters
+params = {}
+params['verbosity'] = 2                      # Verbosity level
+params['hbar'] = 1.0                         # Planck's constant
+params['hamiltonian_interpol'] = 'Trapezoid' # Trapezoid rule interpolation of H(t)
+params['lanczos_min_matrix_size'] = 33       # Use LAPACK for subspaces of dim 32 and smaller
 
-# Set initial state
-S.set_initial_state(init_state)
+#
+# Run calculations
+#
 
-# Parameters for GF/Chi calculation
-gf_params = {}
-gf_params['verbosity'] = 2                      # Verbosity level
-gf_params['hbar'] = 1.0                         # Planck's constant
-gf_params['hamiltonian_interpol'] = 'Trapezoid' # Trapezoid rule interpolation of H(t)
-gf_params['lanczos_min_matrix_size'] = 33       # Use LAPACK for subspaces of dim 32 and smaller
+# Density of electrons N(t)
+density = compute_expectval(n('up',0) + n('dn',0), init_state, H, t_mesh, params)
 
-# Run calculation!
-S.compute_2t_obs(h = H, params = gf_params)
+# Correlator <S_z(t) S_z(t')>
+Sz = 0.5 * (n('up',0) - n('dn',0))
+SzSz = compute_correlator_2t(Sz, Sz, init_state, H, t_mesh, params)
+
+# Correlator <n_up(t) c^\dagger_dn(t') c_dn(t'')>
+n_cdag_c = compute_correlator_3t(n('up',0),
+                                 c_dag('dn',0),
+                                 c('dn',0),
+                                 init_state,
+                                 H,
+                                 t_mesh, params)
+
+# Greater Green's function
+g_g = compute_g_g(gf_struct, init_state, H, t_mesh, params)
+# Lesser Green's function
+g_l = compute_g_l(gf_struct, init_state, H, t_mesh, params)
+# Susceptibility
+chi = compute_chi(chi_indices, init_state, H, t_mesh, params)
 
 # On MPI rank 0, save results to HDF5 archive
 if mpi.is_master_node():
     with HDFArchive('example.h5', 'w') as ar:
         ar['init_state'] = init_state
-        ar['g_l'] = S.g_l
-        ar['g_g'] = S.g_g
-        ar['chi'] = S.chi
+        ar['density'] = density
+        ar['SzSz'] = SzSz
+        ar['n_cdag_c'] = n_cdag_c
+        ar['g_l'] = g_l
+        ar['g_g'] = g_g
+        ar['chi'] = chi
