@@ -29,6 +29,9 @@ module.add_imports('triqs.gf',
                    'realevol.init_state')
 
 module.add_include("<realevol/compute.hpp>")
+module.add_include("<realevol/make_static_op.hpp>")
+module.add_include("<realevol/time_expr.hpp>")
+module.add_include("<realevol/time_interp.hpp>")
 module.add_include("<realevol/utility.hpp>")
 module.add_include("<triqs/gfs/gf_tests.hpp>")
 
@@ -50,71 +53,53 @@ using time_interp_operator_t = realevol::operators::many_body_operator_generic<t
 module.add_enum("h_interpolation", ["Rectangle", "Trapezoid", "Simpson"], "realevol",
                 "Hamiltonian interpolation between time slices")
 
+operator_types = [("time_expr_operator_t", "operators_texpr.Operator"),
+                  ("time_interp_operator_t", "operators_tinterp.Operator")]
+
 #
 # compute_expectval()
 #
 
-module.add_function(
-    name = "compute_expectval",
-    signature = "expectval_container_t(static_operator_t op,"
-                "init_state initial_state, time_expr_operator_t h, mesh_t_t t_mesh,"
-                "solver_parameters_t<1> params)",
-    calling_pattern = "auto result = compute_expectval(op, initial_state, h, t_mesh, params)",
-    doc = """Compute expectation value of operator 'op' as a function of time"""
-)
+for cpp_t, py_t in operator_types:
 
-module.add_function(
-    name = "compute_expectval",
-    signature = "expectval_container_t(static_operator_t op,"
-                "init_state initial_state, time_interp_operator_t h, mesh_t_t t_mesh,"
-                "solver_parameters_t<1> params)",
-    calling_pattern = "auto result = compute_expectval(op, initial_state, h, t_mesh, params)",
-    doc = """Compute expectation value of operator 'op' as a function of time"""
-)
+    module.add_function(
+        name = "compute_expectval",
+        signature = f"expectval_container_t({cpp_t} op,"
+                    f"init_state initial_state, {cpp_t} h, mesh_t_t t_mesh,"
+                    "solver_parameters_t<1> params)",
+        calling_pattern = "auto result = compute_expectval(make_static_op(op), initial_state, h, t_mesh, params)",
+        doc = """Compute expectation value of operator 'op' as a function of time"""
+    )
 
 #
 # compute_correlator_2t()
 #
 
-module.add_function(
-    name = "compute_correlator_2t",
-    signature = "correlator_2t_container_t(static_operator_t op1, static_operator_t op2,"
-                "init_state initial_state, time_expr_operator_t h, mesh_t_t t_mesh,"
-                "solver_parameters_t<2> params)",
-    calling_pattern = "auto result = compute_correlator_2t(op1, op2, initial_state, h, t_mesh, params)",
-    doc = """Compute a 2-point correlator of operators 'op1' and 'op2' with their time arguments defined on a Cartesian product 't_mesh' x 't_mesh'"""
-)
+for cpp_t, py_t in operator_types:
 
-module.add_function(
-    name = "compute_correlator_2t",
-    signature = "correlator_2t_container_t(static_operator_t op1, static_operator_t op2,"
-                "init_state initial_state, time_interp_operator_t h, mesh_t_t t_mesh,"
-                "solver_parameters_t<2> params)",
-    calling_pattern = "auto result = compute_correlator_2t(op1, op2, initial_state, h, t_mesh, params)",
-    doc = """Compute a 2-point correlator of operators 'op1' and 'op2' with their time arguments defined on a Cartesian product 't_mesh' x 't_mesh'"""
-)
+    module.add_function(
+        name = "compute_correlator_2t",
+        signature = f"correlator_2t_container_t({cpp_t} op1, {cpp_t} op2,"
+                    f"init_state initial_state, {cpp_t} h, mesh_t_t t_mesh,"
+                    "solver_parameters_t<2> params)",
+        calling_pattern = "auto result = compute_correlator_2t(make_static_op(op1), make_static_op(op2), initial_state, h, t_mesh, params)",
+        doc = """Compute a 2-point correlator of operators 'op1' and 'op2' with their time arguments defined on a Cartesian product 't_mesh' x 't_mesh'"""
+    )
 
 #
 # compute_correlator_3t()
 #
 
-module.add_function(
-    name = "compute_correlator_3t",
-    signature = "correlator_3t_container_t(static_operator_t op1, static_operator_t op2, static_operator_t op3,"
-                "init_state initial_state, time_expr_operator_t h, mesh_t_t t_mesh,"
-                "solver_parameters_t<3> params)",
-    calling_pattern = "auto result = compute_correlator_3t(op1, op2, op3, initial_state, h, t_mesh, params)",
-    doc = """Compute a 3-point correlator of operators 'op1', 'op2' and 'op3' with their time arguments defined on a Cartesian product 't_mesh' x 't_mesh' x 't_mesh'"""
-)
+for cpp_t, py_t in operator_types:
 
-module.add_function(
-    name = "compute_correlator_3t",
-    signature = "correlator_3t_container_t(static_operator_t op1, static_operator_t op2, static_operator_t op3,"
-                "init_state initial_state, time_interp_operator_t h, mesh_t_t t_mesh,"
-                "solver_parameters_t<3> params)",
-    calling_pattern = "auto result = compute_correlator_3t(op1, op2, op3, initial_state, h, t_mesh, params)",
-    doc = """Compute a 3-point correlator of operators 'op1', 'op2' and 'op3' with their time arguments defined on a Cartesian product 't_mesh' x 't_mesh' x 't_mesh'"""
-)
+    module.add_function(
+        name = "compute_correlator_3t",
+        signature = f"correlator_3t_container_t({cpp_t} op1, {cpp_t} op2, {cpp_t} op3,"
+                    f"init_state initial_state, {cpp_t} h, mesh_t_t t_mesh,"
+                    "solver_parameters_t<3> params)",
+        calling_pattern = "auto result = compute_correlator_3t(make_static_op(op1), make_static_op(op2), make_static_op(op3), initial_state, h, t_mesh, params)",
+        doc = """Compute a 3-point correlator of operators 'op1', 'op2' and 'op3' with their time arguments defined on a Cartesian product 't_mesh' x 't_mesh' x 't_mesh'"""
+    )
 
 #
 # compute_g_l()
