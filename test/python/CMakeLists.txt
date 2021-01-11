@@ -58,7 +58,7 @@ foreach(test ${SIMPLE_TESTS})
   add_realevol_python_test(${test})
 endforeach()
 
-set(MPI_TESTS star_texpr star_tinterp)
+set(MPI_TESTS star_texpr star_tinterp dimer_static)
 foreach(test ${MPI_TESTS})
   add_realevol_python_test(${test} 1 2 4)
 endforeach()
