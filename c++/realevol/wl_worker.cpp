@@ -198,7 +198,10 @@ void wl_worker<NPoints, HamiltonianType, TPointSelector>::do_inner_loop(
     // computing the scalar product.
     if(!call_t_selector(t_selector, t_mesh, t_indices)) return;
 
-    props[NPoints - 1](psi[NPoints - 1], t_indices[1], t_indices[0]);
+    if constexpr(NPoints == 1)
+      props[NPoints - 1](psi[NPoints - 1], 0, t_indices[0]);
+    else
+      props[NPoints - 1](psi[NPoints - 1], t_indices[1], t_indices[0]);
     ops[NPoints - 1].apply(psi[NPoints - 1], psi[NPoints]);
 
     add_to_element(result, t_indices, coeff * dot_product(phi, psi[NPoints]));
