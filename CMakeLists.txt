@@ -86,6 +86,9 @@ if(Build_Tests)
   enable_testing()
 endif()
 
+# Force compilation of shared libraries
+set(BUILD_SHARED_LIBS ON)
+
 # Export the list of compile-commands into compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
