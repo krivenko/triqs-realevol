@@ -208,6 +208,16 @@ for npoints in range(1, 4):
     module.add_converter(conv)
 
 #
+# Utility functions
+#
+
+module.add_function(
+    name = "make_gf_ret_adv",
+    signature = "std::pair<block_gf_2t_t,block_gf_2t_t>(block_gf_2t_t g_l, block_gf_2t_t g_g)",
+    doc = """Compute retarded and advanced Green's functions out of the lesser and greater components"""
+)
+
+#
 # Comparison tests
 #
 
