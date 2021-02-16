@@ -20,6 +20,8 @@
  ******************************************************************************/
 #pragma once
 
+#include <limits>
+
 #include <boost/operators.hpp>
 
 #include "interpolator.hpp"
@@ -120,7 +122,10 @@ public:
 
 namespace triqs::utility {
 
-inline bool is_zero(realevol::time_interp const& ti, double = 0 /* neglected */) { return ti.is_zero(); }
+inline bool is_zero(realevol::time_interp const& ti,
+                    double tolerance = 100 * std::numeric_limits<double>::epsilon()) {
+  return ti.is_zero(tolerance);
+}
 inline realevol::time_interp conj(realevol::time_interp const& ti) { return ti.conj(); }
 
 }

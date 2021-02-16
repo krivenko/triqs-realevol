@@ -28,6 +28,7 @@
 #include <triqs/arrays.hpp>
 #include <triqs/gfs.hpp>
 #include <triqs/utility/exceptions.hpp>
+#include <triqs/utility/numeric_ops.hpp>
 
 namespace realevol {
 
@@ -97,7 +98,11 @@ public:
   }
 
   friend bool is_constant(interpolator1d const& interp) { return interp.is_constant_; }
-  [[nodiscard]] bool is_zero() const { return is_constant(*this) && data(0) == T{}; }
+  [[nodiscard]] bool is_zero(double tolerance = {}) const {
+    for(auto const& x : data)
+      if(std::abs(x) > tolerance) return false;
+    return true;
+  }
 
   friend std::ostream& operator<<(std::ostream& os, interpolator1d const& interp) {
     if(interp.is_constant_)
