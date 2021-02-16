@@ -65,6 +65,9 @@ c.add_constructor(signature="(gf_mesh<retime> m, triqs::arrays::array<std::compl
                   doc="Create complex interpolator")
 
 c.add_call(signature="std::complex<double>(double t)", doc="Interpolation result at time point t")
+c.add_property(getter=cfunction("triqs::arrays::array<std::complex<double>, 1> get_data()"),
+               name="data",
+               doc="Values at interpolation nodes")
 module.add_class(c)
 
 module.add_function(signature="bool is_zero(time_interp ti)", doc="Boolean : is zero interpolator?")
