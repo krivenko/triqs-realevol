@@ -189,7 +189,8 @@ void wl_worker<NPoints, HamiltonianType, TPointSelector>::do_inner_loop(
       props[Point](psi[Point], t_index_prev, t_index);
       ops[Point].apply(psi[Point], psi[Point + 1]);
 
-      do_inner_loop<Point + 1>(props, ops, psi, phi, coeff, result);
+      if(!is_zero(dot_product(psi[Point + 1], psi[Point + 1])))
+        do_inner_loop<Point + 1>(props, ops, psi, phi, coeff, result);
 
       t_index_prev = t_index;
     }
