@@ -79,7 +79,7 @@ print("h(t) =", h)
 
 params = {}
 params['verbosity'] = 2
-params['lanczos_min_matrix_size'] = 10000
+params['lanczos_min_matrix_size'] = 16
 
 g_g = compute_g_g(gf_struct, init_state, h, t_mesh, params)
 g_l = compute_g_l(gf_struct, init_state, h, t_mesh, params)
