@@ -521,7 +521,8 @@ init_state make_equilibrium_init_state(static_operator_t const& h,
 
   check_signals();
 
-  if(params.verbosity >= 2 && sp_lowest_levels.back().first == sp.get_index())
+  if(params.verbosity >= 2 &&
+     !sp_lowest_levels.empty() && sp_lowest_levels.back().first == sp.get_index())
    std::cout << "[Node " << comm.rank() << "] Provisionally relevant levels on subspace "
              << sp.get_index() << ": "
              << sp_lowest_levels.back().second << std::endl;
