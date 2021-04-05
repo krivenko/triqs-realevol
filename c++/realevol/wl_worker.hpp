@@ -135,6 +135,7 @@ private:
                      std::array<op_with_map_t, NPoints> const& ops,
                      std::array<state_on_subspace_t, NPoints+1> & psi,
                      state_on_subspace_t & phi,
+                     std::array<state_on_subspace_t, NPoints-1> & psi_copies,
                      dcomplex coeff,
                      time_container_view_t<NPoints> result
                     ) const;

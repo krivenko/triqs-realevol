@@ -173,24 +173,40 @@ void wl_worker<NPoints, HamiltonianType, TPointSelector>::do_inner_loop(
   std::array<op_with_map_t, NPoints> const& ops,
   std::array<state_on_subspace_t, NPoints+1> & psi,
   state_on_subspace_t & phi,
+  std::array<state_on_subspace_t, NPoints-1> & psi_copies,
   dcomplex coeff,
   time_container_view_t<NPoints> result
 ) const {
   if constexpr(Point < NPoints - 1) { // Do a step of recursion
 
     int & t_index = t_indices[NPoints-1-Point];
-    int t_index_prev = 0;
+    int t_index_prev = Point > 0 ? t_indices[NPoints - Point] : 0;
 
-    // TODO: Get rid of this rewind operation if possible
     if constexpr(Point > 0)
-      props[Point](psi[Point], t_indices[NPoints - Point], 0);
+      psi_copies[Point - 1] = psi[Point];
 
-    for(t_index = 0; t_index < t_mesh.size(); ++t_index) {
+    // Lower part of the t_index loop
+    for(t_index = t_index_prev; t_index >= 0; --t_index) {
       props[Point](psi[Point], t_index_prev, t_index);
       ops[Point].apply(psi[Point], psi[Point + 1]);
 
       if(!is_zero(dot_product(psi[Point + 1], psi[Point + 1])))
-        do_inner_loop<Point + 1>(props, ops, psi, phi, coeff, result);
+        do_inner_loop<Point + 1>(props, ops, psi, phi, psi_copies, coeff, result);
+
+      t_index_prev = t_index;
+    }
+
+    if constexpr(Point > 0)
+      psi[Point] = psi_copies[Point - 1];
+
+    // Upper part of the t_index loop
+    t_index_prev = Point > 0 ? t_indices[NPoints - Point] : 0;
+    for(t_index = t_index_prev + 1; t_index < t_mesh.size(); ++t_index) {
+      props[Point](psi[Point], t_index_prev, t_index);
+      ops[Point].apply(psi[Point], psi[Point + 1]);
+
+      if(!is_zero(dot_product(psi[Point + 1], psi[Point + 1])))
+        do_inner_loop<Point + 1>(props, ops, psi, phi, psi_copies, coeff, result);
 
       t_index_prev = t_index;
     }
@@ -265,6 +281,13 @@ void wl_worker<NPoints, HamiltonianType, TPointSelector>::operator()(
     return state_on_subspace_t(hss.sub_hilbert_spaces[sp]);
   }, wl.sp_indices);
 
+  // Temporary space used to store copies of |\psi_n> in the inner loops
+  auto psi_copies = make_array<state_on_subspace_t, NPoints-1>(
+    [&](int Point) {
+      return state_on_subspace_t(hss.sub_hilbert_spaces[wl.sp_indices[Point+1]]);
+    }
+  );
+
   // Outer loop over t_0
   int t_index_prev = 0;
   int & t_index = t_indices[0];
@@ -275,7 +298,7 @@ void wl_worker<NPoints, HamiltonianType, TPointSelector>::operator()(
 
     // Enter the first inner loop
     psi[0] = psi_i;
-    do_inner_loop<0>(props, ops, psi, phi, coeff, result);
+    do_inner_loop<0>(props, ops, psi, phi, psi_copies, coeff, result);
 
     t_index_prev = t_index;
   }
