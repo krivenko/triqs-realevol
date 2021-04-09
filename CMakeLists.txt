@@ -30,7 +30,7 @@ endif()
 
 # ############
 # Define Project
-project(realevol VERSION 0.9.1 LANGUAGES CXX)
+project(realevol VERSION 0.9.2 LANGUAGES CXX)
 get_directory_property(IS_SUBPROJECT PARENT_DIRECTORY)
 
 # ############
