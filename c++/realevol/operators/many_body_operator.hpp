@@ -412,4 +412,28 @@ namespace realevol::operators {
   return many_body_operator_generic<scalar_t>::make_canonical(hilbert_space::statistic_enum::Boson, true, indices_t{indices...});
  }
 
+ // ---- operator_stat ----
+
+ // Determine whether a given operator is bosonic or fermionic
+ //
+ // All monomials of a bosonic (fermionic) operator have an even (odd) number of fermionic canonical operators.
+ // This function throws if the given operator is neither bosonic nor fermionic.
+ //
+
+ template <typename ScalarType>
+ hilbert_space::statistic_enum operator_stat(many_body_operator_generic<ScalarType> const& op) {
+   int stat_int = -1; // indefinite statistics
+   for(auto const& m : op.get_monomials()) {
+     int n_fermions = 0;
+     for(auto const& g : m.first) {
+        if(g.stat == hilbert_space::Fermion) ++n_fermions;
+     }
+     if(stat_int != -1 && stat_int != (n_fermions % 2))
+       TRIQS_RUNTIME_ERROR << "Indefinite operator statistics";
+     stat_int = n_fermions % 2;
+   }
+   return stat_int == 1 ? hilbert_space::Fermion :
+                          hilbert_space::Boson; // Zero-monomial operator (stat_int == -1) is bosonic
+ }
+
 }

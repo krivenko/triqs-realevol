@@ -38,7 +38,11 @@ module.add_include("<triqs/cpp2py_converters.hpp>")
 module.add_preamble("""
 using namespace realevol::operators;
 using namespace realevol;
+using hilbert_space::statistic_enum::Boson;
+using hilbert_space::statistic_enum::Fermion;
 """)
+
+module.add_enum("realevol::hilbert_space::statistic_enum", ["Boson", "Fermion"], "realevol::hilbert_space", "The statistics: Boson or Fermion")
 
 # The operator class
 op = class_(
@@ -76,5 +80,10 @@ for name, doc in [("c","Fermionic annihilation operator"),
 
 module.add_function("many_body_operator_generic<time_expr> dagger(many_body_operator_generic<time_expr> Op)",
                     doc = "Return the Hermitian conjugate of the operator")
+
+module.add_function(
+    "hilbert_space::statistic_enum operator_stat(many_body_operator_generic<time_expr> Op)",
+    doc = "Determine whether a given operator is bosonic or fermionic (throws for operators with indefinite statistics)"
+)
 
 module.generate_code()

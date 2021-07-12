@@ -193,5 +193,19 @@ class test_operators_texpr(unittest.TestCase):
         self.assertStrEqual(X, "(-(t^2),-(sin(t)))*C^+(,1)C^+(,2)C(,4)C(,3)A^+(,5)A(,6)")
         self.assertStrEqual(dagger(X), "(-(t^2),-(-(sin(t))))*C^+(,3)C^+(,4)C(,2)C(,1)A^+(,6)A(,5)")
 
+    def test_operator_stat(self):
+        self.assertStrEqual(operator_stat(Operator()), "Boson")
+        self.assertStrEqual(operator_stat(Operator(te("2.0"))), "Boson")
+        self.assertStrEqual(operator_stat(c_dag("",1)), "Fermion")
+        self.assertStrEqual(operator_stat(c("",1)), "Fermion")
+        self.assertStrEqual(operator_stat(a_dag("",1)), "Boson")
+        self.assertStrEqual(operator_stat(a("",1)), "Boson")
+        self.assertStrEqual(operator_stat(c_dag("",1) * c("",2) + c_dag("",2) * c("",1)), "Boson")
+        self.assertStrEqual(operator_stat(c_dag("",1) * c("",2) * c("",3) + c_dag("",4)), "Fermion")
+        self.assertStrEqual(operator_stat(a_dag("",1) * a("",2)), "Boson")
+        self.assertStrEqual(operator_stat(a_dag("",1) * a("",2) * c("",3) + c_dag("",4)), "Fermion")
+        with self.assertRaises(RuntimeError):
+            operator_stat(a_dag("",1) * a("",2) * c("",3) + c_dag("",4) * c("",5))
+
 if __name__ == '__main__':
     unittest.main()
