@@ -240,6 +240,16 @@ class test_dimer_static(unittest.TestCase):
         ref21 = self.ref21.compute_expvalue(self.t_mesh)
         assert_array_almost_equal(ref21.data, avg_hop21.data)
 
+        # Batch mode
+        avg_batch = compute_expectval([2.0 * op, 3.0 * op],
+                                      self.init_state1,
+                                      self.H2,
+                                      self.t_mesh,
+                                      params)
+        self.assertEqual(len(avg_batch), 2)
+        assert_array_almost_equal(2.0 * ref12.data, avg_batch[0].data)
+        assert_array_almost_equal(3.0 * ref12.data, avg_batch[1].data)
+
     def test_compute_correlator_2t(self):
         op1 = c_dag('dn', 0) * c('up', 0) + c_dag('dn', 1) * c('up', 1)
         op2 = c_dag('up', 0) * c('dn', 0) + c_dag('up', 1) * c('dn', 1)
@@ -257,6 +267,16 @@ class test_dimer_static(unittest.TestCase):
         self.assertEqual(ref21.mesh, corr21.mesh)
         self.assertEqual(ref21.target_shape, corr21.target_shape)
         assert_array_almost_equal(ref21.data, corr21.data)
+
+        # Batch mode
+        corr_batch = compute_correlator_2t([(op1, op2), (2.0 * op1, 3.0 * op2)],
+                                           self.init_state1,
+                                           self.H2,
+                                           self.t_mesh,
+                                           params)
+        self.assertEqual(len(corr_batch), 2)
+        assert_array_almost_equal(ref12.data, corr_batch[0].data)
+        assert_array_almost_equal(6.0 * ref12.data, corr_batch[1].data)
 
     def test_compute_correlator_3t(self):
         op1 = n('dn', 0) + n('up', 0)
@@ -276,6 +296,16 @@ class test_dimer_static(unittest.TestCase):
         self.assertEqual(ref21.mesh, corr21.mesh)
         self.assertEqual(ref21.target_shape, corr21.target_shape)
         assert_array_almost_equal(ref21.data, corr21.data)
+
+        # Batch mode
+        corr_batch = compute_correlator_3t([(op1, op2, op3), (2.0 * op1, 3.0 * op2, 4.0 * op3)],
+                                           self.init_state1,
+                                           self.H2,
+                                           self.t_mesh,
+                                           params)
+        self.assertEqual(len(corr_batch), 2)
+        assert_array_almost_equal(ref12.data, corr_batch[0].data)
+        assert_array_almost_equal(24.0 * ref12.data, corr_batch[1].data)
 
     def test_g_g(self):
         params = {'verbosity' : 0, 'hbar' : self.hbar}

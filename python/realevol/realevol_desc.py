@@ -48,6 +48,30 @@ using namespace realevol;
 using realevol::operators::many_body_operator;
 using time_expr_operator_t = realevol::operators::many_body_operator_generic<time_expr>;
 using time_interp_operator_t = realevol::operators::many_body_operator_generic<time_interp>;
+
+template<typename OperatorType>
+std::vector<static_operator_t> make_static_ops(std::vector<OperatorType> const& ops) {
+  std::vector<static_operator_t> result;
+  result.reserve(ops.size());
+  for(auto const& op : ops)
+    result.emplace_back(make_static_op(op));
+  return result;
+}
+
+template<typename OperatorType, std::size_t NPoints>
+std::vector<std::array<static_operator_t, NPoints>>
+make_static_ops(std::vector<std::array<OperatorType, NPoints>> const& ops) {
+  std::vector<std::array<static_operator_t, NPoints>> result;
+  result.reserve(ops.size());
+  for(auto const& op_array : ops) {
+    result.emplace_back(
+      map_array<static_operator_t>([](auto const& op) {
+        return make_static_op(op);
+      }, op_array)
+    );
+  }
+  return result;
+}
 """)
 
 module.add_enum("h_interpolation", ["Rectangle", "Trapezoid", "Simpson"], "realevol",
@@ -71,6 +95,16 @@ for cpp_t, py_t in operator_types:
         doc = """Compute expectation value of operator 'op' as a function of time"""
     )
 
+    # Batch version
+    module.add_function(
+        name = "compute_expectval",
+        signature = f"std::vector<expectval_container_t>(std::vector<{cpp_t}> ops,"
+                    f"init_state initial_state, {cpp_t} h, mesh_t_t t_mesh,"
+                    "solver_parameters_t<1> params)",
+        calling_pattern = "auto result = compute_expectval(make_static_ops(ops), initial_state, h, t_mesh, params)",
+        doc = """Batch-compute expectation values of operators 'ops' as functions of time"""
+    )
+
 #
 # compute_correlator_2t()
 #
@@ -86,6 +120,17 @@ for cpp_t, py_t in operator_types:
         doc = """Compute a 2-point correlator of operators 'op1' and 'op2' with their time arguments defined on a Cartesian product 't_mesh' x 't_mesh'"""
     )
 
+    # Batch version
+    module.add_function(
+        name = "compute_correlator_2t",
+        signature = f"std::vector<correlator_2t_container_t>(std::vector<std::array<{cpp_t}, 2>> ops,"
+                    f"init_state initial_state, {cpp_t} h, mesh_t_t t_mesh,"
+                    "solver_parameters_t<2> params)",
+        calling_pattern = "auto result = compute_correlator_2t(make_static_ops(ops), initial_state, h, t_mesh, params)",
+        doc = """Batch-compute 2-point correlators of operators 'ops[i][0]' and 'ops[i][1]' with their time arguments defined """
+              """on a Cartesian product 't_mesh' x 't_mesh'"""
+    )
+
 #
 # compute_correlator_3t()
 #
@@ -99,6 +144,17 @@ for cpp_t, py_t in operator_types:
                     "solver_parameters_t<3> params)",
         calling_pattern = "auto result = compute_correlator_3t(make_static_op(op1), make_static_op(op2), make_static_op(op3), initial_state, h, t_mesh, params)",
         doc = """Compute a 3-point correlator of operators 'op1', 'op2' and 'op3' with their time arguments defined on a Cartesian product 't_mesh' x 't_mesh' x 't_mesh'"""
+    )
+
+    # Batch version
+    module.add_function(
+        name = "compute_correlator_3t",
+        signature = f"std::vector<correlator_3t_container_t>(std::vector<std::array<{cpp_t}, 3>> ops,"
+                    f"init_state initial_state, {cpp_t} h, mesh_t_t t_mesh,"
+                    "solver_parameters_t<3> params)",
+        calling_pattern = "auto result = compute_correlator_3t(make_static_ops(ops), initial_state, h, t_mesh, params)",
+        doc = """Batch-compute 3-point correlators of operators 'ops[i][0]', 'ops[i][1]' and 'ops[i][2]' """
+              """with their time arguments defined on a Cartesian product 't_mesh' x 't_mesh' x 't_mesh'"""
     )
 
 #
