@@ -567,7 +567,7 @@ Computation of the 1-, 2- and 3-point correlators is performed by the following 
     \end{itemize}
     Returns a scalar-valued \texttt{triqs.gf.gf.Gf} object defined on the 1-dimensional real time mesh (\texttt{t\_mesh}).
 
-    \item 2-point correlator $\aver{A(t) B(t)}$ (\ref{2point_corr}).
+    \item 2-point correlator $\aver{A(t) B(t')}$ (\ref{2point_corr}).
     \begin{lstlisting}[language=Python]
         compute_correlator_2t(A, B, init_state, h, t_mesh, params)
     \end{lstlisting}
@@ -582,9 +582,9 @@ Computation of the 1-, 2- and 3-point correlators is performed by the following 
     \end{itemize}
     Returns a scalar-valued \texttt{triqs.gf.gf.Gf} object defined on 2-dimensional Cartesian product of the real time mesh with itself (\texttt{t\_mesh} $\times$ \texttt{t\_mesh}).
 
-    \item 3-point correlator $\aver{A(t) B(t) C(t)}$ (\ref{3point_corr}).
+    \item 3-point correlator $\aver{A(t) B(t') C(t'')}$ (\ref{3point_corr}).
     \begin{lstlisting}[language=Python]
-        compute_correlator_3t(A, B, C, init_state, H, t_mesh, params)
+        compute_correlator_3t(A, B, C, init_state, h, t_mesh, params)
     \end{lstlisting}
     Arguments:
     \begin{itemize}
@@ -644,7 +644,8 @@ Computation of the 1-, 2- and 3-point correlators is performed by the following 
 
 Operator-valued arguments of these functions can be either \texttt{realevol.operators\_texpr.Operator}\linebreak or
  \texttt{realevol.operators\_tinterp.Operator} objects, but not both mixed in the same function call. \texttt{gf\_struct} defines the structure of the greater/lesser Green's functions to be measured. It has a form of a list, \texttt{[(block\_index, [inner\_indices])]} (see Sec.~ \ref{sec:formulation:space}). \texttt{chi\_indices} controls what components of the susceptibility are to be measured. It is a \texttt{set} of
- \texttt{(block\_index,inner\_index)} pairs. 
+\texttt{(block\_index,inner\_index)} pairs.
+
 {\it Important}: All indices met in \texttt{gf\_struct}, \texttt{chi\_indices} and in \texttt{h} must be known to the \texttt{InitState} object used in the simulation.
 
 \texttt{params} is a parameters dictionary with the following elements.
@@ -658,6 +659,14 @@ Operator-valued arguments of these functions can be either \texttt{realevol.oper
     \item \texttt{lanczos\_gs\_energy\_tol}, dictionary \texttt{\{int:float\}}, allows to set Lanczos eigenvalue convergence tolerance for individual subspaces $\mathcal{\tilde H}_s$. Generation of Krylov basis vectors stops when the lowest eigenvalue of the tridiagonal Lanczos matrix converges within that tolerance;
     \item \texttt{lanczos\_max\_krylov\_dim}, dictionary \texttt{\{int:float\}}, allows to set a cap on the Krylov basis size for individual subspaces $\mathcal{\tilde H}_s$.
 \end{itemize}
+
+Functions \texttt{compute\_expectval()}, \texttt{compute\_correlator\_2t()} and \texttt{compute\_correlator\_3t()} have additional overloads with the following signatures,
+\begin{lstlisting}[language=Python]
+    compute_expectval([A1, A2, ...], init_state, h, t_mesh, params)
+    compute_correlator_2t([(A1, B1), (A2, B2), ...] init_state, h, t_mesh, params)
+    compute_correlator_3t([(A1, B1, C1), (A2, B2, C2), ...], init_state, h, t_mesh, params)
+\end{lstlisting}
+These functions will perform computation in so called batch mode. For example, the batch version of \texttt{compute\_expectval()} will compute time-dependent expectation values of multiple operators \texttt{A1, A2, ...} and return a list of as many GF objects. Similarly, the batch overload of \texttt{compute\_correlator\_2t()} will compute a list of correlators $\aver{A_1(t) B_1(t')}$, $\aver{A_2(t) B_2(t')}$, \ldots in one go. The batch functions should be used whenever one needs multiple expectation values/ correlators defined one the same time mesh and derived from the same initial state and time-dependent Hamiltonian. Internally, these functions allocate and evaluate world lines of all requested quantities at once, which results in more efficient parallelism compared to repeated calls to the non-batch counterparts.
 
 \section{\label{sec:example}Simulation example}
 
