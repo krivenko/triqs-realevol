@@ -20,6 +20,7 @@
  ******************************************************************************/
 #pragma once
 
+#include <array>
 #include <string>
 #include <vector>
 #include <map>
@@ -39,6 +40,16 @@ namespace realevol {
 // Expectation values
 //
 
+// Batch-compute expectation values of operators 'ops' as functions of time
+template<typename HamiltonianType>
+std::vector<expectval_container_t>
+compute_expectval(std::vector<static_operator_t> const& ops,
+                  init_state const& initial_state,
+                  HamiltonianType const& h,
+                  mesh_t_t const& t_mesh,
+                  solver_parameters_t<1> const& params,
+                  mpi::communicator const& comm = {});
+
 // Compute expectation value of operator 'op' as a function of time
 template<typename HamiltonianType>
 expectval_container_t compute_expectval(static_operator_t const& op,
@@ -51,6 +62,17 @@ expectval_container_t compute_expectval(static_operator_t const& op,
 //
 // 2-point correlator
 //
+
+// Batch-compute 2-point correlators of operators 'ops[i][0]' and 'ops[i][1]' with their time
+// arguments defined on a Cartesian product 't_mesh' x 't_mesh'.
+template<typename HamiltonianType>
+std::vector<correlator_2t_container_t>
+compute_correlator_2t(std::vector<std::array<static_operator_t, 2>> ops,
+                      init_state const& initial_state,
+                      HamiltonianType const& h,
+                      mesh_t_t const& t_mesh,
+                      solver_parameters_t<2> const& params,
+                      mpi::communicator const& comm = {});
 
 // Compute a 2-point correlator of operators 'op1' and 'op2' with their time
 // arguments defined on a Cartesian product 't_mesh' x 't_mesh'.
@@ -66,6 +88,17 @@ correlator_2t_container_t compute_correlator_2t(static_operator_t const& op1,
 //
 // 3-point correlator
 //
+
+// Batch-compute 3-point correlators of operators 'ops[i][0]', 'ops[i][1]' and 'ops[i][2]'
+// with their time arguments defined on a Cartesian product 't_mesh' x 't_mesh' x 't_mesh'.
+template<typename HamiltonianType>
+std::vector<correlator_3t_container_t>
+compute_correlator_3t(std::vector<std::array<static_operator_t, 3>> ops,
+                      init_state const& initial_state,
+                      HamiltonianType const& h,
+                      mesh_t_t const& t_mesh,
+                      solver_parameters_t<3> const& params,
+                      mpi::communicator const& comm = {});
 
 // Compute a 3-point correlator of operators 'op1', 'op2' and 'op3' with their time
 // arguments defined on a Cartesian product 't_mesh' x 't_mesh' x 't_mesh'.
