@@ -65,7 +65,7 @@ std::array<Out, N> map_array2(Lambda &&l, std::array<In1, N> const &a, std::arra
 /// Make a new std::array<T, N> with all elements equal to T(args...)
 template<typename T, std::size_t N, typename... Args> std::array<T, N>
 make_array_repeat(Args &&... args) {
-  return make_array<T, N>([&](size_t) { return T(args...); });
+  return make_array<T, N>([&](std::size_t) { return T(args...); });
 }
 
 } // namespace realevol
