@@ -25,12 +25,6 @@ module = module_(full_name = "texpr", app_name = "realevol", doc = "Time-depende
 
 module.add_include("<realevol/time_expr.hpp>")
 
-# FIXME: This include makes a little sense here, but without it the module will
-# SEGFAULT in `cpp2py::py_converter<std::complex<double>>::py2c()` whenever
-# a complex value is passed from Python to a C++ function.
-module.add_include("<triqs/arrays.hpp>")
-module.add_include("<triqs/cpp2py_converters.hpp>")
-
 module.add_preamble("""
 using namespace realevol;
 using triqs::utility::is_zero;

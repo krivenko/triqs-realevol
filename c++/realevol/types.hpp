@@ -26,6 +26,8 @@
 #include <variant>
 
 #include <triqs/gfs.hpp>
+#include <triqs/mesh/retime.hpp>
+#include <triqs/mesh/prod.hpp>
 #include <triqs/utility/numeric_ops.hpp>
 
 #include "operators/many_body_operator.hpp"
@@ -36,6 +38,7 @@
 
 namespace realevol {
 
+using namespace triqs;
 using namespace triqs::gfs;
 using namespace realevol::operators;
 using namespace realevol::hilbert_space;
@@ -49,7 +52,7 @@ struct make_cartesian_product;
 
 template<typename T, std::size_t N, std::size_t... Indices>
 struct make_cartesian_product<T, N, std::index_sequence<Indices...>> {
-  using type = cartesian_product<return_T<T, Indices>...>;
+  using type = mesh::prod<return_T<T, Indices>...>;
 };
 
 template<typename T> struct make_cartesian_product<T, 1> {
@@ -60,26 +63,26 @@ template<typename T> struct make_cartesian_product<T, 1> {
 
 // Time meshes
 template<std::size_t NPoints>
-using time_mesh_t = gf_mesh<typename detail::make_cartesian_product<retime, NPoints>::type>;
+using time_mesh_t = typename detail::make_cartesian_product<mesh::retime, NPoints>::type;
 using mesh_t_t = time_mesh_t<1>;
 using mesh_2t_t = time_mesh_t<2>;
 using mesh_3t_t = time_mesh_t<3>;
 
 // Multi-dimensional GF containers for computed correlation functions
 template<std::size_t NPoints>
-using time_container_t = gf<typename detail::make_cartesian_product<retime, NPoints>::type,
+using time_container_t = gf<typename detail::make_cartesian_product<mesh::retime, NPoints>::type,
                             scalar_valued>;
 using expectval_container_t = time_container_t<1>;
 using correlator_2t_container_t = time_container_t<2>;
 using correlator_3t_container_t = time_container_t<3>;
 
-using gf_2t_t = gf<cartesian_product<retime, retime>>;
-using block_gf_2t_t = block_gf<cartesian_product<retime, retime>>;
-using gf_2t_view = gf_view<cartesian_product<retime, retime>>;
-using block_gf_2t_view = block_gf_view<cartesian_product<retime, retime>>;
+using gf_2t_t = gf<mesh::prod<mesh::retime, mesh::retime>>;
+using block_gf_2t_t = block_gf<mesh::prod<mesh::retime, mesh::retime>>;
+using gf_2t_view = gf_view<mesh::prod<mesh::retime, mesh::retime>>;
+using block_gf_2t_view = block_gf_view<mesh::prod<mesh::retime, mesh::retime>>;
 
 using indices_type = operators::indices_t;
-using chi_indices_t = std::vector<std::pair<std::string, std::variant<int, std::string>>>;
+using chi_indices_t = std::vector<std::pair<std::string, long>>;
 
 template<std::size_t NPoints>
 using time_container_view_t = typename time_container_t<NPoints>::view_type;

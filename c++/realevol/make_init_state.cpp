@@ -21,7 +21,7 @@
 #include <triqs/utility/first_include.hpp>
 
 #ifndef NDEBUG
-#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
+#define NDA_ENFORCE_BOUNDCHECK
 #endif
 
 #include <csignal>
@@ -35,15 +35,16 @@
 #include <numeric>
 #include <type_traits>
 
-#include <triqs/arrays/vector.hpp>
-#include <triqs/arrays/linalg/eigenelements.hpp>
+#include <nda/nda.hpp>
+#include <nda/linalg.hpp>
+
 #include <triqs/utility/signal_handler.hpp>
 #include <mpi/mpi.hpp>
 
 #include <realevol/hilbert_space/space_partition.hpp>
 #include <realevol/hilbert_space/state_view.hpp>
 
-#include <ezarpack/storages/triqs.hpp>
+#include <ezarpack/storages/nda.hpp>
 #include <ezarpack/arpack_solver.hpp>
 #include <ezarpack/version.hpp>
 
@@ -108,7 +109,7 @@ init_state make_pure_init_state(static_operator_t const& generator,
 
 // -----------------------------------------------------------------
 
-using namespace triqs::arrays;
+using namespace nda;
 using sp_levels_t = std::pair<int,vector<double>>;
 using eigensystem_t = std::pair<vector<double>,matrix<dcomplex>>;
 using real_state_on_subspace_t = state<sub_hilbert_space,double,false>;
@@ -120,13 +121,13 @@ using real_static_op_on_subspace_t = imperative_operator<sub_hilbert_space,doubl
 
 auto make_arpack_solver_params(int nev, bool eigenvectors, std::true_type) {
  using namespace ezarpack;
- using params_t = arpack_solver<Complex, triqs_storage>::params_t;
+ using params_t = arpack_solver<Complex, nda_storage>::params_t;
  return params_t(nev, params_t::SmallestReal, eigenvectors ? params_t::Ritz : params_t::None);
 }
 
 auto make_arpack_solver_params(int nev, bool eigenvectors, std::false_type) {
  using namespace ezarpack;
- using params_t = arpack_solver<Symmetric, triqs_storage>::params_t;
+ using params_t = arpack_solver<Symmetric, nda_storage>::params_t;
  return params_t(nev, params_t::Smallest, eigenvectors);
 }
 
@@ -178,7 +179,7 @@ void find_lowest_levels_on_subspace(sub_hilbert_space const& sp,
    from(i) = 0;
   }
 
-  auto eig = linalg::eigenvalues_in_place(&M);
+  auto eig = linalg::eigenvalues(M);
   gs_energy = std::min(gs_energy, eig(0));
   int i = 0;
   for(; i < N && eig(i) <= gs_energy + energy_window; ++i);
@@ -193,7 +194,7 @@ void find_lowest_levels_on_subspace(sub_hilbert_space const& sp,
  // Set up ARPACK solver
  using namespace ezarpack;
  arpack_solver<is_complex_t::value ? Complex : Symmetric,
-               triqs_storage> arps(sp.size());
+               nda_storage> arps(sp.size());
 
  using state_view_t = state_view<sub_hilbert_space,T>;
  std::array<state_view_t,3> state_views = {
@@ -324,9 +325,9 @@ void compute_eigenvectors(sub_hilbert_space const& sp,
    from(i) = 0;
   }
 
-  auto eig = linalg::eigenelements_in_place(&M);
+  auto eig = linalg::eigenelements(M);
   auto r = range(n_vectors_to_compute);
-  eigensystems.emplace_back(eig.first(r), eig.second(r,range()).transpose());
+  eigensystems.emplace_back(eig.first(r), eig.second(range(), r));
   return;
 
  }
@@ -338,7 +339,7 @@ void compute_eigenvectors(sub_hilbert_space const& sp,
 
  // Set up ARPACK solver
  using namespace ezarpack;
- arpack_solver<is_complex_t::value ? Complex : Symmetric, triqs_storage> arps(sp.size());
+ arpack_solver<is_complex_t::value ? Complex : Symmetric, nda_storage> arps(sp.size());
 
  using state_view_t = state_view<sub_hilbert_space,T>;
  std::array<state_view_t,3> state_views = {
@@ -410,7 +411,7 @@ init_state make_equilibrium_init_state(static_operator_t const& h,
                                        double temperature,
                                        eq_solver_parameters_t const& params,
                                        std::map<operators::indices_t, int> const& bits_per_boson,
-                                       mpi::communicator const& comm) {
+                                       mpi::communicator comm) {
 
  // Check that h is Hermitian
  if(!(h - dagger(h)).is_zero())
@@ -529,7 +530,7 @@ init_state make_equilibrium_init_state(static_operator_t const& h,
  }
 
  // Find the global energy minimum
- gs_energy = mpi::all_reduce(gs_energy, comm, 0, MPI_MIN);
+ gs_energy = mpi::all_reduce(gs_energy, comm, MPI_MIN);
 
  if(params.verbosity >= 1 && comm.rank() == 0)
   std::cout << "Ground state energy: " << gs_energy << std::endl;
@@ -605,14 +606,14 @@ init_state make_equilibrium_init_state(static_operator_t const& h,
  sp_lowest_levels.clear();
 
  // Complete partition function
- Z = mpi::all_reduce(Z, comm, 0, MPI_SUM);
+ Z = mpi::all_reduce(Z, comm, MPI_SUM);
 
  // Gather relevant eigenpairs
  if(params.verbosity >= 1 && comm.rank() == 0)
   std::cout << "Gathering eigensystems ..." << std::endl;
 
  // Collect information about relevant subspaces from all ranks
- auto tmp = mpi::all_gather(rel_sp_i, comm, 0);
+ auto tmp = mpi::all_gather(rel_sp_i, comm);
  std::set<global_index> all_relevant_sp_i(tmp.begin(), tmp.end());
 
  auto & shs = ist.sub_hilbert_spaces;

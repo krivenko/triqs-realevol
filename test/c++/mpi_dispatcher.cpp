@@ -18,11 +18,13 @@
  * realevol. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
-#include <triqs/test_tools/arrays.hpp>
-
 #include <chrono>
 #include <thread>
+
+// clang-format off
+#include <nda/nda.hpp>
+#include <nda/gtest_tools.hpp>
+// clang-format on
 
 #include <realevol/mpi_dispatcher.hpp>
 
@@ -52,7 +54,7 @@ Job test_sum(mpi_dispatcher<Job,GeneratorArgs...> & disp,
   sleep_duration += 1ms;
   sum += job;
  }
- sum = mpi::all_reduce(sum, comm, 0, MPI_SUM);
+ sum = mpi::all_reduce(sum, comm, MPI_SUM);
 
  return sum;
 }

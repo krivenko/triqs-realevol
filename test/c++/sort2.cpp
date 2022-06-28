@@ -18,9 +18,12 @@
  * realevol. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include <triqs/test_tools/arrays.hpp>
-
 #include <random>
+
+// clang-format off
+#include <nda/nda.hpp>
+#include <nda/gtest_tools.hpp>
+// clang-format on
 
 #include <realevol/sort2.hpp>
 
@@ -46,4 +49,3 @@ TEST(sort2, Random) {
  EXPECT_TRUE(std::is_sorted(v2.begin(), v2.end()));
 }
 
-MAKE_MAIN;

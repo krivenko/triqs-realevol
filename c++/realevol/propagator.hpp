@@ -95,7 +95,7 @@ class propagator {
 
  const bool is_static_h;           // Is Hamiltonian static on sp
  const dcomplex h_coeff;           // Hamiltonian prefactor in the exponential
- gf_mesh<retime> const& t_mesh;    // Time mesh
+ mesh::retime const& t_mesh;       // Time mesh
 
  // Choose the exact diagonaliztion solver
  enum {OneD, LAPACK, Lanczos} ed_solver;
@@ -107,7 +107,7 @@ class propagator {
 public:
 
  propagator(op_on_subspace_t<HScalarType> const& h, sub_hilbert_space const& sp,
-            gf_mesh<retime> const& t_mesh,
+            mesh::retime const& t_mesh,
             double hbar, bool is_static_op, h_interpolation h_interpol,
             long lanczos_min_matrix_size, double gs_energy_convergence, int max_krylov_dim);
 

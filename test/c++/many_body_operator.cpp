@@ -19,18 +19,32 @@
  *
  ******************************************************************************/
 
+#include <sstream>
+
 #include <triqs/utility/first_include.hpp>
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/serialization/complex.hpp>
 
+// clang-format off
+#include <nda/nda.hpp>
+#include <nda/gtest_tools.hpp>
+// clang-format on
+
 #include <triqs/gfs.hpp>
-#include <triqs/test_tools/arrays.hpp>
 
 #include <realevol/time_expr.hpp>
 #include <realevol/time_interp.hpp>
 #include <realevol/operators/many_body_operator.hpp>
+
+// Check that 'cout << Y' prints X
+#define EXPECT_PRINT(X, Y)                                                                                                                           \
+  {                                                                                                                                                  \
+    std::stringstream ss;                                                                                                                            \
+    ss << Y;                                                                                                                                         \
+    EXPECT_EQ(X, ss.str());                                                                                                                          \
+  }
 
 using namespace realevol;
 using namespace realevol::operators;
@@ -359,10 +373,10 @@ TEST(operator, time_interp) {
  }
 
  // Algebra
- triqs::gfs::segment_mesh m(0, 1, 6);
- auto ti1 = time_interp(m, triqs::arrays::array<double,1>{.0, 0.2, 0.4, 0.6, 0.8, 1.0});
- auto ti2 = time_interp(m, triqs::arrays::array<double,1>{.0, 0.1, 0.3, 0.5, 0.7, 0.9});
- auto ti3 = time_interp(m, triqs::arrays::array<double,1>{.0, 0.2, 0.4, 0.6, 0.4, 0.2});
+ triqs::mesh::segment_mesh m(0, 1, 6);
+ auto ti1 = time_interp(m, nda::array<double,1>{.0, 0.2, 0.4, 0.6, 0.8, 1.0});
+ auto ti2 = time_interp(m, nda::array<double,1>{.0, 0.1, 0.3, 0.5, 0.7, 0.9});
+ auto ti3 = time_interp(m, nda::array<double,1>{.0, 0.2, 0.4, 0.6, 0.4, 0.2});
 
  auto C = ti1 * c<ti>(0), Cd = c_dag<ti>(1);
  auto A = a<ti>(0), Ad = ti2 * a_dag<ti>(1);
@@ -516,5 +530,3 @@ TEST(operator, time_interp) {
  EXPECT_PRINT("ti([0,1]->[(0,0),...,(-1,-0.9)])*C^+(1)C^+(2)C(4)C(3)A^+(5)A(6)", X);
  EXPECT_PRINT("ti([0,1]->[(0,-0),...,(-1,0.9)])*C^+(3)C^+(4)C(2)C(1)A^+(6)A(5)", dagger(X));
 }
-
-MAKE_MAIN;

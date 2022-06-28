@@ -18,11 +18,15 @@
  * realevol. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #include <set>
 #include <vector>
 
-#include <triqs/test_tools/arrays.hpp>
+// clang-format off
+#include <nda/nda.hpp>
+#include <nda/gtest_tools.hpp>
+// clang-format on
+
+#include <triqs/mesh/bases/segment.hpp>
 
 #include <realevol/time_expr.hpp>
 
@@ -101,10 +105,10 @@ TEST(hs_structure, BosonFermion) {
  fops.insert_fermion("up",0);
  fops.insert_boson("B",0);
 
- triqs::gfs::segment_mesh mesh(0,1.0,101);
+ triqs::mesh::segment_mesh mesh(0,1.0,101);
  class hilbert_space full_hs(fops, {3});
  hilbert_space_structure<time_expr_operator_t> hss(h, fops, full_hs, fops,
-                             is_zero_on_mesh<triqs::gfs::segment_mesh>(mesh));
+                             is_zero_on_mesh<triqs::mesh::segment_mesh>(mesh));
 
  EXPECT_EQ(32, hss.sub_hilbert_spaces.size());
 
@@ -137,10 +141,10 @@ TEST(hs_structure, BosonFermionCoupled) {
  fops.insert_fermion("up",0);
  fops.insert_boson("B",0);
 
- triqs::gfs::segment_mesh mesh(0,1.0,101);
+ triqs::mesh::segment_mesh mesh(0,1.0,101);
  class hilbert_space full_hs(fops, {3});
  hilbert_space_structure<time_expr_operator_t> hss(h, fops, full_hs, fops,
-                             is_zero_on_mesh<triqs::gfs::segment_mesh>(mesh));
+                             is_zero_on_mesh<triqs::mesh::segment_mesh>(mesh));
 
  EXPECT_EQ(4, hss.sub_hilbert_spaces.size());
 
@@ -161,5 +165,3 @@ TEST(hs_structure, BosonFermionCoupled) {
 
  test_make_monomial_connections(hss);
 }
-
-MAKE_MAIN;

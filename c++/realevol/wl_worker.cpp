@@ -39,7 +39,7 @@ wl_worker<NPoints, HamiltonianType, TPointSelector>::wl_worker(
   hilbert_space_structure<HamiltonianType> const& hss,
   std::vector<bool> const& is_static_sp,
   TPointSelector const& t_selector,
-  gf_mesh<retime> const& t_mesh,
+  mesh::retime const& t_mesh,
   h_interpolation HInterpol,
   lanczos_params_t const& lanczos_params
 ) :
@@ -83,7 +83,7 @@ void add_to_element(time_container_view_t<NPoints> gf,
 
 template<std::size_t... Ints>
 bool call_t_selector_impl(time_point_selector<sizeof...(Ints)> const& t_selector,
-                          gf_mesh<retime> const& t_mesh,
+                          mesh::retime const& t_mesh,
                           std::array<int, sizeof...(Ints)> const& t_indices,
                           std::index_sequence<Ints...>
                          ) {
@@ -92,7 +92,7 @@ bool call_t_selector_impl(time_point_selector<sizeof...(Ints)> const& t_selector
 
 template<std::size_t NPoints>
 bool call_t_selector(time_point_selector<NPoints> const& t_selector,
-                     gf_mesh<retime> const& t_mesh,
+                     mesh::retime const& t_mesh,
                      std::array<int, NPoints> const& t_indices
                     ) {
   return call_t_selector_impl(t_selector,

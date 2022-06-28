@@ -79,7 +79,6 @@ set(SIMPLE_TESTS time_expr.cpp
                  space_partition.cpp
                  lanczos_worker.cpp
                  hs_structure.cpp
-                 worldlines.cpp
                  sort2.cpp
                  interpolator.cpp
                  init_state_pure.cpp)
@@ -92,3 +91,5 @@ set(MPI_TESTS mpi_dispatcher.cpp init_state_equilibrium.cpp)
 foreach(test ${MPI_TESTS})
   add_realevol_cpp_test(${test} 1 2 4)
 endforeach()
+add_realevol_cpp_test(worldlines.cpp 1)
+

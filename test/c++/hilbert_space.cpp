@@ -18,19 +18,18 @@
  * realevol. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
+#include <complex>
 #include <map>
 #include <vector>
 
-// FIXME: Code in <triqs/utility/variant_extensions.hpp> depends on these
-// headers but does not include them.
-//
-// https://github.com/TRIQS/triqs/pull/799
-#include <ostream>
-#include <sstream>
+// clang-format off
+#include <nda/nda.hpp>
+#include <nda/gtest_tools.hpp>
+// clang-format on
+
+#include <h5/h5.hpp>
 
 #include <triqs/utility/variant_extensions.hpp>
-#include <triqs/test_tools/arrays.hpp>
 
 #include <realevol/time_expr.hpp>
 
@@ -56,6 +55,26 @@ void check_state(StateType const& st, std::map<int,typename StateType::value_typ
   else                { EXPECT_EQ(.0, a); }
  });
 }
+
+template <typename T>
+T rw_h5(T const &x, std::string filename = "ess", std::string name = "x") {
+
+  namespace h5 = h5;
+  T y; // must be default constructible
+
+  {
+    h5::file file(filename + ".h5", 'w');
+    h5_write(file, name, x);
+  }
+
+  {
+    h5::file file(filename + ".h5", 'r');
+    h5_read(file, name, y);
+  }
+
+  return y;
+}
+
 
 TEST(hilbert_space, fundamental_operator_set) {
  using hs::statistic_enum::Fermion;
@@ -166,7 +185,7 @@ TEST(hilbert_space, state_view) {
  for (int i=0; i<3; ++i) fop.insert_boson("B",i);
 
  hs::hilbert_space h_full(fop, {1,1,1});
- triqs::arrays::vector<double> amplitudes(h_full.size());
+ nda::vector<double> amplitudes(h_full.size());
  amplitudes() = 0;
 
  hs::state_view<hs::hilbert_space,double> sv(amplitudes, h_full);
@@ -395,6 +414,8 @@ TEST(hilbert_space, time_expr_complex) {
  op = 1.0*c_dag<time_expr>("up",0)*c<time_expr>("down",1)
          *a_dag<time_expr>("B",0)*a<time_expr>("B",1);
 
+ using namespace std::complex_literals;
+
  // Spin-flips
  op += 1i*("2*t^2"*c_dag<time_expr>("down",0)*c<time_expr>("up",1));
  op += 1i*("2*t^2"*c_dag<time_expr>("up",0)*c<time_expr>("down",1));
@@ -415,5 +436,3 @@ TEST(hilbert_space, time_expr_complex) {
  imp_op.update_coeffs([t](time_expr & M){ M = M(t);});
  check_state(imp_op(st1,t), {{172, std::sqrt(6.0)},{211,-0.18i},{220,0.18i}});
 }
-
-MAKE_MAIN;

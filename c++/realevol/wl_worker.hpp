@@ -96,7 +96,7 @@ class wl_worker {
 
   // Time arguments of the operators (t_0, t_1, ..., t_{N-1}) in the trace are
   // defined on this mesh.
-  gf_mesh<retime> t_mesh;
+  mesh::retime t_mesh;
 
   // Hamiltonian interpolation method
   h_interpolation HInterpol;
@@ -112,7 +112,7 @@ public:
             hilbert_space_structure<HamiltonianType> const& hss,
             std::vector<bool> const& is_static_sp,
             TPointSelector const& t_selector,
-            gf_mesh<retime> const& t_mesh,
+            mesh::retime const& t_mesh,
             h_interpolation HInterpol,
             lanczos_params_t const& lanczos_params);
 

@@ -24,7 +24,8 @@
 #include <set>
 #include <vector>
 
-#include <triqs/arrays/matrix.hpp>
+#include <nda/nda.hpp>
+
 #include <triqs/gfs.hpp>
 
 #include "hilbert_space/space_partition.hpp"
@@ -32,8 +33,6 @@
 #include "types.hpp"
 
 namespace realevol {
-
-using triqs::arrays::matrix;
 
 /// List of subspace branchings
 ///      /-> sp'_1              /-> sp'_1
@@ -55,7 +54,7 @@ struct hilbert_space_structure {
  // Connections between subspaces: *_connection[stat][operator_linear_index][B] -> B'
  // WARNING: For operators belonging to fops but missing from merger_fops
  // (not 1-to-1 mappings) no connections are stored
- matrix<long> creation_connection[2], annihilation_connection[2];
+ nda::matrix<long> creation_connection[2], annihilation_connection[2];
  // Hilbert space partition
  mutable space_partition<dyn_state_on_space_t<HScalarType>, op_on_space_t<HScalarType>> partition;
 
@@ -162,8 +161,8 @@ private:
    creation_connection[stat].resize(fops.size(stat), partition.n_subspaces());
    annihilation_connection[stat].resize(fops.size(stat), partition.n_subspaces());
 
-   creation_connection[stat].as_array_view() = -1;
-   annihilation_connection[stat].as_array_view() = -1;
+   make_array_view(creation_connection[stat]) = -1;
+   make_array_view(annihilation_connection[stat]) = -1;
 
    for (auto it = merger_fops.begin(stat); it != merger_fops.end(stat); ++it) {
     int n = fops.pos(it->index, stat);

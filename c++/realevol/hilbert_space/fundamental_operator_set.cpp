@@ -41,15 +41,15 @@ namespace realevol::hilbert_space {
 
   // a little visitor for reduction to string
   struct variant_visitor {
-   std::string operator()(int i) const { return "i" + std::to_string(i); }
+   std::string operator()(long i) const { return "i" + std::to_string(i); }
    std::string operator()(std::string const& s) const { return "s" + s; }
   };
 
   // decode the string
-  std::variant<int, std::string> string_to_variant(std::string const& s) {
+  std::variant<long, std::string> string_to_variant(std::string const& s) {
    switch (s[0]) {
     case 'i':
-     return std::stoi(s.c_str() + 1); // the variant is an int. Skip the first char and recover the int
+     return std::stoi(s.c_str() + 1); // the variant is a long. Skip the first char and recover the long
     case 's':
      return s.c_str() + 1; // the variant is a string. Just skip the first char
     default:
@@ -81,8 +81,8 @@ namespace realevol::hilbert_space {
  // private constructor
  fundamental_operator_set::fundamental_operator_set(std::vector<std::vector<std::string>> const& v_f,
                                                     std::vector<std::vector<std::string>> const& v_b) {
-  for (int n = 0; n < v_f.size(); ++n) fermion_map_index_n.insert({to_indices(v_f[n]), n});
-  for (int n = 0; n < v_b.size(); ++n) boson_map_index_n.insert({to_indices(v_b[n]), n});
+  for (long n = 0; n < v_f.size(); ++n) fermion_map_index_n.insert({to_indices(v_f[n]), n});
+  for (long n = 0; n < v_b.size(); ++n) boson_map_index_n.insert({to_indices(v_b[n]), n});
  }
 
  // --- h5

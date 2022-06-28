@@ -25,6 +25,7 @@
 #include <utility>
 
 #include <triqs/gfs.hpp>
+#include <triqs/mesh/retime.hpp>
 
 namespace realevol {
 
@@ -36,7 +37,7 @@ protected:
  const std::array<std::pair<double, double>, NPoints> t_ranges;
  const std::array<double, NPoints - 1> delta_t_max;
 
- using mesh_point_t = triqs::gfs::gf_mesh<triqs::gfs::retime>::mesh_point_t;
+ using mesh_point_t = triqs::mesh::retime::mesh_point_t;
 
  [[nodiscard]] inline bool in_domain(std::array<mesh_point_t, NPoints> const& t) const {
    // Check the ranges first

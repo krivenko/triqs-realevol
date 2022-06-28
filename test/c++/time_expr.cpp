@@ -25,16 +25,19 @@
 #include <sstream>
 
 #include <triqs/gfs.hpp>
-#include <triqs/gfs/meshes/segment.hpp>
+#include <triqs/mesh/bases/segment.hpp>
 #include <triqs/utility/numeric_ops.hpp>
 
-#include <triqs/test_tools/arrays.hpp>
+// clang-format off
+#include <nda/nda.hpp>
+#include <nda/gtest_tools.hpp>
+// clang-format on
 
 #include <realevol/time_expr.hpp>
 #include <realevol/mesh_utils.hpp>
 
 using namespace realevol;
-using triqs::gfs::segment_mesh;
+using triqs::mesh::segment_mesh;
 
 time_expr te1("t^2"), te2("t + sin(pi/2)"), te3("sqrt(9.0) + 1.5");
 time_expr te4("t^2",1.0), te5("t + sin(pi/2)","t^3");
@@ -209,5 +212,3 @@ TEST(time_expr,try_reduce_to_constant) {
   EXPECT_TRUE(is_constant(te0t2));
   EXPECT_FALSE(is_constant(te1tt3));
 }
-
-MAKE_MAIN;

@@ -29,16 +29,17 @@
 
 #include <triqs/utility/dressed_iterator.hpp>
 #include <triqs/utility/exceptions.hpp>
+#include <triqs/utility/variant_extensions.hpp>
 
 #include <h5/h5.hpp>
 
 namespace realevol::hilbert_space {
 
  /// Sequence of indices (`std::vector` of int/string variant objects)
- using indices_t = std::vector<std::variant<int, std::string>>;
+ using indices_t = std::vector<std::variant<long, std::string>>;
 
  /// Structure of the Green's function
- using gf_struct_t = std::vector<std::pair<std::string, std::vector<std::variant<int, std::string>>>>;
+ using gf_struct_t = std::vector<std::pair<std::string, long>>;
 
  /// The statistics: Boson or Fermion
  enum statistic_enum {Boson, Fermion};
@@ -107,10 +108,10 @@ class fundamental_operator_set {
   */
  fundamental_operator_set (gf_struct_t const& gf_struct_fermion, gf_struct_t const& gf_struct_boson) {
   for(auto const& block : gf_struct_fermion)
-   for(auto const& inner : block.second)
+   for(auto inner : itertools::range(block.second))
     insert_fermion(block.first, inner);
   for(auto const& block : gf_struct_boson)
-   for(auto const& inner : block.second)
+   for(auto inner : itertools::range(block.second))
     insert_boson(block.first, inner);
  }
 

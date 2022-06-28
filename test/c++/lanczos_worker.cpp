@@ -20,18 +20,19 @@
  ******************************************************************************/
 
 #include <triqs/utility/first_include.hpp>
-#include <triqs/test_tools/arrays.hpp>
 
 #include <cstdlib>
 #include <vector>
 #include <iostream>
 #include <complex>
 
-#include <triqs/arrays.hpp>
-#include <triqs/arrays/blas_lapack/dot.hpp>
-#include <triqs/arrays/asserts.hpp>
+// clang-format off
+#include <nda/nda.hpp>
+#include <nda/linalg.hpp>
+#include <nda/gtest_tools.hpp>
+// clang-format on
 
-using namespace triqs::arrays;
+using namespace nda;
 
 vector<double> make_zero_state(vector<double> const& st) {
  vector<double> zero_st(st.size());
@@ -40,7 +41,7 @@ vector<double> make_zero_state(vector<double> const& st) {
 }
 
 template<typename VT>
-auto dot_product(VT const& a, VT const& b) -> typename VT::value_type { return dotc(a,b);}
+auto dot_product(VT const& a, VT const& b) -> typename VT::value_type { return nda::blas::dotc(a,b);}
 
 #include <realevol/lanczos_worker.hpp>
 
@@ -107,5 +108,3 @@ TEST(lanczos_worker, complex) {
   EXPECT_EQ(n+1, lw.values().size());
  }
 }
-
-MAKE_MAIN;

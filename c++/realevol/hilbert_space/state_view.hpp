@@ -25,15 +25,15 @@
 
 #include <boost/operators.hpp>
 #include <triqs/utility/numeric_ops.hpp>
-#include <triqs/arrays.hpp>
-#include <triqs/arrays/blas_lapack/dot.hpp>
+
+#include <nda/nda.hpp>
 
 #include "hilbert_space.hpp"
 #include "state.hpp"
 
 namespace realevol::hilbert_space {
 
-/// Many-body state as a view of a `triqs::arrays::vector` object.
+/// Many-body state as a view of a `nda::vector` object.
 /**
   @tparam HilbertSpace Hilbert space type, one of [[hilbert_space]] and [[sub_hilbert_space]]
   @tparam ScalarType Amplitude type, normally `double` or `std::complex<double>`
@@ -44,7 +44,7 @@ class state_view : boost::additive<state_view<HilbertSpace, ScalarType>>,
                    boost::multiplicative<state_view<HilbertSpace, ScalarType>, ScalarType> {
 
  const HilbertSpace* hs_p;
- using amplitude_t = triqs::arrays::vector_view<ScalarType>;
+ using amplitude_t = nda::vector_view<ScalarType>;
  amplitude_t ampli;
 
  public:
@@ -154,12 +154,12 @@ class state_view : boost::additive<state_view<HilbertSpace, ScalarType>>,
  // Additions to StateVector concept
  //
 
- /// Direct access to the storage container (`triqs::arrays::vector_view`)
+ /// Direct access to the storage container (`nda::vector_view`)
  /**
    @return Constant reference to the storage container
   */
  amplitude_t const& amplitudes() const { return ampli; }
- /// Direct access to the storage container (`triqs::arrays::vector`)
+ /// Direct access to the storage container (`nda::vector`)
  /**
    @return Reference to the storage container
   */

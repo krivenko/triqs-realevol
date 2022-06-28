@@ -20,12 +20,13 @@
  ******************************************************************************/
 
 #ifndef NDEBUG
-#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
+#define NDA_ENFORCE_BOUNDCHECK
 #endif
 
 #include <cmath>
 
-#include <triqs/arrays/linalg/eigenelements.hpp>
+#include <nda/nda.hpp>
+#include <nda/linalg.hpp>
 
 #include "time_expr.hpp"
 #include "time_interp.hpp"
@@ -33,7 +34,7 @@
 
 namespace realevol {
 
-using namespace triqs::arrays;
+using namespace nda;
 
 ////////////////
 /// inst_h_t ///
@@ -100,7 +101,7 @@ inline void prop_lapack_t<HScalarType>::diag(double t, double dt) {
   workspace(range(),i) = to_st.amplitudes();
   from_st(i) = 0;
  }
- eig = linalg::eigenelements_in_place(&workspace);
+ eig = linalg::eigenelements(workspace);
 }
 
 template<typename HScalarType>
@@ -108,9 +109,9 @@ inline void prop_lapack_t<HScalarType>::operator()(state_on_subspace_t & st, dou
  double dt = t_max - t_min;
  if(!inst_h.is_static) diag(t_min, dt);
  auto & psi = st.amplitudes();
- psi = conj(eig.second) * psi;
+ psi = dagger(eig.second) * psi;
  for(int i : range(psi.size())) psi(i) *= std::exp(c * dt * eig.first(i));
- psi = eig.second.transpose() * psi;
+ psi = eig.second * psi;
 }
 
 //////////////////////
@@ -142,7 +143,7 @@ inline void prop_lanczos_t<HScalarType>::operator()(state_on_subspace_t & st, do
 
  for(int n : all)
   krylov_coeffs(n) = std::exp(c * inst_h.dt * eigenvalues(n)) * lw.vectors()(n, 0);
- krylov_coeffs(all) = lw.vectors().transpose() * krylov_coeffs(all);
+ krylov_coeffs(all) = transpose(lw.vectors()) * krylov_coeffs(all);
 
  // Propagate
  lw.krylov_2_fock(norm * krylov_coeffs(all), st);
@@ -154,7 +155,7 @@ inline void prop_lanczos_t<HScalarType>::operator()(state_on_subspace_t & st, do
 
 template<typename HScalarType>
 propagator<HScalarType>::propagator(op_on_subspace_t<HScalarType> const& h, sub_hilbert_space const& sp,
-                                    gf_mesh<retime> const& t_mesh,
+                                    mesh::retime const& t_mesh,
                                     double hbar, bool is_static_h, h_interpolation h_interpol,
                                     long lanczos_min_matrix_size,
                                     double gs_energy_convergence,

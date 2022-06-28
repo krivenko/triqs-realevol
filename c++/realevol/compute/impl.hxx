@@ -73,7 +73,7 @@ void compute_impl(std::vector<std::array<static_operator_t, NPoints>> const& ops
                   std::vector<time_container_t<NPoints>> & results,
                   solver_parameters_t<NPoints> const& params,
                   TPointSelector const& t_selector,
-                  mpi::communicator const& comm
+                  mpi::communicator comm
                  ) {
   assert(results.size() == ops.size());
 
@@ -141,7 +141,7 @@ void compute_impl(std::vector<std::array<static_operator_t, NPoints>> const& ops
     fops,
     initial_state.get_full_hs(),
     all_ops_fops,
-    is_zero_on_mesh<gf_mesh<retime>>(t_mesh)
+    is_zero_on_mesh<mesh::retime>(t_mesh)
   );
 
   check_signals();
@@ -406,10 +406,7 @@ inline void restore_antihermiticity(gf_2t_view f,
   for(auto t_tp : f.mesh()) {
     auto const& [t, tp] = t_tp.components_tuple();
     if(t_selector({t, tp})) continue;
-    // FIXME: Workaround for TRIQS issue #798
-    //
-    // https://github.com/TRIQS/triqs/issues/798
-    f[t_tp] = -dagger(matrix<dcomplex>(f[{tp, t}]));
+    f[t_tp] = -dagger(f[{tp, t}]);
   }
 }
 
@@ -432,11 +429,11 @@ block_gf_2t_t compute_block_gf(gf_struct_t const& gf_struct,
   std::vector<time_container_t<2>> gf_elements;
 
   for (auto const& bl : gf_struct) {
-    int n = bl.second.size();
+    int n = bl.second;
 
     for(int i1 = 0; i1 < n; ++i1) {
       for(int i2 = 0; i2 < n; ++i2) {
-        ops.emplace_back(f(bl.first, bl.second[i1], bl.second[i2]));
+        ops.emplace_back(f(bl.first, i1, i2));
         gf_elements.emplace_back(time_container_t<2>({t_mesh, t_mesh}));
         init_gf(gf_elements.back(), t_selector);
       }
@@ -452,25 +449,15 @@ block_gf_2t_t compute_block_gf(gf_struct_t const& gf_struct,
                   t_selector,
                   comm);
 
-  struct index_visitor  {
-    std::vector<std::string> indices;
-    void operator()(int i) { indices.push_back(std::to_string(i)); }
-    void operator()(std::string s) { indices.push_back(s); }
-  };
-
   std::vector<std::string> block_names;
   std::vector<gf_2t_t> g_blocks;
 
   auto element_it = gf_elements.begin();
   for (auto const& bl : gf_struct) {
     block_names.push_back(bl.first);
-    int n = bl.second.size();
+    int n = bl.second;
 
-    index_visitor iv;
-    for (auto const& ind : bl.second) { std::visit(iv, ind); }
-    std::vector<std::vector<std::string>> indices{{iv.indices,iv.indices}};
-
-    auto block = gf_2t_t{{t_mesh, t_mesh}, make_shape(n, n), indices};
+    auto block = gf_2t_t{{t_mesh, t_mesh}, make_shape(n, n)};
 
     for(int i1 = 0; i1 < n; ++i1) {
       for(int i2 = 0; i2 < n; ++i2) {
@@ -501,10 +488,7 @@ block_gf_2t_t compute_g_l(gf_struct_t const& gf_struct,
                                                  params.t_ranges[0]},
                                                  params.delta_t_max);
 
-  auto f = [&](std::string const& block_name,
-               std::variant<int, std::string> const& ind1,
-               std::variant<int, std::string> const& ind2
-              ) {
+  auto f = [&](std::string const& block_name, long ind1, long ind2) {
     auto op1 = c_dag(block_name, ind2);
     auto op2 = c(block_name, ind1);
     return std::array<static_operator_t, 2>{op2, op1};
@@ -543,10 +527,7 @@ block_gf_2t_t compute_g_g(gf_struct_t const& gf_struct,
 
   time_point_selector_lower_triangle t_selector(params.t_ranges, params.delta_t_max);
 
-  auto f = [&](std::string const& block_name,
-               std::variant<int, std::string> const& ind1,
-               std::variant<int, std::string> const& ind2
-              ) {
+  auto f = [&](std::string const& block_name, long ind1, long ind2) {
     auto op1 = c(block_name, ind1);
     auto op2 = c_dag(block_name, ind2);
     return std::array<static_operator_t, 2>{op2, op1};
@@ -610,19 +591,7 @@ gf_2t_t compute_chi(chi_indices_t const& chi_indices,
                   t_selector,
                   comm);
 
-  struct index_visitor  {
-    std::string operator()(int i) { return std::to_string(i); }
-    std::string operator()(std::string s) { return s; }
-  } iv;
-
-  std::vector<std::string> indices1d;
-  indices1d.reserve(n_indices);
-  for (auto const& ind : chi_indices) {
-    indices1d.push_back(ind.first + "," + std::visit(iv, ind.second));
-  }
-  std::vector<std::vector<std::string>> indices{{indices1d, indices1d}};
-
-  auto chi = gf_2t_t{{t_mesh, t_mesh}, make_shape(n_indices, n_indices), indices};
+  auto chi = gf_2t_t{{t_mesh, t_mesh}, make_shape(n_indices, n_indices)};
   auto element_it = chi_elements.begin();
   for(int i1 = 0; i1 < n_indices; ++i1) {
     for(int i2 = 0; i2 < n_indices; ++i2) {

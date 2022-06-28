@@ -14,7 +14,7 @@ else()
 endif()
 
 # -- Boost --
-find_package(Boost 1.53 REQUIRED)
+find_package(Boost 1.78 REQUIRED)
 
 # -- Cpp2Py --
 if(PythonSupport OR Build_Documentation)

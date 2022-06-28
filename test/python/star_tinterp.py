@@ -53,7 +53,7 @@ class test_star_texpr(unittest.TestCase):
         dt = ti(m_interp, np.array([0.1*(1-np.exp(-5*x)) for x in m_interp]))
 
         fops = set(product(spin_names,range(n_bath+1)))
-        gf_struct = [('dn', [0]), ('up', [0])]
+        gf_struct = [('dn', 1), ('up', 1)]
         chi_indices = [('dn',0), ('up',0)]
 
         ## Initial Hamiltonian

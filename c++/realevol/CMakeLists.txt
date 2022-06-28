@@ -48,7 +48,7 @@ macro(add_realevol_cpp_lib CPPLIBNAME)
   add_library(${PROJECT_NAME}::${CPPLIBNAME} ALIAS ${CPPLIBNAME})
 
   # Link against triqs and enable warnings
-  target_link_libraries(${CPPLIBNAME} PUBLIC triqs
+  target_link_libraries(${CPPLIBNAME} PUBLIC triqs nda::blas_lapack
                         PRIVATE $<BUILD_INTERFACE:${PROJECT_NAME}_warnings>)
 
   # Configure target and compilation
@@ -62,7 +62,7 @@ macro(add_realevol_cpp_lib CPPLIBNAME)
                              TRIQS_GIT_HASH=${TRIQS_GIT_HASH}
                              $<$<CONFIG:Debug>:REALEVOL_DEBUG>
                              $<$<CONFIG:Debug>:TRIQS_DEBUG>
-                             $<$<CONFIG:Debug>:TRIQS_ARRAYS_ENFORCE_BOUNDCHECK>
+                             $<$<CONFIG:Debug>:NDA_ENFORCE_BOUNDCHECK>
   )
 
   # Run clang-tidy if found

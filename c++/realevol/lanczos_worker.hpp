@@ -24,15 +24,16 @@
 #include <type_traits>
 #include <vector>
 
-#include <triqs/arrays.hpp>
+#include <nda/nda.hpp>
+
 #include <triqs/utility/is_complex.hpp>
 #include <triqs/utility/numeric_ops.hpp>
 #include <triqs/utility/exceptions.hpp>
 
 #include <triqs/tridiag_worker.hpp>
 
-using namespace triqs::arrays;
-using triqs::arrays::lapack::tridiag_worker;
+using namespace nda;
+using nda::lapack::tridiag_worker;
 using triqs::is_complex;
 using triqs::utility::is_zero;
 

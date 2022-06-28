@@ -31,7 +31,7 @@ module.add_include("<triqs/cpp2py_converters.hpp>")
 
 module.add_preamble("""
 using namespace realevol;
-using namespace triqs::gfs;
+using namespace triqs;
 using triqs::utility::is_zero;
 using triqs::utility::conj;
 """)
@@ -47,25 +47,25 @@ c = class_(
     )
 
 c.add_constructor(signature="()", doc="Create zero interpolator")
-c.add_constructor(signature="(gf_mesh<retime> m)", doc="Create zero interpolator")
+c.add_constructor(signature="(mesh::retime m)", doc="Create zero interpolator")
 c.add_constructor(signature="(double r)", doc="Create real constant interpolator")
-c.add_constructor(signature="(gf_mesh<retime> m, double r)", doc="Create real constant interpolator")
+c.add_constructor(signature="(mesh::retime m, double r)", doc="Create real constant interpolator")
 c.add_constructor(signature="(std::complex<double> z)", doc="Create complex constant interpolator")
-c.add_constructor(signature="(gf_mesh<retime> m, std::complex<double> z)", doc="Create complex constant interpolator")
+c.add_constructor(signature="(mesh::retime m, std::complex<double> z)", doc="Create complex constant interpolator")
 c.add_constructor(signature="(double r, double i)", doc="Create complex constant interpolator out of two real numbers")
-c.add_constructor(signature="(gf_mesh<retime> m, double r, double i)", doc="Create complex constant interpolator out of two real numbers")
-c.add_constructor(signature="(gf_mesh<retime> m, triqs::arrays::array<double, 1> r)", doc="Create real interpolator")
-c.add_constructor(signature="(gf_mesh<retime> m, triqs::arrays::array<double, 1> r, double i)",
+c.add_constructor(signature="(mesh::retime m, double r, double i)", doc="Create complex constant interpolator out of two real numbers")
+c.add_constructor(signature="(mesh::retime m, nda::array<double, 1> r)", doc="Create real interpolator")
+c.add_constructor(signature="(mesh::retime m, nda::array<double, 1> r, double i)",
                   doc="Create complex interpolator with a constant imaginary part")
-c.add_constructor(signature="(gf_mesh<retime> m, double r, triqs::arrays::array<double, 1> i)",
+c.add_constructor(signature="(mesh::retime m, double r, nda::array<double, 1> i)",
                   doc="Create complex interpolator with a constant real part")
-c.add_constructor(signature="(gf_mesh<retime> m, triqs::arrays::array<double, 1> r, triqs::arrays::array<double, 1> i)",
+c.add_constructor(signature="(mesh::retime m, nda::array<double, 1> r, nda::array<double, 1> i)",
                   doc="Create complex interpolator")
-c.add_constructor(signature="(gf_mesh<retime> m, triqs::arrays::array<std::complex<double>, 1> z)",
+c.add_constructor(signature="(mesh::retime m, nda::array<std::complex<double>, 1> z)",
                   doc="Create complex interpolator")
 
 c.add_call(signature="std::complex<double>(double t)", doc="Interpolation result at time point t")
-c.add_property(getter=cfunction("triqs::arrays::array<std::complex<double>, 1> get_data()"),
+c.add_property(getter=cfunction("nda::array<std::complex<double>, 1> get_data()"),
                name="data",
                doc="Values at interpolation nodes")
 module.add_class(c)

@@ -18,20 +18,16 @@
  * realevol. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #include <set>
 #include <vector>
 #include <algorithm>
 
-// FIXME: Code in <triqs/utility/variant_extensions.hpp> depends on these
-// headers but does not include them.
-//
-// https://github.com/TRIQS/triqs/pull/799
-#include <ostream>
-#include <sstream>
+// clang-format off
+#include <nda/nda.hpp>
+#include <nda/gtest_tools.hpp>
+// clang-format on
 
 #include <triqs/utility/variant_extensions.hpp>
-#include <triqs/test_tools/arrays.hpp>
 
 #include <realevol/time_expr.hpp>
 
@@ -383,4 +379,3 @@ TEST(space_partition, Phase2) {
  }
 
 }
-

@@ -20,18 +20,14 @@
 
 #pragma once
 
+#include <algorithm>
 #include <complex>
 
-#include <triqs/arrays/blas_lapack/f77/cxx_interface.hpp>
-#include <triqs/arrays/blas_lapack/tools.hpp>
-#include <triqs/arrays/matrix.hpp>
-#include <triqs/arrays/vector.hpp>
+#include <nda/nda.hpp>
 
 #include <triqs/utility/exceptions.hpp>
 
-namespace triqs::arrays::lapack {
-
-  using namespace blas_lapack_tools;
+namespace nda::lapack {
 
   template <bool Complex = false> struct tridiag_worker {};
 
@@ -52,10 +48,10 @@ namespace triqs::arrays::lapack {
     template <typename VT> void operator()(VT const &diag, VT const &supdiag /* superdiagonal */) {
       if (supdiag.size() != diag.size() - 1) TRIQS_RUNTIME_ERROR << "Error in tridiagonal matrix diagonalization: size mismatch";
       resize(diag.size());
-      D(range(0, s))     = diag;
-      E(range(0, s - 1)) = supdiag;
+      std::copy(std::begin(diag), std::begin(diag) + s, std::begin(D));
+      std::copy(std::begin(supdiag), std::begin(supdiag) + s - 1, std::begin(E));
       int info;
-      f77::stev('V', s, D.data_start(), E.data_start(), Z.data_start(), first_dim(Z), W.data_start(), info);
+      f77::stev('V', s, D.data(), E.data(), Z.data(), first_dim(Z), W.data(), info);
       if (info != 0) TRIQS_RUNTIME_ERROR << "Error in tridiagonal matrix diagonalization " << info;
     }
     vector_view<double> values() const { return D(range(0, s)); }
@@ -83,7 +79,7 @@ namespace triqs::arrays::lapack {
     template <typename VTd, typename VTe> void operator()(VTd const &diag, VTe const &supdiag /* superdiagonal */) {
       if (supdiag.size() != diag.size() - 1) TRIQS_RUNTIME_ERROR << "Error in tridiagonal matrix diagonalization: size mismatch";
       resize(diag.size());
-      D(range(0, s)) = diag;
+      std::copy(std::begin(diag), std::begin(diag) + s, std::begin(D));
       // construct transformed off-diagonal elements;
       U(0) = 1.0;
       for (int i : range(0, s - 1)) {
@@ -92,7 +88,7 @@ namespace triqs::arrays::lapack {
         E(i)                   = std::real(e * conj(U(i)) * (U(i + 1)));
       }
       int info;
-      f77::stev('V', s, D.data_start(), E.data_start(), Z.data_start(), first_dim(Z), W.data_start(), info);
+      f77::stev('V', s, D.data(), E.data(), Z.data(), first_dim(Z), W.data(), info);
       if (info != 0) TRIQS_RUNTIME_ERROR << "Error in tridiagonal matrix diagonalization " << info;
 
       // Back-transform the eigenvectors
@@ -103,4 +99,4 @@ namespace triqs::arrays::lapack {
     matrix_view<std::complex<double>> vectors() const { return V(range(0, s), range(0, s)); }
   };
 
-} // namespace triqs::arrays::lapack
+} // namespace nda::lapack

@@ -44,7 +44,7 @@ t = [0.3]*n_bath
 dt = te("0.1*(1-exp(-5*t))")
 
 fops = set(product(spin_names,range(n_bath+1)))
-gf_struct = [('dn', [0]), ('up', [0])]
+gf_struct = [('dn', 1), ('up', 1)]
 chi_indices = [('dn',0), ('up',0)]
 
 t_max = 1.0

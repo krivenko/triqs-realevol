@@ -48,7 +48,7 @@ make_gf_ret_adv(block_gf_2t_t const& g_l, block_gf_2t_t const& g_g) {
  auto res = std::make_pair(make_block_gf(g_l.block_names(), blocks),
                            make_block_gf(g_l.block_names(), blocks));
 
- gf_mesh<retime>::mesh_point_t t, tp;
+ mesh::retime::mesh_point_t t, tp;
  for(auto bl : range(g_l.size())) {
   auto const& g_l_block = g_l[bl];
   auto const& g_g_block = g_g[bl];

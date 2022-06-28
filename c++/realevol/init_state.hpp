@@ -65,7 +65,7 @@ init_state make_equilibrium_init_state(static_operator_t const& h,
                                        double temperature,
                                        eq_solver_parameters_t const& params,
                                        std::map<operators::indices_t, int> const& bits_per_boson = {},
-                                       mpi::communicator const& comm = {});
+                                       mpi::communicator comm = {});
 
 /// Initial state, including information about the Hilbert space structure
 class init_state {
@@ -171,7 +171,7 @@ private:
                                                double,
                                                eq_solver_parameters_t const&,
                                                std::map<operators::indices_t, int> const&,
-                                               mpi::communicator const&);
+                                               mpi::communicator);
 
 };
 

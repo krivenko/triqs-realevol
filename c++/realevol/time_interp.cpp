@@ -22,6 +22,8 @@
 
 namespace realevol {
 
+using namespace std::literals::complex_literals;
+
 //
 // Constructors
 //

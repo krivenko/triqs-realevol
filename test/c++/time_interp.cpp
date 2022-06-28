@@ -19,22 +19,26 @@
  *
  ******************************************************************************/
 
-#include <triqs/gfs.hpp>
+// clang-format off
+#include <nda/nda.hpp>
+#include <nda/gtest_tools.hpp>
+// clang-format on
 
-#include <triqs/test_tools/arrays.hpp>
+#include <triqs/gfs.hpp>
+#include <triqs/mesh/bases/segment.hpp>
 
 #include <realevol/time_interp.hpp>
 #include <realevol/mesh_utils.hpp>
 
 using namespace realevol;
-using namespace triqs::arrays;
-using triqs::gfs::segment_mesh;
+using namespace nda;
+using triqs::mesh::segment_mesh;
 
 segment_mesh m(0, 10, 11);
 
 template<typename F>
-auto init_array(segment_mesh const& m_, F && f) -> triqs::arrays::array<decltype(f(.0)), 1> {
-  triqs::arrays::array<decltype(f(.0)), 1> res(m_.size());
+auto init_array(segment_mesh const& m_, F && f) -> nda::array<decltype(f(.0)), 1> {
+  nda::array<decltype(f(.0)), 1> res(m_.size());
   for(int i : range(m_.size())) res(i) = f(m_[i]);
   return res;
 }
@@ -216,5 +220,3 @@ TEST(time_interp, try_reduce_to_constant) {
   EXPECT_FALSE(is_constant(ti_mid));
   EXPECT_TRUE(is_constant(ti_high));
 }
-
-MAKE_MAIN;

@@ -21,15 +21,19 @@
 
 #include <triqs/utility/first_include.hpp>
 
-#include <triqs/test_tools/arrays.hpp>
+// clang-format off
+#include <nda/nda.hpp>
+#include <nda/gtest_tools.hpp>
+// clang-format on
+
 #include <triqs/gfs.hpp>
+#include <triqs/mesh/bases/segment.hpp>
 
 #include <realevol/interpolator.hpp>
 
 using namespace realevol;
 
-using namespace realevol;
-using triqs::gfs::segment_mesh;
+using triqs::mesh::segment_mesh;
 
 TEST(interpolator, out_of_bounds) {
   segment_mesh m(0,0.5,6);
@@ -64,5 +68,3 @@ TEST(interpolator, is_constant) {
   EXPECT_TRUE(is_constant(interp3));
   EXPECT_TRUE(interp3.is_zero());
 }
-
-MAKE_MAIN;

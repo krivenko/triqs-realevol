@@ -21,7 +21,10 @@
 
 #include <cmath>
 
-#include <triqs/test_tools/arrays.hpp>
+// clang-format off
+#include <nda/nda.hpp>
+#include <nda/gtest_tools.hpp>
+// clang-format on
 
 #include <realevol/init_state.hpp>
 
@@ -82,5 +85,3 @@ TEST(init_state, pure) {
   EXPECT_ARRAY_EQ(wst.state.amplitudes(), wst_new.state.amplitudes());
  }
 }
-
-MAKE_MAIN;

@@ -19,8 +19,8 @@
 #
 # ##############################################################################
 
-cmake_minimum_required(VERSION 3.6.0 FATAL_ERROR)
-cmake_policy(VERSION 3.6.0)
+cmake_minimum_required(VERSION 3.12.4 FATAL_ERROR)
+cmake_policy(VERSION 3.12.4)
 if(POLICY CMP0074)
   cmake_policy(SET CMP0074 NEW)
 endif()
@@ -30,12 +30,12 @@ endif()
 
 # ############
 # Define Project
-project(realevol VERSION 0.9.3 LANGUAGES CXX)
+project(realevol VERSION 0.10.0 LANGUAGES CXX)
 get_directory_property(IS_SUBPROJECT PARENT_DIRECTORY)
 
 # ############
-# Load TRIQS and CPP2PY
-find_package(TRIQS 3.0 REQUIRED)
+# Load TRIQS
+find_package(TRIQS 3.1 REQUIRED)
 
 # Get the git hash & print status
 triqs_get_git_hash_of_source_dir(PROJECT_GIT_HASH)

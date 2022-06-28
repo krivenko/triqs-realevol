@@ -18,10 +18,12 @@
  * realevol. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #include <cmath>
 
-#include <triqs/test_tools/arrays.hpp>
+// clang-format off
+#include <nda/nda.hpp>
+#include <nda/gtest_tools.hpp>
+// clang-format on
 
 #include <realevol/time_expr.hpp>
 #include <realevol/init_state.hpp>
@@ -29,6 +31,13 @@
 using namespace realevol;
 using namespace realevol::operators;
 using namespace realevol::hilbert_space;
+
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  ASSERT(mpi::has_env);
+  mpi::environment env(argc, argv);
+  return RUN_ALL_TESTS();
+}
 
 TEST(init_state_equilibrium, real) {
  double U = 3.0;
@@ -79,8 +88,8 @@ TEST(init_state_equilibrium, real) {
   EXPECT_EQ(wst_ref[i].state.get_hilbert().get_index(),
             wst[i].state.get_hilbert().get_index());
   auto const& a = wst[i].state.amplitudes();
-  EXPECT_CLOSE(1.0, dot(a,a));
-  EXPECT_CLOSE(1.0, abs(dot(wst_ref[i].state.amplitudes(),a)));
+  EXPECT_CLOSE(1.0, nda::blas::dot(a, a));
+  EXPECT_CLOSE(1.0, abs(nda::blas::dot(wst_ref[i].state.amplitudes(), a)));
  }
  EXPECT_CLOSE(1.0, total_weight);
 }
@@ -134,10 +143,8 @@ TEST(init_state_equilibrium, complex) {
   EXPECT_EQ(wst_ref[i].state.get_hilbert().get_index(),
             wst[i].state.get_hilbert().get_index());
   auto const& a = wst[i].state.amplitudes();
-  EXPECT_CLOSE(1.0, dotc(a,a));
-  EXPECT_CLOSE(1.0, abs(dotc(wst_ref[i].state.amplitudes(),a)));
+  EXPECT_CLOSE(1.0, nda::blas::dotc(a,a));
+  EXPECT_CLOSE(1.0, abs(nda::blas::dotc(wst_ref[i].state.amplitudes(),a)));
  }
  EXPECT_CLOSE(1.0, total_weight);
 }
-
-MAKE_MAIN;

@@ -25,7 +25,8 @@
 #include <iostream>
 #include <vector>
 
-#include <triqs/arrays.hpp>
+#include <nda/nda.hpp>
+
 #include <triqs/gfs.hpp>
 #include <triqs/utility/exceptions.hpp>
 #include <triqs/utility/numeric_ops.hpp>
@@ -37,8 +38,8 @@ class interpolator1d {
 
 public:
   using value_type = T;
-  using mesh_type = triqs::gfs::segment_mesh;
-  using data_type = triqs::arrays::array<value_type, 1>;
+  using mesh_type = triqs::mesh::segment_mesh;
+  using data_type = nda::array<value_type, 1>;
 
 protected:
 

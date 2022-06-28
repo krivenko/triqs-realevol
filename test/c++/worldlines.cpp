@@ -25,7 +25,12 @@
 
 #include <mpi/mpi.hpp>
 
-#include <triqs/test_tools/arrays.hpp>
+// clang-format off
+#include <nda/nda.hpp>
+#include <nda/gtest_tools.hpp>
+// clang-format on
+
+#include <triqs/mesh/retime.hpp>
 
 #include <realevol/array_utility.hpp>
 #include <realevol/time_expr.hpp>
@@ -53,6 +58,13 @@ bool operator==(worldline_desc_t<NPoints> const& wl1,
 
 } // namespace realevol
 
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  ASSERT(mpi::has_env);
+  mpi::environment env(argc, argv);
+  return RUN_ALL_TESTS();
+}
+
 class WorldlinesTest : public ::testing::Test {
 
 protected:
@@ -68,7 +80,7 @@ protected:
   const double h = 0.2;
   const double T = 0.5;
   const double J = 0.1;
-  gf_mesh<retime> t_mesh = {0, 1.0, 10};
+  mesh::retime t_mesh = {0, 1.0, 10};
 
   void SetUp() override {
     fundamental_operator_set fops;
@@ -95,7 +107,7 @@ protected:
       initial_state.get_fops(),
       initial_state.get_full_hs(),
       initial_state.get_fops(),
-      is_zero_on_mesh<gf_mesh<retime>>(t_mesh)
+      is_zero_on_mesh<mesh::retime>(t_mesh)
     );
 
     branchings1 = hss1->compute_branchings(
@@ -114,7 +126,7 @@ protected:
       initial_state.get_fops(),
       initial_state.get_full_hs(),
       initial_state.get_fops(),
-      is_zero_on_mesh<gf_mesh<retime>>(t_mesh)
+      is_zero_on_mesh<mesh::retime>(t_mesh)
     );
 
     branchings2 = hss2->compute_branchings(
@@ -155,7 +167,7 @@ TEST_F(WorldlinesTest, InitialState) {
   ASSERT_EQ(atomic_weights.size(), wst.size());
   for(int n = 0; n < atomic_weights.size(); ++n) {
     EXPECT_NEAR(atomic_weights[n], wst[n].weight, 1e-10);
-    EXPECT_ARRAY_NEAR(triqs::arrays::vector<dcomplex>{1.0},
+    EXPECT_ARRAY_NEAR(nda::vector<dcomplex>{1.0},
                       wst[n].state.amplitudes());
   }
 }
@@ -279,5 +291,3 @@ TEST_F(WorldlinesTest, make_worldlines3) {
 
   EXPECT_EQ(ref_wls2, wls2);
 }
-
-MAKE_MAIN

@@ -22,12 +22,13 @@
 #include <benchmark/benchmark.h>
 
 #include <triqs/gfs.hpp>
+#include <triqs/mesh/retime.hpp>
 
 #include <realevol/time_expr.hpp>
 
 using namespace realevol;
 
-triqs::gfs::gf_mesh<triqs::gfs::retime> mesh(1.0, 5.0, 41);
+triqs::mesh::retime mesh(1.0, 5.0, 41);
 
 static void time_expr_real_const(benchmark::State &state) {
   int n_terms = state.range(0);

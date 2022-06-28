@@ -20,6 +20,7 @@
  ******************************************************************************/
 #pragma once
 
+#include <complex>
 #include <limits>
 
 #include <boost/operators.hpp>
@@ -34,7 +35,7 @@ class time_interp : public interpolator1d<std::complex<double>>,
 public:
 
   using interp_t = interpolator1d<std::complex<double>>;
-  using real_data_type = triqs::arrays::array<double, 1>;
+  using real_data_type = nda::array<double, 1>;
 
   // Constructors
   time_interp() = default;
@@ -104,17 +105,17 @@ public:
 
   // Real part
   time_interp real() const {
-    return time_interp(mesh, (real_data_type)triqs::arrays::real(data));
+    return time_interp(mesh, (real_data_type)nda::real(data));
   }
 
   // Imaginary part
   time_interp imag() const {
-    return time_interp(mesh, (real_data_type)triqs::arrays::imag(data));
+    return time_interp(mesh, (real_data_type)nda::imag(data));
   }
 
   // Complex conjugate
   time_interp conj() const {
-    return time_interp(mesh, (data_type)triqs::arrays::conj(data));
+    return time_interp(mesh, (data_type)nda::conj(data));
   }
 };
 

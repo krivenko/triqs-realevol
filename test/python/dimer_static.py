@@ -165,8 +165,7 @@ class dimer_static_ref:
     def compute_chi(self, t_mesh):
         u = self.U
         chi_indices = list(it.product(['dn', 'up'], [0, 1]))
-        chi = Gf(mesh = MeshProduct(t_mesh, t_mesh),
-                 indices = list(map(lambda i: "%s,%i" % i, chi_indices)))
+        chi = Gf(mesh = MeshProduct(t_mesh, t_mesh), indices = list(range(4)))
         for (n1, i1), (n2, i2) in it.product(enumerate(chi_indices), enumerate(chi_indices)):
             op1 = self.n[i1]
             op2 = self.n[i2]
@@ -188,7 +187,7 @@ class test_dimer_static(unittest.TestCase):
     def setUpClass(cls):
         # Fundamental operator set
         cls.fops = set(it.product(('dn', 'up'), (0, 1)))
-        cls.gf_struct = [('dn', [0, 1]), ('up', [0, 1])]
+        cls.gf_struct = [('dn', 2), ('up', 2)]
         cls.chi_indices = list(it.product(['dn', 'up'], [0, 1]))
 
         # Hamiltonian of decoupled atoms
