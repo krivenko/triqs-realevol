@@ -31,16 +31,14 @@
 
 #include <triqs/utility/signal_handler.hpp>
 
-#include "array_utility.hpp"
-#include "time_expr.hpp"
-#include "time_interp.hpp"
-#include "mesh_utils.hpp"
-#include "hs_structure.hpp"
-#include "time_point_selector.hpp"
-#include "mpi_dispatcher.hpp"
-#include "worldlines.hpp"
-#include "wl_worker.hpp"
-#include "compute.hpp"
+#include "../array_utility.hpp"
+#include "../mesh_utils.hpp"
+#include "../hs_structure.hpp"
+#include "../time_point_selector.hpp"
+#include "../mpi_dispatcher.hpp"
+#include "../worldlines.hpp"
+#include "../wl_worker.hpp"
+#include "../compute.hpp"
 
 namespace signal_handler = triqs::signal_handler;
 
@@ -379,7 +377,7 @@ correlator_3t_container_t compute_correlator_3t(static_operator_t const& op1,
 // Initialize a GF container
 //
 
-void init_gf(time_container_view_t<2> f, time_point_selector_lower_triangle const& t_selector) {
+inline void init_gf(time_container_view_t<2> f, time_point_selector_lower_triangle const& t_selector) {
   const double nan = std::numeric_limits<double>::quiet_NaN();
   for(auto t_tp : f.mesh()) {
     auto const& [t, tp] = t_tp.components_tuple();
@@ -391,7 +389,7 @@ void init_gf(time_container_view_t<2> f, time_point_selector_lower_triangle cons
 // Change t <-> t' in a GF
 //
 
-auto swap_t_tp(gf_2t_view g) {
+inline auto swap_t_tp(gf_2t_view g) {
   auto result = gf_2t_t{g.mesh(), g.target_shape(), g.indices()};
   for(auto t_tp : g.mesh()) {
     auto const& [t, tp] = t_tp.components_tuple();
@@ -403,8 +401,8 @@ auto swap_t_tp(gf_2t_view g) {
 //
 // Restore anti-hermiticity of a GF
 //
-void restore_antihermiticity(gf_2t_view f,
-                             time_point_selector_lower_triangle const& t_selector) {
+inline void restore_antihermiticity(gf_2t_view f,
+                                    time_point_selector_lower_triangle const& t_selector) {
   for(auto t_tp : f.mesh()) {
     auto const& [t, tp] = t_tp.components_tuple();
     if(t_selector({t, tp})) continue;
@@ -639,156 +637,5 @@ gf_2t_t compute_chi(chi_indices_t const& chi_indices,
 
   return chi;
 }
-
-//
-// Explicit instantiations
-//
-
-template
-std::vector<expectval_container_t>
-compute_expectval(std::vector<static_operator_t> const& ops,
-                  init_state const& initial_state,
-                  time_expr_operator_t const& h,
-                  mesh_t_t const& t_mesh,
-                  solver_parameters_t<1> const& params,
-                  mpi::communicator const& comm);
-template
-std::vector<expectval_container_t>
-compute_expectval(std::vector<static_operator_t> const& ops,
-                  init_state const& initial_state,
-                  time_interp_operator_t const& h,
-                  mesh_t_t const& t_mesh,
-                  solver_parameters_t<1> const& params,
-                  mpi::communicator const& comm);
-
-template
-expectval_container_t compute_expectval(static_operator_t const& op,
-                                        init_state const& initial_state,
-                                        time_expr_operator_t const& h,
-                                        mesh_t_t const& t_mesh,
-                                        solver_parameters_t<1> const& params,
-                                        mpi::communicator const& comm);
-template
-expectval_container_t compute_expectval(static_operator_t const& op,
-                                        init_state const& initial_state,
-                                        time_interp_operator_t const& h,
-                                        mesh_t_t const& t_mesh,
-                                        solver_parameters_t<1> const& params,
-                                        mpi::communicator const& comm);
-
-template
-std::vector<correlator_2t_container_t>
-compute_correlator_2t(std::vector<std::array<static_operator_t, 2>> ops,
-                      init_state const& initial_state,
-                      time_expr_operator_t const& h,
-                      mesh_t_t const& t_mesh,
-                      solver_parameters_t<2> const& params,
-                      mpi::communicator const& comm);
-template
-std::vector<correlator_2t_container_t>
-compute_correlator_2t(std::vector<std::array<static_operator_t, 2>> ops,
-                      init_state const& initial_state,
-                      time_interp_operator_t const& h,
-                      mesh_t_t const& t_mesh,
-                      solver_parameters_t<2> const& params,
-                      mpi::communicator const& comm);
-
-template
-correlator_2t_container_t compute_correlator_2t(static_operator_t const& op1,
-                                                static_operator_t const& op2,
-                                                init_state const& initial_state,
-                                                time_expr_operator_t const& h,
-                                                mesh_t_t const& t_mesh,
-                                                solver_parameters_t<2> const& params,
-                                                mpi::communicator const& comm);
-template
-correlator_2t_container_t compute_correlator_2t(static_operator_t const& op1,
-                                                static_operator_t const& op2,
-                                                init_state const& initial_state,
-                                                time_interp_operator_t const& h,
-                                                mesh_t_t const& t_mesh,
-                                                solver_parameters_t<2> const& params,
-                                                mpi::communicator const& comm);
-
-template
-std::vector<correlator_3t_container_t>
-compute_correlator_3t(std::vector<std::array<static_operator_t, 3>> ops,
-                      init_state const& initial_state,
-                      time_expr_operator_t const& h,
-                      mesh_t_t const& t_mesh,
-                      solver_parameters_t<3> const& params,
-                      mpi::communicator const& comm);
-template
-std::vector<correlator_3t_container_t>
-compute_correlator_3t(std::vector<std::array<static_operator_t, 3>> ops,
-                      init_state const& initial_state,
-                      time_interp_operator_t const& h,
-                      mesh_t_t const& t_mesh,
-                      solver_parameters_t<3> const& params,
-                      mpi::communicator const& comm);
-
-template
-correlator_3t_container_t compute_correlator_3t(static_operator_t const& op1,
-                                                static_operator_t const& op2,
-                                                static_operator_t const& op3,
-                                                init_state const& initial_state,
-                                                time_expr_operator_t const& h,
-                                                mesh_t_t const& t_mesh,
-                                                solver_parameters_t<3> const& params,
-                                                mpi::communicator const& comm);
-template
-correlator_3t_container_t compute_correlator_3t(static_operator_t const& op1,
-                                                static_operator_t const& op2,
-                                                static_operator_t const& op3,
-                                                init_state const& initial_state,
-                                                time_interp_operator_t const& h,
-                                                mesh_t_t const& t_mesh,
-                                                solver_parameters_t<3> const& params,
-                                                mpi::communicator const& comm);
-
-template
-block_gf_2t_t compute_g_l(gf_struct_t const& gf_struct,
-                          init_state const& initial_state,
-                          time_expr_operator_t const& h,
-                          mesh_t_t const& t_mesh,
-                          solver_parameters_t<2> const& params,
-                          mpi::communicator const& comm);
-template
-block_gf_2t_t compute_g_l(gf_struct_t const& gf_struct,
-                          init_state const& initial_state,
-                          time_interp_operator_t const& h,
-                          mesh_t_t const& t_mesh,
-                          solver_parameters_t<2> const& params,
-                          mpi::communicator const& comm);
-
-template
-block_gf_2t_t compute_g_g(gf_struct_t const& gf_struct,
-                          init_state const& initial_state,
-                          time_expr_operator_t const& h,
-                          mesh_t_t const& t_mesh,
-                          solver_parameters_t<2> const& params,
-                          mpi::communicator const& comm);
-template
-block_gf_2t_t compute_g_g(gf_struct_t const& gf_struct,
-                          init_state const& initial_state,
-                          time_interp_operator_t const& h,
-                          mesh_t_t const& t_mesh,
-                          solver_parameters_t<2> const& params,
-                          mpi::communicator const& comm);
-
-template
-gf_2t_t compute_chi(chi_indices_t const& chi_indices,
-                    init_state const& initial_state,
-                    time_expr_operator_t const& h,
-                    mesh_t_t const& t_mesh,
-                    solver_parameters_t<2> const& params,
-                    mpi::communicator const& comm);
-template
-gf_2t_t compute_chi(chi_indices_t const& chi_indices,
-                    init_state const& initial_state,
-                    time_interp_operator_t const& h,
-                    mesh_t_t const& t_mesh,
-                    solver_parameters_t<2> const& params,
-                    mpi::communicator const& comm);
 
 } // namespace realevol
