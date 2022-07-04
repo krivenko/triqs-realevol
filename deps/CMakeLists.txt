@@ -17,7 +17,7 @@ endif()
 find_package(Boost 1.53 REQUIRED)
 
 # -- ARPACK-NG --
-find_package(arpack-ng CONFIG 3.6.0 REQUIRED)
+find_package(arpack-ng CONFIG 3.6.0 REQUIRED NAMES arpackng arpack-ng)
 message(STATUS "Found ARPACK-NG version ${arpack-ng_VERSION}")
 if(arpack_ng_LIBRARIES) # ARPACK-NG prior to version 3.8.0
   message(STATUS "  arpack_ng_LIBRARIES: ${arpack_ng_LIBRARIES}")
