@@ -25,10 +25,11 @@
 #include <vector>
 
 #include <triqs/arrays.hpp>
-#include <triqs/arrays/blas_lapack/stev.hpp>
 #include <triqs/utility/is_complex.hpp>
 #include <triqs/utility/numeric_ops.hpp>
 #include <triqs/utility/exceptions.hpp>
+
+#include <triqs/tridiag_worker.hpp>
 
 using namespace triqs::arrays;
 using triqs::arrays::lapack::tridiag_worker;
