@@ -1,12 +1,12 @@
-realevol - Real time evolution solver based on TRIQS 
+realevol - Real time evolution solver based on TRIQS
 
-Copyright (C) 2014-2022, I. Krivenko, M. Danilov, P. Kubiczek
+Copyright (C) 2014-2023, I. Krivenko, M. Danilov, P. Kubiczek
 
 realevol is free software: you can redistribute it and/or modify it under the
 terms of the GNU General Public License as published by the Free Software
 Foundation, either version 3 of the License, or (at your option) any later
 version.
- 
+
 realevol is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE. See the GNU General Public License for more details.
