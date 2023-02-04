@@ -30,7 +30,7 @@ endif()
 # -- GoogleTest --
 external_dependency(GTest
   GIT_REPO https://github.com/google/googletest
-  GIT_TAG release-1.10.0
+  GIT_TAG v1.13.0
   BUILD_ALWAYS
   EXCLUDE_FROM_ALL
 )
@@ -58,7 +58,7 @@ if(Build_Benchmarks)
   set(BENCHMARK_ENABLE_INSTALL OFF CACHE BOOL "")
   external_dependency(GBenchmark
     GIT_REPO https://github.com/google/benchmark
-    GIT_TAG v1.5.6
+    GIT_TAG v1.7.1
     BUILD_ALWAYS
     EXCLUDE_FROM_ALL
   )
