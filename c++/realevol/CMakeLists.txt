@@ -115,7 +115,7 @@ add_realevol_cpp_lib(realevol_c
                      operators/many_body_operator.cpp
                      hilbert_space/fundamental_operator_set.cpp)
 
-target_link_libraries(realevol_c PRIVATE ezarpack arpack PUBLIC h5::hdf5)
+target_link_libraries(realevol_c PRIVATE ezarpack ${ARPACK_LIBRARIES} PUBLIC h5::hdf5)
 target_link_libraries(realevol_c PUBLIC realevol_time_expr_c realevol_time_interp_c)
 add_dependencies(realevol_c realevol_time_expr_c realevol_time_interp_c)
 

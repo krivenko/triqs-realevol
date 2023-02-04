@@ -16,23 +16,6 @@ endif()
 # -- Boost --
 find_package(Boost 1.53 REQUIRED)
 
-# -- ARPACK-NG --
-find_package(arpack-ng CONFIG 3.6.0 REQUIRED NAMES arpackng arpack-ng)
-message(STATUS "Found ARPACK-NG version ${arpack-ng_VERSION}")
-if(arpack_ng_LIBRARIES) # ARPACK-NG prior to version 3.8.0
-  message(STATUS "  arpack_ng_LIBRARIES: ${arpack_ng_LIBRARIES}")
-  add_library(arpack INTERFACE)
-  target_link_libraries(arpack INTERFACE ${arpack_ng_LIBRARIES})
-else() # ARPACK 3.8.0 and newer
-  find_package(LAPACK REQUIRED)
-  add_library(arpack INTERFACE)
-  target_link_libraries(arpack INTERFACE ARPACK::ARPACK ${LAPACK_LIBRARIES})
-  if(arpack-ng_DIR)
-    # A workaround for the broken ARPACK::ARPACK target
-    target_link_libraries(arpack INTERFACE -L${arpack-ng_DIR}/../.. -larpack)
-  endif()
-endif()
-
 # -- Cpp2Py --
 if(PythonSupport OR Build_Documentation)
   external_dependency(Cpp2Py
@@ -55,14 +38,19 @@ external_dependency(GTest
 # -- ezARPACK --
 set(Examples OFF CACHE BOOL "")
 set(Tests OFF CACHE BOOL "")
-set(Skip_arpack-ng ON CACHE BOOL "")
 external_dependency(ezARPACK
-  VERSION 0.9
+  VERSION 1.0
   GIT_REPO https://github.com/krivenko/ezARPACK
   GIT_TAG master
   BUILD_ALWAYS
   EXCLUDE_FROM_ALL
 )
+
+# -- ARPACK-NG --
+include(${CMAKE_CURRENT_BINARY_DIR}/ezARPACK_src/cmake/ezARPACKMacros.cmake)
+find_arpackng(3.8.0 REQUIRED)
+message(STATUS "ARPACK_LIBRARIES: ${ARPACK_LIBRARIES}")
+set(ARPACK_LIBRARIES "${ARPACK_LIBRARIES}" PARENT_SCOPE)
 
 # -- Google Benchmark --
 if(Build_Benchmarks)
