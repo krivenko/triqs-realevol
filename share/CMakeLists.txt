@@ -14,15 +14,20 @@ if(NOT CMAKE_INSTALL_PREFIX STREQUAL TRIQS_ROOT AND NOT IS_SUBPROJECT)
     FILES
       ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.modulefile
       ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}vars.sh
-    DESTINATION share
+    DESTINATION share/${PROJECT_NAME}
   )
- 
+
   message(STATUS "***************************************************************")
   message(STATUS "* Custom install Location. Use:                                ")
   message(STATUS "*                                                              ")
-  message(STATUS "*   source ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}vars.sh      ")
+  message(STATUS "*   source ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/${PROJECT_NAME}vars.sh      ")
   message(STATUS "*                                                              ")
   message(STATUS "* to set up the environment variables                          ")
+  if(DEFINED ENV{MODULEPATH})
+    message(STATUS "*                                                                          ")
+    message(STATUS "* Consider copying ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.modulefile  ")
+    message(STATUS "*   into your environment module directories                               ")
+  endif()
   message(STATUS "***************************************************************")
 
 endif()
