@@ -18,6 +18,9 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+
+#include <cstdint>
+
 #include "./many_body_operator.hpp"
 
 #include <h5/h5.hpp>

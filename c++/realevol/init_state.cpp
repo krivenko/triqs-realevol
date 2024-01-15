@@ -20,6 +20,7 @@
  ******************************************************************************/
 #include <triqs/utility/first_include.hpp>
 
+#include <cstdint>
 #include <string>
 
 #include "init_state.hpp"

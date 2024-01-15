@@ -21,6 +21,7 @@
 #pragma once
 
 #include <complex>
+#include <cstdint>
 #include <string>
 #include <ostream>
 

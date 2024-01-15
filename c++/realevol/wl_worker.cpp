@@ -19,6 +19,8 @@
  *
  ******************************************************************************/
 
+#include <cstdint>
+
 #include "wl_worker.hpp"
 
 #include "array_utility.hpp"

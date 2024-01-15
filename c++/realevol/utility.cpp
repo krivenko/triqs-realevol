@@ -18,6 +18,7 @@
  * realevol. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+#include <cstdint>
 #include <string>
 #include <vector>
 
