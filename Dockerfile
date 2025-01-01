@@ -13,11 +13,11 @@ RUN apt-get update && \
 ENV OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
 
 # Download a C++20 compatible version of Boost
-ARG BOOST_URL=https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz
+ARG BOOST_URL=https://archives.boost.io/release/1.78.0/source/boost_1_78_0.tar.bz2
 RUN curl -O -L $BOOST_URL &&             \
-    tar -xf boost_1_78_0.tar.gz &&       \
+    tar -xf boost_1_78_0.tar.bz2 &&       \
     mv boost_1_78_0 /home/build/boost && \
-    rm boost_1_78_0.tar.gz
+    rm boost_1_78_0.tar.bz2
 
 # Install ARPACK-NG
 USER build
