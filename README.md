@@ -1,7 +1,7 @@
 realevol - Real time evolution solver based on TRIQS
 ====================================================
 
-Copyright (C) 2014-2024, I. Krivenko, M. Danilov, P. Kubiczek
+Copyright (C) 2014-2025, I. Krivenko, M. Danilov, P. Kubiczek
 
 Installation
 ------------
