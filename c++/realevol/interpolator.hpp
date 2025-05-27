@@ -38,7 +38,7 @@ class interpolator1d {
 
 public:
   using value_type = T;
-  using mesh_type = triqs::mesh::segment_mesh;
+  using mesh_type = triqs::mesh::retime;
   using data_type = nda::array<value_type, 1>;
 
 protected:
@@ -70,16 +70,16 @@ public:
       TRIQS_RUNTIME_ERROR << "Too few data points, need at least 2";
   }
 
-  value_type operator()(double x) const {
+  value_type operator()(double t) const {
 
     if(is_constant_) return data(0);
 
-    TRIQS_ASSERT(x >= mesh.x_min());
-    TRIQS_ASSERT(x <= mesh.x_max());
+    TRIQS_ASSERT(t >= mesh.t_min());
+    TRIQS_ASSERT(t <= mesh.t_max());
 
-    int l = std::floor(x / mesh.delta());
+    int l = std::floor(t / mesh.delta());
     if(l == mesh.size() - 1) return data(l);
-    double d = (x - mesh[l]) / (mesh[l + 1] - mesh[l]);
+    double d = (t - mesh[l]) / (mesh[l + 1] - mesh[l]);
     return (1.0 - d) * data(l) + d * data(l + 1);
   }
 
@@ -109,7 +109,7 @@ public:
     if(interp.is_constant_)
       os << interp.data(0);
     else {
-      os << "ti([" << interp.mesh.x_min() << "," << interp.mesh.x_max() << "]->[";
+      os << "ti([" << interp.mesh.t_min() << "," << interp.mesh.t_max() << "]->[";
       os << interp.data(0) << (interp.mesh.size() > 2 ? ",...," : ",")
          << interp.data(interp.mesh.size()-1) << "])";
     }

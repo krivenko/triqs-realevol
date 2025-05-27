@@ -25,19 +25,18 @@
 // clang-format on
 
 #include <triqs/gfs.hpp>
-#include <triqs/mesh/bases/segment.hpp>
 
 #include <realevol/time_interp.hpp>
 #include <realevol/mesh_utils.hpp>
 
 using namespace realevol;
 using namespace nda;
-using triqs::mesh::segment_mesh;
+using triqs::mesh::retime;
 
-segment_mesh m(0, 10, 11);
+triqs::mesh::retime m(0, 10, 11);
 
 template<typename F>
-auto init_array(segment_mesh const& m_, F && f) -> nda::array<decltype(f(.0)), 1> {
+auto init_array(triqs::mesh::retime const& m_, F && f) -> nda::array<decltype(f(.0)), 1> {
   nda::array<decltype(f(.0)), 1> res(m_.size());
   for(int i : range(m_.size())) res(i) = f(m_[i]);
   return res;
@@ -205,12 +204,12 @@ TEST(time_interp, Division) {
 
 TEST(time_interp, try_reduce_to_constant) {
 
-  segment_mesh m2(0,100,101);
+  triqs::mesh::retime m2(0,100,101);
   time_interp ti(m2, init_array(m2, [](double t){ return double(t > 50); }));
 
   EXPECT_FALSE(is_constant(ti));
 
-  segment_mesh m_low(0,50,51), m_mid(25,75,51), m_high(51,100,50);
+  triqs::mesh::retime m_low(0,50,51), m_mid(25,75,51), m_high(51,100,50);
 
   auto ti_low = try_reduce_to_constant(ti, m_low);
   auto ti_mid = try_reduce_to_constant(ti, m_mid);

@@ -26,7 +26,6 @@
 #include <sstream>
 
 #include <triqs/gfs.hpp>
-#include <triqs/mesh/bases/segment.hpp>
 #include <triqs/utility/numeric_ops.hpp>
 
 // clang-format off
@@ -38,7 +37,7 @@
 #include <realevol/mesh_utils.hpp>
 
 using namespace realevol;
-using triqs::mesh::segment_mesh;
+using triqs::mesh::retime;
 
 time_expr te1("t^2"), te2("t + sin(pi/2)"), te3("sqrt(9.0) + 1.5");
 time_expr te4("t^2",1.0), te5("t + sin(pi/2)","t^3");
@@ -194,7 +193,7 @@ TEST(time_expr,Division) {
 }
 
 TEST(time_expr,try_reduce_to_constant) {
-  segment_mesh m(0,100,101);
+  retime m(0,100,101);
 
   time_expr te0t("sgn(t - 200)"), te1t("1*t"),
             te0t2("sgn(t - 200)","2"), te1tt3("1*t","t^3");

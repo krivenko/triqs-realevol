@@ -373,7 +373,7 @@ TEST(operator, time_interp) {
  }
 
  // Algebra
- triqs::mesh::segment_mesh m(0, 1, 6);
+ triqs::mesh::retime m(0, 1, 6);
  auto ti1 = time_interp(m, nda::array<double,1>{.0, 0.2, 0.4, 0.6, 0.8, 1.0});
  auto ti2 = time_interp(m, nda::array<double,1>{.0, 0.1, 0.3, 0.5, 0.7, 0.9});
  auto ti3 = time_interp(m, nda::array<double,1>{.0, 0.2, 0.4, 0.6, 0.4, 0.2});

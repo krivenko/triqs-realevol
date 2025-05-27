@@ -27,16 +27,15 @@
 // clang-format on
 
 #include <triqs/gfs.hpp>
-#include <triqs/mesh/bases/segment.hpp>
 
 #include <realevol/interpolator.hpp>
 
 using namespace realevol;
 
-using triqs::mesh::segment_mesh;
+using triqs::mesh::retime;
 
 TEST(interpolator, out_of_bounds) {
-  segment_mesh m(0,0.5,6);
+  retime m(0,0.5,6);
   interpolator1d<double> interp(m, {3,4,5,6,7,8});
 
   EXPECT_THROW(interp(-1), triqs::exception);
@@ -44,7 +43,7 @@ TEST(interpolator, out_of_bounds) {
 }
 
 TEST(interpolator, evaluate) {
-  segment_mesh m(0,0.5,6);
+  retime m(0,0.5,6);
   interpolator1d<double> interp(m, {0,1,4,9,16,25});
 
   std::vector<double> ref = {0,0.5,1,2.5,4,6.5,9,12.5,16,20.5,25};
@@ -54,7 +53,7 @@ TEST(interpolator, evaluate) {
 }
 
 TEST(interpolator, is_constant) {
-  segment_mesh m(0,0.5,6);
+  retime m(0,0.5,6);
 
   interpolator1d<double> interp1(m, {2,2,2,2,2,2});
   EXPECT_TRUE(is_constant(interp1));
