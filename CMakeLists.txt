@@ -35,6 +35,9 @@ get_directory_property(IS_SUBPROJECT PARENT_DIRECTORY)
 
 # ############
 # Load TRIQS
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 OLD)
+endif()
 find_package(TRIQS 3.1 REQUIRED)
 
 # Get the git hash & print status
