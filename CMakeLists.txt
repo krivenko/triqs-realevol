@@ -120,6 +120,9 @@ target_compile_options(${PROJECT_NAME}_warnings
     $<$<CXX_COMPILER_ID:AppleClang>:-Wno-gcc-compat>
 )
 
+# Provide GNU Installation directories
+include(GNUInstallDirs)
+
 # #############
 # Build Project
 

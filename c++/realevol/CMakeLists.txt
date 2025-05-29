@@ -59,7 +59,7 @@ macro(add_realevol_cpp_lib CPPLIBNAME)
   target_include_directories(${CPPLIBNAME} PUBLIC
                              $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/c++>)
   target_include_directories(${CPPLIBNAME} SYSTEM INTERFACE
-                             $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>)
+                             $<INSTALL_INTERFACE:${CMAKE_INSTALL_FULL_INCLUDEDIR}>)
   target_compile_definitions(${CPPLIBNAME} PUBLIC
                              REALEVOL_GIT_HASH=${PROJECT_GIT_HASH}
                              TRIQS_GIT_HASH=${TRIQS_GIT_HASH}
@@ -103,7 +103,8 @@ macro(add_realevol_cpp_lib CPPLIBNAME)
   endif()
 
   # Install library
-  install(TARGETS ${CPPLIBNAME} EXPORT ${PROJECT_NAME}-targets DESTINATION lib)
+  install(TARGETS ${CPPLIBNAME} EXPORT ${PROJECT_NAME}-targets
+          DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endmacro()
 
 add_realevol_cpp_lib(realevol_time_expr_c time_expr.cpp)
@@ -125,5 +126,5 @@ add_dependencies(realevol_c realevol_time_expr_c realevol_time_interp_c)
 
 # Install headers
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        DESTINATION include
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         FILES_MATCHING PATTERN "*.hpp")
