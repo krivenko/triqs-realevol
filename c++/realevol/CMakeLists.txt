@@ -52,7 +52,10 @@ macro(add_realevol_cpp_lib CPPLIBNAME)
                         PRIVATE $<BUILD_INTERFACE:${PROJECT_NAME}_warnings>)
 
   # Configure target and compilation
-  set_property(TARGET ${CPPLIBNAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
+  set_target_properties(${CPPLIBNAME} PROPERTIES
+                        POSITION_INDEPENDENT_CODE ON
+                        VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+  )
   target_include_directories(${CPPLIBNAME} PUBLIC
                              $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/c++>)
   target_include_directories(${CPPLIBNAME} SYSTEM INTERFACE
