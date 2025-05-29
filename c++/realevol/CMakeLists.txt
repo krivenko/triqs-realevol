@@ -80,7 +80,7 @@ macro(add_realevol_cpp_lib CPPLIBNAME)
       TARGET ${CPPLIBNAME}
       COMMAND ${CPPCHECK_EXECUTABLE}
         --enable=warning,style,performance,portability
-        --std=c++17
+        --std=c++20
         --template=gcc
         --verbose
         --force
@@ -115,7 +115,8 @@ add_realevol_cpp_lib(realevol_c
                      operators/many_body_operator.cpp
                      hilbert_space/fundamental_operator_set.cpp)
 
-target_link_libraries(realevol_c PRIVATE ezarpack ${ARPACK_LIBRARIES} PUBLIC h5::hdf5)
+target_link_libraries(realevol_c PRIVATE ezarpack ${ARPACK_LIBRARIES}
+                                 PUBLIC h5::h5_c h5::hdf5)
 target_link_libraries(realevol_c PUBLIC realevol_time_expr_c realevol_time_interp_c)
 add_dependencies(realevol_c realevol_time_expr_c realevol_time_interp_c)
 

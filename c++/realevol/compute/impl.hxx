@@ -380,7 +380,7 @@ correlator_3t_container_t compute_correlator_3t(static_operator_t const& op1,
 inline void init_gf(time_container_view_t<2> f, time_point_selector_lower_triangle const& t_selector) {
   const double nan = std::numeric_limits<double>::quiet_NaN();
   for(auto t_tp : f.mesh()) {
-    auto const& [t, tp] = t_tp.components_tuple();
+    auto const& [t, tp] = t_tp.as_tuple();
     f[t_tp] = t_selector({t, tp}) ? .0 : dcomplex(nan, nan);
   }
 }
@@ -390,10 +390,10 @@ inline void init_gf(time_container_view_t<2> f, time_point_selector_lower_triang
 //
 
 inline auto swap_t_tp(gf_2t_view g) {
-  auto result = gf_2t_t{g.mesh(), g.target_shape(), g.indices()};
+  auto result = gf_2t_t{g.mesh(), g.target_shape()};
   for(auto t_tp : g.mesh()) {
-    auto const& [t, tp] = t_tp.components_tuple();
-    result[t_tp] = g[{tp, t}];
+    auto const& [t, tp] = t_tp.as_tuple();
+    result[t_tp] = g[tp, t];
   }
   return result;
 }
@@ -404,9 +404,9 @@ inline auto swap_t_tp(gf_2t_view g) {
 inline void restore_antihermiticity(gf_2t_view f,
                                     time_point_selector_lower_triangle const& t_selector) {
   for(auto t_tp : f.mesh()) {
-    auto const& [t, tp] = t_tp.components_tuple();
+    auto const& [t, tp] = t_tp.as_tuple();
     if(t_selector({t, tp})) continue;
-    f[t_tp] = -dagger(f[{tp, t}]);
+    f[t_tp] = -dagger(f[tp, t]);
   }
 }
 

@@ -61,7 +61,7 @@ macro(add_realevol_cpp_test test)
       TARGET ${test_name}
       COMMAND ${CPPCHECK_EXECUTABLE}
       --enable=warning,style,performance,portability
-      --std=c++17
+      --std=c++20
       --template=gcc
       --verbose
       --force

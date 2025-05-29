@@ -146,8 +146,8 @@ public:
  }
 
  // Access eigenvalues and eigenvectors of the Krylov-projected operator
- vector_view<double> values() const { return tdw.values(); }
- matrix_view<double> vectors() const { return tdw.vectors(); }
+ vector_view<double const> values() const { return tdw.values(); }
+ matrix_view<double const> vectors() const { return tdw.vectors(); }
 
  void reset() {
   alpha.clear();

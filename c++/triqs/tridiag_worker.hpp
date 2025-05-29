@@ -54,8 +54,12 @@ namespace nda::lapack {
       f77::stev('V', s, D.data(), E.data(), Z.data(), first_dim(Z), W.data(), info);
       if (info != 0) TRIQS_RUNTIME_ERROR << "Error in tridiagonal matrix diagonalization " << info;
     }
-    vector_view<double> values() const { return D(range(0, s)); }
-    matrix_view<double> vectors() const { return Z(range(0, s), range(0, s)); }
+    vector_view<double const> values() const {
+      return vector_view<double const>({long(s)}, D.data());
+    }
+    matrix_view<double const> vectors() const {
+      return matrix_view<double const>({long(s), long(s)}, Z.data());
+    }
   };
 
   template <> struct tridiag_worker<true> {
@@ -95,8 +99,12 @@ namespace nda::lapack {
       for (int i : range(0, s))
         for (int j : range(0, s)) V(i, j) = Z(i, j) * conj(U(i)) * U(j);
     }
-    vector_view<double> values() const { return D(range(0, s)); }
-    matrix_view<std::complex<double>> vectors() const { return V(range(0, s), range(0, s)); }
+    vector_view<double const> values() const {
+      return vector_view<double const>({long(s)}, D.data());
+    }
+    matrix_view<std::complex<double> const> vectors() const {
+      return matrix_view<std::complex<double> const>({long(s), long(s)}, V.data());
+    }
   };
 
 } // namespace nda::lapack

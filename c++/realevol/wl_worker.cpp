@@ -67,7 +67,7 @@ void add_to_element_impl(time_container_view_t<sizeof...(Ints)> gf,
                          dcomplex val,
                          std::index_sequence<Ints...>
                         ) {
-  gf[{t_indices[Ints]...}] += val;
+  gf.data()(t_indices[Ints]...) += val;
 }
 
 template<std::size_t NPoints>

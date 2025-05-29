@@ -38,7 +38,7 @@ get_directory_property(IS_SUBPROJECT PARENT_DIRECTORY)
 if(POLICY CMP0167)
   cmake_policy(SET CMP0167 OLD)
 endif()
-find_package(TRIQS 3.1 REQUIRED)
+find_package(TRIQS 3.3 REQUIRED)
 
 # Get the git hash & print status
 triqs_get_git_hash_of_source_dir(PROJECT_GIT_HASH)
@@ -167,7 +167,7 @@ if(BUILD_DEBIAN_PACKAGE AND NOT IS_SUBPROJECT)
   execute_process(COMMAND dpkg --print-architecture
                   OUTPUT_VARIABLE CMAKE_DEBIAN_PACKAGE_ARCHITECTURE
                   OUTPUT_STRIP_TRAILING_WHITESPACE)
-  set(CPACK_DEBIAN_PACKAGE_DEPENDS "triqs (>= 3.1)")
+  set(CPACK_DEBIAN_PACKAGE_DEPENDS "triqs (>= 3.3)")
   set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
   set(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS ON)
   include(CPack)

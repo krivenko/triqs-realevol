@@ -98,7 +98,7 @@ inline void prop_lapack_t<HScalarType>::diag(double t, double dt) {
  for(int i : range(from_st.size())) {
   from_st(i) = 1.0;
   to_st = inst_h(from_st);
-  workspace(range(),i) = to_st.amplitudes();
+  workspace(range::all,i) = to_st.amplitudes();
   from_st(i) = 0;
  }
  eig = linalg::eigenelements(workspace);
@@ -138,7 +138,7 @@ inline void prop_lanczos_t<HScalarType>::operator()(state_on_subspace_t & st, do
  lw(st);
 
  // Construct the propagation exponent
- vector_view<double> eigenvalues = lw.values();
+ vector_view<double const> eigenvalues = lw.values();
  auto all = range(eigenvalues.size());
 
  for(int n : all)

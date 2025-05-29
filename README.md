@@ -6,7 +6,7 @@ Copyright (C) 2014-2025, I. Krivenko, M. Danilov, P. Kubiczek
 Installation
 ------------
 
-- Install the [TRIQS](http://triqs.github.io/triqs/3.1.x/install.html) library version 3.1.x.
+- Install the [TRIQS](http://triqs.github.io/triqs/3.3.x/install.html) library version 3.3.x.
 - Make sure you have [ARPACK-NG](https://github.com/opencollab/arpack-ng) version 3.8.0 or newer installed somewhere.
 - `source <path_to_triqs_install_dir>/share/triqsvars.sh`
 - `git clone https://github.com/krivenko/triqs-realevol.git triqs-realevol.git`

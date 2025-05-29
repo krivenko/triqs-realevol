@@ -175,7 +175,7 @@ void find_lowest_levels_on_subspace(sub_hilbert_space const& sp,
   for(long i : range(N)) {
    from(i) = 1;
    h.apply(from, to);
-   M(range(),i) = to.amplitudes();
+   M(range::all,i) = to.amplitudes();
    from(i) = 0;
   }
 
@@ -321,13 +321,13 @@ void compute_eigenvectors(sub_hilbert_space const& sp,
   for(long i : range(N)) {
    from(i) = 1;
    h.apply(from, to);
-   M(range(),i) = to.amplitudes();
+   M(range::all,i) = to.amplitudes();
    from(i) = 0;
   }
 
   auto eig = linalg::eigenelements(M);
   auto r = range(n_vectors_to_compute);
-  eigensystems.emplace_back(eig.first(r), eig.second(range(), r));
+  eigensystems.emplace_back(eig.first(r), eig.second(range::all, r));
   return;
 
  }
@@ -362,7 +362,7 @@ void compute_eigenvectors(sub_hilbert_space const& sp,
  arps(apply_h, params);
 
  eigensystems.emplace_back(real(arps.eigenvalues()),
-                           arps.eigenvectors()(range(),range(n_vectors_to_compute)));
+                           arps.eigenvectors()(range::all,range(n_vectors_to_compute)));
 
  // Sort eigenvalues and eigenvectors as complex ARPACK is not trustworthy in this respect...
  if(is_complex_t::value) {
@@ -641,7 +641,7 @@ init_state make_equilibrium_init_state(static_operator_t const& h,
   for(long i : range(energies.size())) {
    double weight = std::exp(-beta*(energies[i] - gs_energy)) / Z;
    ist.weighted_states.emplace_back(state_on_subspace_t(shs.back()), weight);
-   ist.weighted_states.back().state.amplitudes() = evec(range(),i);
+   ist.weighted_states.back().state.amplitudes() = evec(range::all,i);
   }
 
   check_signals();

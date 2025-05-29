@@ -41,9 +41,8 @@ make_gf_ret_adv(block_gf_2t_t const& g_l, block_gf_2t_t const& g_g) {
   if(shape != g_g[bl].target_shape()) TRIQS_RUNTIME_ERROR
    << "Block " << g_l.name[bl]
    << " has different target shapes within g_l and g_g.";
-  auto indices = g_l[bl].indices();
 
-  blocks.emplace_back(mesh, shape, indices);
+  blocks.emplace_back(mesh, shape);
  }
 
  auto res = std::make_pair(make_block_gf(g_l.block_names(), blocks),
@@ -57,7 +56,7 @@ make_gf_ret_adv(block_gf_2t_t const& g_l, block_gf_2t_t const& g_g) {
   auto & g_adv_block = res.second[bl];
 
   for(auto ttp : g_l_block.mesh()) {
-   std::tie(t, tp) = ttp.components_tuple();
+   std::tie(t, tp) = ttp.as_tuple();
    if(t >= tp) g_ret_block[ttp] = g_g_block[ttp] - g_l_block[ttp];
    if(t <= tp) g_adv_block[ttp] = g_l_block[ttp] - g_g_block[ttp];
   }

@@ -56,7 +56,7 @@ void test_make_monomial_connections(hilbert_space_structure<time_expr_operator_t
                              realevol::hilbert_space::statistic_enum stat,
                              int linear_index) {
     auto c = (dagger ? hss.creation_connection : hss.annihilation_connection)
-             [stat](linear_index, range());
+             [stat](linear_index, range::all);
     return std::vector<int>(c.begin(), c.end());
   };
 
