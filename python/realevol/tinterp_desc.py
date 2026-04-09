@@ -65,6 +65,9 @@ c.add_constructor(signature="(mesh::retime m, nda::array<std::complex<double>, 1
                   doc="Create complex interpolator")
 
 c.add_call(signature="std::complex<double>(double t)", doc="Interpolation result at time point t")
+c.add_property(getter=cfunction("triqs::mesh::retime get_mesh()"),
+               name="mesh",
+               doc="Time mesh")
 c.add_property(getter=cfunction("nda::array<std::complex<double>, 1> get_data()"),
                name="data",
                doc="Values at interpolation nodes")

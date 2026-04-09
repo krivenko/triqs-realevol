@@ -58,6 +58,10 @@ class test_tinterp(unittest.TestCase):
     def assertEvalAllClose(cls, ti, ti_ref, tol = 1e-12):
         assert_allclose([ti(t) for t in cls.T], ti_ref, atol = tol)
 
+    def test_mesh(self):
+        for ti in self.TI[1:]:
+            self.assertEqual(ti.mesh, self.m)
+
     def test_is_constant(self):
         self.assertEqual([is_constant(t) for t in self.TI],
                          [True, False, False, True, False, False, True, True, False])
