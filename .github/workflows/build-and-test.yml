@@ -185,6 +185,7 @@ jobs:
     - name: Test realevol
       env:
         TMPDIR: "/tmp"
+        OMP_NUM_THREADS: 1
       run: |
         mkdir -p $HOME/.prte
         echo -e "\nrmaps_default_mapping_policy = :oversubscribe" >> \
