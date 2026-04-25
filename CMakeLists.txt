@@ -38,7 +38,11 @@ get_directory_property(IS_SUBPROJECT PARENT_DIRECTORY)
 if(POLICY CMP0167)
   cmake_policy(SET CMP0167 OLD)
 endif()
-find_package(TRIQS 3.3 REQUIRED)
+set(REQUIRED_TRIQS_VERSION_MIN 3.3)
+set(REQUIRED_TRIQS_VERSION_MAX <3.4)
+find_package(TRIQS
+             ${REQUIRED_TRIQS_VERSION_MIN}...${REQUIRED_TRIQS_VERSION_MAX}
+             REQUIRED)
 
 # Get the git hash & print status
 triqs_get_git_hash_of_source_dir(PROJECT_GIT_HASH)
@@ -155,23 +159,5 @@ endif()
 # Additional configuration files
 add_subdirectory(share)
 
-# #############
-# Debian Package
-
-option(BUILD_DEBIAN_PACKAGE "Build a deb package" OFF)
-if(BUILD_DEBIAN_PACKAGE AND NOT IS_SUBPROJECT)
-  if(NOT CMAKE_INSTALL_PREFIX STREQUAL "/usr")
-    message(FATAL_ERROR "CMAKE_INSTALL_PREFIX must be /usr for packaging")
-  endif()
-  set(CPACK_PACKAGE_NAME ${PROJECT_NAME})
-  set(CPACK_GENERATOR "DEB")
-  set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
-  set(CPACK_PACKAGE_CONTACT "https://github.com/krivenko/triqs-realevol")
-  execute_process(COMMAND dpkg --print-architecture
-                  OUTPUT_VARIABLE CMAKE_DEBIAN_PACKAGE_ARCHITECTURE
-                  OUTPUT_STRIP_TRAILING_WHITESPACE)
-  set(CPACK_DEBIAN_PACKAGE_DEPENDS "triqs (>= 3.3)")
-  set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
-  set(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS ON)
-  include(CPack)
-endif()
+# Packaging with automatic versioning
+add_subdirectory(packaging)
