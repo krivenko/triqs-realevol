@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM flatironinstitute/triqs:3.3.0
+FROM flatironinstitute/triqs:3.3.1
 LABEL maintainer="Igor Krivenko"
 LABEL description="Real time evolution solver based on TRIQS"
 LABEL version="0.11.0"
@@ -10,7 +10,7 @@ RUN useradd -m -s /bin/bash -u 999 build && echo "build:build" | chpasswd
 RUN usermod -aG sudo build
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    make g++-13 file apt-utils libboost-dev libopenblas-dev
+    make g++ file apt-utils libboost-dev libopenblas-dev
 
 ENV OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
 
@@ -36,7 +36,7 @@ WORKDIR /home
 COPY --chown=build . /home/build/realevol.git
 RUN mkdir /home/build/realevol.build
 WORKDIR /home/build/realevol.build
-ENV CC=gcc-13 CXX=g++-13 REPO=/build/repo
+ENV CC=gcc CXX=g++ REPO=/build/repo
 RUN cmake ../realevol.git                               \
         -DCMAKE_INSTALL_PREFIX=/usr                     \
         -DCMAKE_BUILD_TYPE=Release                      \
