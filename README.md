@@ -7,8 +7,8 @@ Copyright (C) 2014-2026, I. Krivenko, M. Danilov, P. Kubiczek
 ### `conda`/`mamba` package from Anaconda.org
 
 ```
-conda install krivenko::triqs_realevol
-mamba install krivenko::triqs_realevol
+conda install -c conda-forge krivenko::triqs_realevol
+mamba install -c conda-forge krivenko::triqs_realevol
 ```
 
 ### Compilation from sources
