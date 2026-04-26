@@ -1,0 +1,57 @@
+context:
+  name: triqs_realevol
+  version: ${{ env.get('REALEVOL_VERSION') }}
+  number: 0
+  python: ${{ env.get('PYTHON_VERSION') }}
+
+package:
+  name: ${{ name|lower }}
+  version: ${{ version }}
+
+about:
+  homepage: https://github.com/krivenko/triqs-realevol
+  license: GPL-3.0-or-later
+  license_file: COPYING.txt
+  summary: Real time evolution solver based on TRIQS
+  repository: https://github.com/krivenko/triqs-realevol
+  documentation: https://github.com/krivenko/triqs-realevol/tree/master/doc
+
+source:
+  git: https://github.com/krivenko/triqs-realevol.git
+  tag: v${{ version }}
+
+build:
+  number: ${{ number }}
+  string: ${{ mpi }}_py${{ python | replace(".", "") }}h${{ hash }}_${{ number }}
+  script: build.sh
+
+requirements:
+  build:
+    - ${{ compiler('c') }}
+    - ${{ compiler('cxx') }}
+    - ${{ mpi }}
+    - cmake
+    - make
+    - python ${{ python }}.*
+  host:
+    - ${{ mpi }}
+    - python ${{ python }}.*
+    - numpy 2.*
+    - triqs 3.3.*
+    - arpack 3.9.*
+    - ezarpack 1.*
+    - libboost-headers
+  run:
+    - ${{ mpi }}
+    - python ${{ python }}.*
+    - numpy 2.*
+    - triqs 3.3.*
+    - arpack 3.9.*
+
+tests:
+  - script:
+      interpreter: python
+      content: |
+        import realevol
+        from realevol.version import version
+        assert version == "${{ version }}"
