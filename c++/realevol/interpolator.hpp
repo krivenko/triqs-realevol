@@ -64,10 +64,12 @@ public:
     mesh(mesh),
     data(is_constant_ ? data_type{data_(0)} : data_) {
     // Optionally save memory by storing only one data value
-    if(!is_constant_ && mesh.size() != data_.shape()[0])
-      TRIQS_RUNTIME_ERROR << "Inconsistent sizes of mesh and data";
-    if(mesh.size() < 2)
-      TRIQS_RUNTIME_ERROR << "Too few data points, need at least 2";
+    if(!is_constant_) {
+      if(mesh.size() != data_.shape()[0])
+        TRIQS_RUNTIME_ERROR << "Inconsistent sizes of mesh and data";
+      if(mesh.size() < 2)
+        TRIQS_RUNTIME_ERROR << "Too few data points, need at least 2";
+    }
   }
 
   value_type operator()(double t) const {
