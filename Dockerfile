@@ -2,7 +2,7 @@
 FROM flatironinstitute/triqs:3.3.1
 LABEL maintainer="Igor Krivenko"
 LABEL description="Real time evolution solver based on TRIQS"
-LABEL version="0.11.1"
+LABEL version="0.11.2"
 LABEL org.opencontainers.image.source=https://github.com/krivenko/realevol
 
 USER root
