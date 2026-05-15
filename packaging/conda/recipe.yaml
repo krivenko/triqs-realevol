@@ -27,13 +27,20 @@ build:
 
 requirements:
   build:
+    - if: linux
+      then:
+      - sysroot_linux-64 ==2.17
     - ${{ compiler('c') }}
     - ${{ compiler('cxx') }}
     - ${{ mpi }}
     - cmake
     - make
     - python ${{ python }}.*
+
   host:
+    - if: linux
+      then:
+      - sysroot_linux-64 ==2.17
     - ${{ mpi }}
     - python ${{ python }}.*
     - numpy 2.*
