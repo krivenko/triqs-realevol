@@ -27,7 +27,8 @@ mamba install -c conda-forge krivenko::triqs_realevol
 
 Development of this software was partially funded by the European Research
 Council (ERC) under the European Union's Horizon 2020 research and innovation
-programme (Grant Agreement No. 854843-FASTCORR).
+programme (Grant Agreement No.
+[854843-FASTCORR](https://cordis.europa.eu/project/id/854843)).
 
 ## License
 
