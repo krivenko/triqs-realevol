@@ -22,3 +22,24 @@ mamba install -c conda-forge krivenko::triqs_realevol
 - `make`
 - `make test`
 - `make install`
+
+## Acknowledgements
+
+Development of this software was partially funded by the European Research
+Council (ERC) under the European Union's Horizon 2020 research and innovation
+programme (Grant Agreement No. 854843-FASTCORR).
+
+## License
+
+realevol is free software: you can redistribute it and/or modify it under the
+terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+realevol is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+realevol (in the file LICENSE.txt in this directory). If not, see
+<http://www.gnu.org/licenses/>.
