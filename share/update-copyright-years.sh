@@ -8,7 +8,7 @@ FIND=$(which find)
 SED=$(which sed)
 
 # Collect paths of files to be updated
-FILES="README.md LICENSE.txt"
+FILES="README.md"
 for PATTERN in "*.cpp" "*.hpp" "*.hxx" "*.py" "*.py.in" "CMakeLists.txt"
 do
     FILES="$FILES $($FIND . -name $PATTERN)"

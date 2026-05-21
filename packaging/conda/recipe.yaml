@@ -11,7 +11,7 @@ package:
 about:
   homepage: https://github.com/krivenko/triqs-realevol
   license: GPL-3.0-or-later
-  license_file: COPYING.txt
+  license_file: LICENSE.txt
   summary: Real time evolution solver based on TRIQS
   repository: https://github.com/krivenko/triqs-realevol
   documentation: https://github.com/krivenko/triqs-realevol/tree/master/doc
