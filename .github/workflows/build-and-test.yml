@@ -124,10 +124,9 @@ jobs:
     steps:
     - uses: actions/checkout@v6
 
-    - name: Update Homebrew formulae
-      run: brew update
-
     - name: Install Homebrew dependencies
+      env:
+        HOMEBREW_NO_AUTO_UPDATE: 1
       run: |
            brew install llvm libomp open-mpi boost fftw hdf5 numpy scipy mpi4py
 
