@@ -110,16 +110,11 @@ jobs:
     name: macOS
     strategy:
       matrix:
-        os:
-          - "macos-latest"
-          # macos-15-intel is probably the last supported macOS x86-64 runner
-          # https://github.com/actions/runner-images/issues/13074
-          - "macos-15-intel"
         compiler:
           # NB: With gcc-15, unit tests segfault
           # in exprtk::parser::init_precompilation()
           - { name: "clang", cc: "clang", cxx: "clang++" }
-    runs-on: ${{ matrix.os }}
+    runs-on: macos-latest
 
     steps:
     - uses: actions/checkout@v6
